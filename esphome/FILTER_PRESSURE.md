@@ -4,7 +4,7 @@ This adds filter-tank pressure measurement to the Waveshare **ESP32-S3-RELAY-6CH
 
 [Yosoo Silicon Pressure Transmitter, 4–20 mA, G1/4, 0–0.5 MPa (ASIN B07NQ36XTC)](https://www.amazon.com/gp/product/B07NQ36XTC)
 
-The IntelliFlo `Pressure` entity already on the dashboard is the **pump’s internal reading** (bar). This package is a separate gauge on the **filter tank** so you can see when the cartridge/sand needs cleaning.
+The IntelliFlo `Pressure` entity already in Home Assistant is the **pump’s internal reading** (bar). This package is a separate gauge on the **filter tank** so you can see when the cartridge/sand needs cleaning.
 
 ## Sensor specs (this listing)
 
@@ -43,7 +43,7 @@ GPIO4 is **ADC1_CH3** (safe to use with WiFi). Relays do **not** use GPIO4:
 | CH5 | GPIO45 |
 | CH6 | GPIO46 |
 
-Dallas 1-Wire is already on **GPIO10** (Pico **GP10**, physical pin 13).
+Dallas 1-Wire is already on **GPIO10** (Pico **GP10**, physical pin 13). The Atlas Industrial pH Kit uses **GPIO5** (Pico **GP5**, pin 7) with its **own** 150 Ω shunt on a **4-wire** 4–20 mA output — do not share this Yosoo loop; see [ACID_PH.md](ACID_PH.md).
 
 Use Pico **GP4**, physical **pin 6**:
 
@@ -145,17 +145,40 @@ If you use a different shunt (120 Ω is also safe), set `filter_pressure_shunt_o
 
 | Entity | Purpose |
 |--------|---------|
-| **Filter Tank Pressure** | Head pressure in psi (Home Assistant + dashboard) |
+| **Filter Tank Pressure** | Head pressure in psi |
 | **Filter Tank Pressure Bar** | Same reading in bar (compare to IntelliFlo pressure) |
 | **Filter Loop Current** | Diagnostic mA; ~4 mA at rest, ~8–16 mA while the pump is on |
 | **Filter Pressure Voltage** | Raw ADC volts |
-| **Filter Clean Pressure** | Saved “just backwashed / new cartridge” psi |
-| **Filter Pressure Rise** | Trip delta (default 10 psi). Backwash when current ≥ clean + rise |
-| **Filter Needs Backwash** | Problem binary sensor |
+| **Filter Clean Speed 1–4** | Learned (or manually set) clean-filter psi at that speed. 0 = not learned yet |
+| **Filter Est Speed 1–4** | Effective clean psi: learned value if present, otherwise estimated from other speeds |
+| **Filter Clean Baseline** | Clean psi used right now |
+| **Filter Pressure Over Clean** | Current psi minus baseline. Backwash when this reaches **Filter Pressure Rise** |
+| **Filter Pressure Rise** | Trip delta (default **10 psi**, Pentair Triton II) |
+| **Filter Learn Hours** | How long a speed must run before a baseline is learned (default **2**, max 48) |
+| **Filter Learn Time** | Hours of Speed 1–4 runtime collected toward the current learn window |
+| **Filter Needs Backwash** | Problem binary sensor (stays on after the pump stops) |
+| **Filter Backwash Detail** | Why it is or is not calling for a backwash |
 | **Filter Pressure Fault** | Loop &lt; 3.5 mA (open) or &gt; 21 mA (short) |
-| **Save Clean Filter Pressure** | Button: store the current reading as clean |
+| **Save Clean Filter Pressure** | Optional: store the current reading now instead of waiting to learn |
+| **Reset Filter Baselines** | Clear learned values and start over (sand change, etc.) |
 
-Typical setup: run the pump on a clean filter, press **Save Clean Filter Pressure**, leave rise at 10 psi. Many sand filters want a backwash about **8–10 psi above** the clean reading.
+Pentair’s Triton II TR140 manual: backwash at **+10 psi** over the clean reading. Leave rise at 10.
+
+### How baselines are learned
+
+You do **not** have to press Save. Example: Speed 1 at 1500 RPM, lowest 2-hour average is 8 psi → **Filter Clean Speed 1** becomes 8 psi → trip at **18 psi**.
+
+The firmware:
+
+1. Ignores the first 10 minutes after the IntelliFlo starts (air purge / prime).
+2. While RPM is within ~200 of Speed 1–4, records 5-minute averages.
+3. After **Filter Learn Hours** of that speed’s runtime (default 2, not necessarily one continuous wall-clock block), takes the **lowest** N-hour average seen.
+4. Only **lowers** a baseline after that (a dirty week cannot raise the clean number). After a backwash, a lower stretch updates it.
+5. Speeds you have not run yet are estimated from the ones you have (`head ≈ a + b·RPM²`).
+
+Set **Filter Learn Hours** to 4 or 8 if you want a longer, more conservative window. Save is still there if you just backwashed and do not want to wait. **Reset Filter Baselines** after new sand.
+
+The backwash flag only **updates** while the pump is running near a known speed. If it trips, it **stays on** after the pump shuts off so Home Assistant can still notify you at night.
 
 ## Checkout
 
@@ -167,4 +190,20 @@ Typical setup: run the pump on a clean filter, press **Save Clean Filter Pressur
 
 ## Home Assistant
 
-After the ESPHome API reconnects you should see `sensor.filter_tank_pressure` with `device_class: pressure`. You can automate on `binary_sensor.filter_needs_backwash` (notify, dashboard badge, etc.).
+After the ESPHome API reconnects you should see `sensor.filter_tank_pressure` and `binary_sensor.filter_needs_backwash` (`device_class: problem`). A simple notify:
+
+```yaml
+automation:
+  - alias: Pool filter needs backwash
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.pool_controller_filter_needs_backwash
+        to: "on"
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          title: Pool filter
+          message: "TR140 is about +10 psi over clean. Time to backwash."
+```
+
+Replace the entity_id and notify target with the names Home Assistant actually assigned. You can also put **Filter Needs Backwash** on a dashboard badge and skip the automation until you want a push.

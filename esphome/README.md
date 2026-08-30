@@ -8,21 +8,25 @@ This directory contains the ESPHome configuration for the pool controller based 
 
 ### Main Configuration
 
-**`pool-controller.yaml`** - The primary ESPHome configuration file that defines:
+**`ha-pool-controller.yaml`** — copy this into Home Assistant ESPHome Builder. It pulls packages and `pentair_if_ic` from GitHub.
+
+**`pool-controller.yaml`** — same firmware for a local CLI compile (`esphome run esphome/pool-controller.yaml` from the repo root).
+
+Both define:
 - Device identification and platform (ESP32-S3 with ESP-IDF framework)
-- GPIO pin assignments for all connected components
-- WiFi, API, OTA, and web server configuration
-- External component integration (custom_web_handler)
+- GPIO pin assignments
+- WiFi, API, OTA, and web_server v3
 - Package includes for modular configuration
-- Web server setup with custom endpoints
 
 **Key Pin Assignments:**
 - `waterfall_pin: GPIO1` - Waterfall relay control (Relay CH1)
 - `one_wire_pin: GPIO10` - Dallas temperature sensors (air & water)
-- `pentair_tx_pin: GPIO17` - RS485 transmit to pump/chlorinator (built-in RS485)
-- `pentair_rx_pin: GPIO18` - RS485 receive from pump/chlorinator (built-in RS485)
+- `pentair_tx_pin: GPIO17` - RS485 transmit to IntelliFlo (built-in RS485)
+- `pentair_rx_pin: GPIO18` - RS485 receive from IntelliFlo (built-in RS485)
 - `pentair_light_pin: GPIO46` - Pentair IntelliBrite light control (Relay CH6)
 - `filter_pressure_pin: GPIO4` - Filter tank 4–20 mA pressure transmitter (Pico GP4 ADC)
+- `acid_pump_pin: GPIO2` - Stenner 45M5 acid pump (Relay CH2)
+- `ph_sensor_pin: GPIO5` - Atlas Industrial pH Kit (KIT-102P) 4–20 mA + (Pico GP5 ADC)
 
 ### Include Files
 
@@ -37,32 +41,37 @@ Configures Dallas DS18B20 temperature sensors on a 1-Wire bus:
 
 #### **`schedule.yaml`**
 The most complex configuration file, handling:
-- Pentair IntelliFlo pump and IntelliChlor chlorinator communication (via pentair_if_ic component)
+- Pentair IntelliFlo communication (via pentair_if_ic). Optional IntelliChlor is `chlorinator.yaml` (not used on this install).
 - UART configuration for RS485 communication
 - Pump status monitoring and control
-- Automated scheduling system with 6 configurable time periods
+- Automated scheduling system with 4 time periods plus a pump end time
 - Pump speed configuration (RPM settings)
 - Waterfall relay control and automation
 - Automation enable/disable controls
 - Extensive state management for scheduling logic
 
-#### **`chlorinator.yaml`**
-Pentair IntelliChlor salt water chlorinator integration:
-- Salt level monitoring (PPM)
-- Chlorinator water temperature reading
-- Chlorinator status and error reporting
-- Output percentage monitoring
-- Flow and low salt alarms
-- Uses the pentair_if_ic custom component
+#### **`chlorinator.yaml`** (optional)
+
+Pentair IntelliChlor on the IntelliFlo RS485 bus. **Not included** in `ha-pool-controller.yaml` — this pad uses a CircuPool RJ-60 PLUS, which does not speak IntelliChlor. Uncomment the package only if you add a compatible SWG.
 
 #### **`filter_pressure.yaml`**
 Filter-tank head pressure from a 2-wire 4–20 mA transmitter (Yosoo 0–0.5 MPa G1/4 or equivalent):
 - ADC on GPIO4 (Pico GP4) via a 150 Ω shunt
 - Pressure in psi and bar, loop current diagnostic
-- Configurable clean-filter baseline and backwash rise
+- Per-speed clean baselines (Speed 1–4); unsaved speeds estimated from RPM²
+- Triton II backwash at +10 psi over the active baseline
 - Fault and “needs backwash” binary sensors
 
 Full wiring, pinout, and plumbing notes: **[FILTER_PRESSURE.md](FILTER_PRESSURE.md)**
+
+#### **`acid_ph.yaml`**
+Stenner 45M5 muriatic-acid dosing plus the **Atlas Scientific Industrial pH Kit (KIT-102P)**:
+- Acid pump on **CH2 / GPIO2** (internal switch, timed pulses only; always-off restore)
+- Atlas IND-pH **4-wire** transmitter: 9–36 V from board VIN, isolated 4–20 mA (0–14 pH) into **GPIO5** (Pico GP5) via a **dedicated** 150 Ω shunt — not the Yosoo 2-wire loop
+- Interlocks: IntelliFlo running, min RPM, filter sensor healthy, valid pH, daily runtime cap, settle time
+- Auto-dose hysteresis (start 7.6 / target 7.4); prime and one-shot pulse buttons
+
+Lights stay on CH6. Do not put the Stenner on CH1 (that GPIO still belongs to the unused waterfall switch). Full wiring and probe plumbing: **[ACID_PH.md](ACID_PH.md)**
 
 #### **`pentair_light.yaml`**
 Pentair IntelliBrite pool light control:
@@ -89,9 +98,9 @@ Pentair IntelliBrite pool light control:
 │  │ └──┬──┘  └─────┘  └─────┘  └─────┘  └─────┘  └───┬──┘              │   │
 │  │    │                                             │                 │   │
 │  │    │ Screw Terminals (NO/COM/NC per channel)     │                 │   │
-│  │    └──> Waterfall Valve        Pool Light <──────┘                 │   │
-│  │         (24V AC)               (12V AC)                            │   │
-│  │         Uses COM & NO          Uses COM & NO                       │   │
+│  │    └──> Unused (waterfall YAML)  Stenner 45M5 (CH2 / GPIO2)        │   │
+│  │         Leave Waterfall Auto OFF   120V hot on COM/NO              │   │
+│  │         Pool Light (CH6 / GPIO46)  Uses COM & NO                   │   │
 │  └────────────────────────────────────────────────────────────────────┘   │
 │                                                                           │
 │  ┌────────────────────────────────────────────────────────────────────┐   │
@@ -119,6 +128,9 @@ Pentair IntelliBrite pool light control:
 │  │  GPIO4  ──> Filter pressure ADC (Pico GP4 / pin 6)                 │   │
 │  │             150Ω shunt from 4-20mA loop − to GND                   │   │
 │  │             Transmitter + from board VIN+ (12-24V), NOT 3.3V/5V    │   │
+│  │                                                                    │   │
+│  │  GPIO5  ──> Atlas KIT-102P pH 4-20mA ADC (Pico GP5 / pin 7)        │   │
+│  │             Dedicated 150Ω shunt; 4-wire (PWR on VIN, Iout here)   │   │
 │  └────────────────────────────────────────────────────────────────────┘   │
 │                                                                           │
 │  Power Supply: USB Type-C (5V) or Screw Terminal (7-36V DC)               │
@@ -136,10 +148,10 @@ EXTERNAL CONNECTIONS:
 │              │    │   │                   │                      │
 │              │    │   │                   │                      │
 │         ┌────▼────▼───▼────┐         ┌────▼─────────────┐        │
-│         │ Pentair          │         │ Pentair          │        │
-│         │ IntelliFlo Pump  │         │ IntelliChlor     │        │
-│         │                  │         │ Chlorinator      │        │
-│         │ A+, B-, Ground   │         │ A+, B-, Ground   │        │
+│         │ Pentair          │         │ CircuPool RJ-60     │        │
+│         │ IntelliFlo Pump  │         │ is NOT on this bus  │        │
+│         │                  │         │                     │        │
+│         │ A+, B-, Ground   │         │ (flow-switch only)  │        │
 │         └──────────────────┘         └──────────────────┘        │
 │                                                                  │
 │  Note: Module has built-in isolation and surge protection        │
@@ -176,27 +188,47 @@ EXTERNAL CONNECTIONS:
 └──────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────┐
+│  ATLAS INDUSTRIAL pH KIT (KIT-102P) — 4-WIRE, NOT 2-WIRE         │
+│                                                                  │
+│   Board VIN+ (12-24V) ──────► transmitter PWR +                  │
+│   Board VIN−            ──────► transmitter PWR −                │
+│                                                                  │
+│   transmitter 4-20mA + ──┬──► GPIO5 (Pico GP5 / pin 7)           │
+│                          └── [150Ω 1%] ──► Pico GND              │
+│                                              ▲                   │
+│   transmitter 4-20mA − ──────────────────────┘                   │
+│                                                                  │
+│   Probe pH pair → transmitter pH terminals                       │
+│   Probe PT-1000 → transmitter TEMP (no polarity)                 │
+│   Do NOT connect F (fault outputs 12-24V) or PLC cal 4/7/10      │
+│   Do NOT share the Yosoo 150Ω. Do NOT use 250Ω.                  │
+│   Full details: ACID_PH.md                                       │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
 │  RELAY CONNECTIONS                                               │
 │                                                                  │
-│  CH1 (GPIO1) - Waterfall Valve:                                  │
+│  CH1 (GPIO1) - Unused waterfall YAML (leave Waterfall Auto OFF): │
 │  ┌──────────────────────────────────┐                            │
-│  │  AC Line ──> COM                 │                            │
-│  │  NO ──> Waterfall Valve ──> AC N │                            │
+│  │  Do not land the Stenner here    │                            │
+│  └──────────────────────────────────┘                            │
+│                                                                  │
+│  CH2 (GPIO2) - Stenner 45M5 acid pump:                           │
+│  ┌──────────────────────────────────┐                            │
+│  │  120V hot ──> COM                │                            │
+│  │  NO ──> Stenner hot (black)      │                            │
+│  │  Neutral and ground stay solid   │                            │
 │  │  NC - Not Used                   │                            │
 │  └──────────────────────────────────┘                            │
 │                                                                  │
-│  CH6 (GPIO46) - Pentair IntelliBrite Pool Light:                 │
+│  CH6 (GPIO46) - Pool light (IntelliBrite-style power cycle):     │
 │  ┌──────────────────────────────────┐                            │
 │  │  AC Line ──> COM                 │                            │
 │  │  NO ──> Pool Light ──> AC Neutral│                            │
 │  │  NC - Not Used                   │                            │
-│  │                                  │                            │
-│  │  Note: Power cycling this relay  │                            │
-│  │  changes light modes (14 modes)  │                            │
 │  └──────────────────────────────────┘                            │
 │                                                                  │
-│  CH2-CH5: Available for expansion                                │
-│  (Additional pumps, heater, valves, etc.)                        │
+│  CH3-CH5: Available for expansion                                │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -204,20 +236,22 @@ EXTERNAL CONNECTIONS:
 
 | Component | Connection Type | Pin/Relay | Notes |
 |-----------|----------------|-----------|-------|
-| **Waterfall Valve** | Relay CH1 | GPIO1 | 10A 250VAC relay switching |
-| **Pool Light** | Relay CH6 | GPIO46 | Power cycling for 14 modes |
+| **Waterfall YAML (unused)** | Relay CH1 | GPIO1 | Leave Waterfall Auto OFF; do not land acid here |
+| **Stenner 45M5 acid pump** | Relay CH2 | GPIO2 | Switch 120 V hot only; pulses only |
+| **Pool Light** | Relay CH6 | GPIO46 | Power cycling for color modes |
 | **Pentair IntelliFlo Pump** | Built-in RS485 | GPIO17/18 | Via onboard isolated RS485 (A+, B-, G) |
-| **Pentair IntelliChlor** | Built-in RS485 | GPIO17/18 | Shared RS485 bus with pump |
 | **Air Temperature** | 1-Wire (Dallas) | GPIO10 | DS18B20 sensor, needs 4.7kΩ pullup |
 | **Water Temperature** | 1-Wire (Dallas) | GPIO10 | DS18B20 sensor (same bus as air) |
 | **Filter tank pressure** | 4–20 mA → ADC | GPIO4 (Pico GP4) | 150 Ω shunt; loop powered from VIN 12–24 V |
+| **Pool pH** | Atlas KIT-102P 4-wire 4–20 mA → ADC | GPIO5 (Pico GP5) | Dedicated 150 Ω; VIN powers PWR; Iout is isolated |
 
 ### Notes
 
 - The Waveshare module has 6 relay channels (10A 250VAC each). Currently using:
-  - **CH1 (GPIO1)**: Waterfall valve control
+  - **CH1 (GPIO1)**: Unused waterfall YAML — leave auto off
+  - **CH2 (GPIO2)**: Stenner 45M5 acid pump
   - **CH6 (GPIO46)**: Pool light control
-  - **CH2-CH5**: Available for expansion (heater, auxiliary pumps, valves, etc.)
+  - **CH3-CH5**: Available for expansion
 - **Built-in RS485**: The module includes an isolated RS485 interface with automatic direction control, TVS diode protection, and hardware isolation - no external converter needed
 - The RS485 terminals (A+, B-, G) are located on the lower right of the module
 - Optional 120Ω termination resistor can be enabled via onboard jumper
@@ -226,6 +260,7 @@ EXTERNAL CONNECTIONS:
 - Power supply options: USB Type-C (5V) or screw terminal (7-36V DC wide range)
 - All GPIO connections via the 40-pin Pico HAT compatible header
 - Filter pressure: see [FILTER_PRESSURE.md](FILTER_PRESSURE.md). GPIO4 is an ADC pin on the Pico header, not a relay. Relays are GPIO1, GPIO2, GPIO41, GPIO42, GPIO45, GPIO46.
+- Acid / pH: see [ACID_PH.md](ACID_PH.md). GPIO5 is the Atlas IND-pH 4–20 mA ADC. Do not put the Stenner on CH1. Do not land transmitter **F** on the ESP.
 
 ## Home Assistant ESPHome Builder (recommended)
 
@@ -236,7 +271,7 @@ Do **not** upload this whole repository into Home Assistant. ESPHome Builder onl
 3. Merge [`secrets.yaml.example`](secrets.yaml.example) into `/config/esphome/secrets.yaml` (Wi‑Fi entries are usually already there).
 4. Click **Install**. First compile pulls `pentair_if_ic` and the `esphome/Include/*.yaml` packages from GitHub.
 
-After that, day-to-day use is Home Assistant entities plus the built-in device page at `http://pool-controller.local` (ESPHome web_server v3). You do not need to compile the Node `web-dashboard` or copy `index.html`.
+After that, day-to-day use is Home Assistant entities plus the built-in device page at `http://pool-controller.local` (ESPHome web_server v3).
 
 If you just pushed YAML/component changes and the compile still uses old files, set `refresh: 0s` on `external_components` and `packages` in `ha-pool-controller.yaml`, compile once, then you can set `refresh: 1d` again.
 
@@ -260,14 +295,12 @@ and the same `username` / `password` on the `packages:` git url. Create a PAT wi
 
 1. Copy `secrets.yaml.example` to `esphome/secrets.yaml` and fill it in
 2. From the **repository root**: `esphome run esphome/pool-controller.yaml`
-3. Device UI: `http://pool-controller.local` (not `/custom_page` unless you embed a built dashboard)
+3. Device UI: `http://pool-controller.local`
 
 ## Dependencies
 
 This configuration requires:
 - ESPHome 2025.9.0 or newer
-- Custom components:
-  - `custom_web_handler` - Custom web endpoint handler
-  - `pentair_if_ic` - Pentair IntelliFlo and IntelliChlor communication
+- Custom component `pentair_if_ic` (IntelliFlo RS485)
 
-See the [components README](../components/README.md) for installation instructions.
+See the [components README](../components/README.md).

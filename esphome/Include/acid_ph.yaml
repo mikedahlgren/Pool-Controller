@@ -1,0 +1,434 @@
+# pH monitor + Stenner 45M5 acid dosing
+#
+# Relay CH2 (GPIO2) switches the Stenner 120V / 1.7A motor. Do NOT use CH1 —
+# that GPIO still drives the unused waterfall switch in schedule.yaml.
+# Lights stay on CH6 (GPIO46).
+#
+# Stenner 45M5: #5 tube, dial 5–100% → 2.5–50 GPD (0.22–4.44 fl oz/min) at ≤25 PSI.
+# Inject on the RETURN after the filter. Do not inject into the filter inlet
+# (often >25 PSI) or into the pH sample loop. See esphome/ACID_PH.md.
+#
+# pH hardware: Atlas Scientific Industrial pH Kit (KIT-102P) —
+# IND-pH / IXIAN isolated 4-wire transmitter + industrial 3/4" NPT probe.
+# 9–36 V on the transmitter PWR terminals from board VIN (12–24 V).
+# Isolated 4–20 mA output (4 mA = 0 pH, 20 mA = 14 pH) through a dedicated
+# 150Ω 1% shunt into GPIO5 (Pico GP5 / pin 7, ADC1). Do NOT wire this as a
+# 2-wire loop like the Yosoo pressure sender. Do NOT land transmitter F
+# (fault, 12–24 V) on an ESP pin. Calibrate buffers on the Atlas, not in YAML.
+# Auto-dose stays off until pH reads valid. Always-off restore; HA cannot
+# hold the pump on — only the pulse script can.
+
+web_server:
+  sorting_groups:
+    - id: sorting_group_acid
+      name: "pH / Acid"
+      sorting_weight: -7
+
+globals:
+  - id: g_acid_dosing
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: g_acid_dose_start_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
+  - id: g_acid_last_dose_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
+  - id: g_acid_seconds_today
+    type: float
+    restore_value: no
+    initial_value: "0"
+  - id: g_acid_day_of_year
+    type: int
+    restore_value: no
+    initial_value: "-1"
+  - id: g_acid_block_reason
+    type: std::string
+    restore_value: no
+    initial_value: '"pH probe not ready"'
+  - id: g_acid_correcting
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+number:
+  - platform: template
+    name: "Acid pH Target"
+    id: acid_ph_target
+    min_value: 7.0
+    max_value: 7.8
+    step: 0.05
+    unit_of_measurement: "pH"
+    optimistic: true
+    restore_value: true
+    initial_value: 7.4
+    mode: box
+    icon: "mdi:ph"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 4
+
+  - platform: template
+    name: "Acid pH Start"
+    id: acid_ph_start
+    min_value: 7.3
+    max_value: 8.2
+    step: 0.05
+    unit_of_measurement: "pH"
+    optimistic: true
+    restore_value: true
+    initial_value: 7.6
+    mode: box
+    icon: "mdi:arrow-up-bold"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 5
+
+  - platform: template
+    name: "Acid Pulse Seconds"
+    id: acid_pulse_seconds
+    min_value: 5
+    max_value: 30
+    step: 1
+    unit_of_measurement: "s"
+    optimistic: true
+    restore_value: true
+    initial_value: 10
+    mode: box
+    icon: "mdi:timer"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 6
+
+  - platform: template
+    name: "Acid Settle Minutes"
+    id: acid_settle_minutes
+    min_value: 5
+    max_value: 60
+    step: 1
+    unit_of_measurement: "min"
+    optimistic: true
+    restore_value: true
+    initial_value: 15
+    mode: box
+    icon: "mdi:timer-sand"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 7
+
+  - platform: template
+    name: "Acid Max Seconds Today"
+    id: acid_max_seconds_today
+    min_value: 60
+    max_value: 3600
+    step: 30
+    unit_of_measurement: "s"
+    optimistic: true
+    restore_value: true
+    initial_value: 1200
+    mode: box
+    icon: "mdi:gauge-full"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 8
+
+  - platform: template
+    name: "Acid Min Pump RPM"
+    id: acid_min_rpm
+    min_value: 800
+    max_value: 2500
+    step: 50
+    unit_of_measurement: "RPM"
+    optimistic: true
+    restore_value: true
+    initial_value: 1200
+    mode: box
+    icon: "mdi:speedometer"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 9
+
+sensor:
+  - platform: template
+    name: "Pool pH"
+    id: pool_ph
+    unit_of_measurement: "pH"
+    accuracy_decimals: 2
+    icon: "mdi:ph"
+    state_class: measurement
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 1
+
+  - platform: template
+    name: "pH Loop Current"
+    id: ph_loop_current
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    icon: "mdi:current-dc"
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 10
+
+  - platform: template
+    name: "Acid Runtime Today"
+    id: acid_runtime_today
+    unit_of_measurement: "s"
+    accuracy_decimals: 0
+    icon: "mdi:clock-outline"
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 3
+
+  - platform: adc
+    pin: ${ph_sensor_pin}   # Pico GP5 / pin 7; Atlas 4–20 mA + through 150Ω to GND
+    name: "pH Loop Voltage"
+    id: ph_loop_voltage
+    attenuation: 12db
+    samples: 16
+    update_interval: 5s
+    accuracy_decimals: 3
+    unit_of_measurement: "V"
+    device_class: voltage
+    entity_category: diagnostic
+    filters:
+      - median:
+          window_size: 5
+          send_every: 2
+          send_first_at: 1
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 11
+    on_value:
+      then:
+        - lambda: |-
+            // Atlas IND-pH (KIT-102P): 4 mA = ph_scale_low (0), 20 mA = ph_scale_high (14)
+            const float r = ${ph_shunt_ohms};
+            const float ph_lo = ${ph_scale_low};
+            const float ph_hi = ${ph_scale_high};
+            const float ma = x / r * 1000.0f;
+            id(ph_loop_current).publish_state(ma);
+            if (ma < 3.5f || ma > 21.0f) {
+              id(pool_ph).publish_state(NAN);
+              return;
+            }
+            float ph = ph_lo + (ma - 4.0f) / 16.0f * (ph_hi - ph_lo);
+            id(pool_ph).publish_state(ph);
+
+switch:
+  - platform: gpio
+    pin: ${acid_pump_pin}
+    id: acid_pump
+    name: "Acid Pump"
+    icon: "mdi:bottle-tonic"
+    restore_mode: ALWAYS_OFF
+    internal: true
+    on_turn_on:
+      - if:
+          condition:
+            lambda: return !id(g_acid_dosing);
+          then:
+            - switch.turn_off: acid_pump
+            - logger.log:
+                level: WARN
+                tag: acid
+                format: "Acid pump ON ignored (pulses only)"
+
+  - platform: template
+    name: "Acid Auto Dose"
+    id: acid_auto
+    icon: "mdi:auto-fix"
+    optimistic: true
+    restore_value: false
+    assumed_state: false
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 2
+    on_turn_off:
+      - lambda: id(g_acid_correcting) = false;
+
+binary_sensor:
+  - platform: template
+    name: "Acid Interlock OK"
+    id: acid_interlock_ok
+    device_class: safety
+    icon: "mdi:shield-check"
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 12
+
+  - platform: template
+    name: "Acid Pump Running"
+    id: acid_pump_running
+    icon: "mdi:pump"
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 13
+
+text_sensor:
+  - platform: template
+    name: "Acid Block Reason"
+    id: acid_block_reason
+    icon: "mdi:message-alert"
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 14
+
+button:
+  - platform: template
+    name: "Acid Pulse"
+    id: acid_pulse_button
+    icon: "mdi:play"
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 15
+    on_press:
+      then:
+        - script.execute: acid_run_pulse
+
+  - platform: template
+    name: "Acid Prime 10s"
+    id: acid_prime_button
+    icon: "mdi:water-pump"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 16
+    on_press:
+      then:
+        - script.execute: acid_prime
+
+script:
+  - id: acid_run_pulse
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: return id(acid_interlock_ok).state;
+          then:
+            - lambda: |-
+                id(g_acid_dosing) = true;
+                id(g_acid_dose_start_ms) = millis();
+            - switch.turn_on: acid_pump
+            - delay: !lambda "return (uint32_t)(id(acid_pulse_seconds).state * 1000.0f);"
+            - switch.turn_off: acid_pump
+            - lambda: |-
+                id(g_acid_dosing) = false;
+                id(g_acid_last_dose_ms) = millis();
+                id(g_acid_seconds_today) += id(acid_pulse_seconds).state;
+                id(acid_runtime_today).publish_state(id(g_acid_seconds_today));
+                ESP_LOGI("acid", "Pulse done, today=%.0f s", id(g_acid_seconds_today));
+          else:
+            - logger.log:
+                level: WARN
+                tag: acid
+                format: "Pulse blocked: %s"
+                args: [ 'id(g_acid_block_reason).c_str()' ]
+
+  - id: acid_prime
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: return id(pump_running).state && !isnan(id(pump_rpm).state) && id(pump_rpm).state >= id(acid_min_rpm).state;
+          then:
+            - lambda: |-
+                id(g_acid_dosing) = true;
+                id(g_acid_dose_start_ms) = millis();
+            - switch.turn_on: acid_pump
+            - delay: 10s
+            - switch.turn_off: acid_pump
+            - lambda: |-
+                id(g_acid_dosing) = false;
+                id(g_acid_last_dose_ms) = millis();
+                id(g_acid_seconds_today) += 10.0f;
+                id(acid_runtime_today).publish_state(id(g_acid_seconds_today));
+          else:
+            - logger.log:
+                level: WARN
+                tag: acid
+                format: "Prime blocked: pump must be running"
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          auto t = id(homeassistant_time).now();
+          if (t.is_valid() && id(g_acid_day_of_year) != t.day_of_year) {
+            id(g_acid_day_of_year) = t.day_of_year;
+            id(g_acid_seconds_today) = 0;
+            id(acid_runtime_today).publish_state(0);
+          }
+
+          std::string why;
+          bool ok = true;
+          if (!id(pump_running).state) {
+            ok = false;
+            why = "pump not running";
+          } else if (isnan(id(pump_rpm).state) || id(pump_rpm).state < id(acid_min_rpm).state) {
+            ok = false;
+            why = "pump RPM too low";
+          } else if (id(filter_pressure_fault).state) {
+            ok = false;
+            why = "filter sensor fault";
+          } else if (isnan(id(pool_ph).state) || id(pool_ph).state < 6.8f || id(pool_ph).state > 8.6f) {
+            ok = false;
+            why = "pH invalid or probe fault";
+          } else if (id(pool_ph).state < 7.1f) {
+            ok = false;
+            why = "pH already low";
+          } else if (id(g_acid_seconds_today) >= id(acid_max_seconds_today).state) {
+            ok = false;
+            why = "daily acid cap reached";
+          } else if (id(g_acid_dosing)) {
+            why = "dosing";
+          } else {
+            why = "ok";
+          }
+          id(g_acid_block_reason) = why;
+          id(acid_interlock_ok).publish_state(ok && !id(g_acid_dosing));
+          id(acid_block_reason).publish_state(why);
+          id(acid_pump_running).publish_state(id(acid_pump).state);
+
+          const uint32_t pulse_lim = (uint32_t)((id(acid_pulse_seconds).state + 8.0f) * 1000.0f);
+          const uint32_t max_ms = pulse_lim > 18000u ? pulse_lim : 18000u;
+          if (id(acid_pump).state && !id(g_acid_dosing)) {
+            id(acid_pump).turn_off();
+            ESP_LOGW("acid", "Forced OFF (not in a pulse)");
+          }
+          if (id(g_acid_dosing) && (millis() - id(g_acid_dose_start_ms) > max_ms)) {
+            id(acid_pump).turn_off();
+            id(g_acid_dosing) = false;
+            ESP_LOGW("acid", "Forced OFF (pulse watchdog)");
+          }
+
+  - interval: 20s
+    then:
+      - lambda: |-
+          if (!id(acid_auto).state) {
+            id(g_acid_correcting) = false;
+            return;
+          }
+          if (isnan(id(pool_ph).state)) return;
+          if (id(pool_ph).state <= id(acid_ph_target).state) {
+            id(g_acid_correcting) = false;
+            return;
+          }
+          if (id(pool_ph).state >= id(acid_ph_start).state) {
+            id(g_acid_correcting) = true;
+          }
+          if (!id(g_acid_correcting)) return;
+          if (!id(acid_interlock_ok).state) return;
+          const uint32_t settle = (uint32_t)(id(acid_settle_minutes).state * 60000.0f);
+          if (id(g_acid_last_dose_ms) != 0 && (millis() - id(g_acid_last_dose_ms) < settle)) return;
+          id(acid_run_pulse).execute();
