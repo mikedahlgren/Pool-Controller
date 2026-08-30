@@ -22,6 +22,7 @@ binary_sensor:
     name: "Pump Status"
     id: pump_running_status
     icon: "mdi:pump"
+    internal: true
     on_state:
       then:
         - lambda: |-
@@ -61,12 +62,6 @@ web_server:
     - id: sorting_group_pump_status
       name: "Pump Status"
       sorting_weight: -20
-    - id: sorting_group_ichlor
-      name: "iChlor"
-      sorting_weight: -10
-    - id: sorting_group_waterfall
-      name: "Waterfall"
-      sorting_weight: -5
     - id: sorting_group_light
       name: "Light"
       sorting_weight: -4
@@ -88,66 +83,79 @@ button:
   
   - platform: template
     name: "Request Pump Status"
+    internal: true
     on_press:
       - lambda: id(my_pentair).requestPumpStatus();
   
   - platform: template
     name: "Pump Run"
+    internal: true
     on_press:
       - lambda: id(my_pentair).run();
   
   - platform: template
     name: "Pump Stop"
+    internal: true
     on_press:
       - lambda: id(my_pentair).stop();
   
   - platform: template
     name: "Pump to Local Control"
+    internal: true
     on_press:
       - lambda: id(my_pentair).pumpToLocalControl();
   
   - platform: template
     name: "Pump to Remote Control"
+    internal: true
     on_press:
       - lambda: id(my_pentair).pumpToRemoteControl();
   
   - platform: template
     name: "Run Local Program 1"
+    internal: true
     on_press:
       - lambda: id(my_pentair).commandLocalProgram(0);
   
   - platform: template
     name: "Run Local Program 2"
+    internal: true
     on_press:
       - lambda: id(my_pentair).commandLocalProgram(1);
   
   - platform: template
     name: "Run Local Program 3"
+    internal: true
     on_press:
       - lambda: id(my_pentair).commandLocalProgram(2);
   
   - platform: template
     name: "Run Local Program 4"
+    internal: true
     on_press:
       - lambda: id(my_pentair).commandLocalProgram(3);
   
   - platform: template
     name: "Run External Program 1"
+    internal: true
     on_press:
       - lambda: id(my_pentair).commandExternalProgram(0);
   
   - platform: template
     name: "Run External Program 2"
+    internal: true
     on_press:
       - lambda: id(my_pentair).commandExternalProgram(1);
   
   - platform: template
     name: "Run External Program 3"
+    internal: true
     on_press:
       - lambda: id(my_pentair).commandExternalProgram(2);
   
   - platform: template
     name: "Run External Program 4"
+    internal: true
     on_press:
       - lambda: id(my_pentair).commandExternalProgram(3);
             
@@ -254,6 +262,7 @@ switch:
     id: waterfall_switch
     icon: "mdi:waterfall"
     restore_mode: ALWAYS_OFF
+    internal: true
 
   # Auto waterfall based on pump RPM.
   # This install has no waterfall — leave this switch OFF so CH1/GPIO1 never fires.
@@ -264,6 +273,7 @@ switch:
     icon: "mdi:waterfall"
     optimistic: true
     restore_mode: ALWAYS_OFF
+    internal: true
     on_turn_on:
       - lambda: |-
           // Save current waterfall state before auto takes over
@@ -289,6 +299,7 @@ switch:
     name: "Off"
     id: pump_off_switch
     icon: "mdi:pump-off"
+    internal: true
     turn_on_action:
       - switch.turn_off: pump_speed_switch_1
       - switch.turn_off: pump_speed_switch_2
@@ -325,6 +336,7 @@ switch:
     icon: "mdi:waterfall"
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
     web_server:
       sorting_group_id: schedule1
       sorting_weight: 6
@@ -336,6 +348,7 @@ switch:
     icon: "mdi:waterfall"
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
     web_server:
       sorting_group_id: schedule2
       sorting_weight: 6
@@ -347,6 +360,7 @@ switch:
     icon: "mdi:waterfall"
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
     web_server:
       sorting_group_id: schedule3
       sorting_weight: 6
@@ -358,6 +372,7 @@ switch:
     icon: "mdi:waterfall"
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
     web_server:
       sorting_group_id: schedule4
       sorting_weight: 6
@@ -737,28 +752,7 @@ sensor:
     clock:
       id: pump_clock
       name: "Pump Clock"
-      web_server:
-        sorting_group_id: sorting_group_pump_status
-        sorting_weight: 9
-
-  # Schedule RPM Sensors - show the RPM value for each schedule's selected speed
-  - platform: template
-    name: "Schedule 2 R"
-    id: schedule2_r
-    icon: "mdi:speedometer"
-    update_interval: 30s
-    lambda: |-
-      std::string speed = id(schedule2_speed).current_option();
-      if (speed == "Off") return 0;
-      if (speed == "Speed 1") return id(pump_speed_1).state;
-      if (speed == "Speed 2") return id(pump_speed_2).state;
-      if (speed == "Speed 3") return id(pump_speed_3).state;
-      if (speed == "Speed 4") return id(pump_speed_4).state;
-      if (speed == "Speed 5") return id(pump_speed_5).state;
-      return 0;
-    web_server:
-      sorting_group_id: schedule2
-      sorting_weight: 7
+      internal: true
 
   - platform: template
     name: "Schedule 1 RPM"

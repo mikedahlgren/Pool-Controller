@@ -201,6 +201,7 @@ sensor:
     unit_of_measurement: "V"
     device_class: voltage
     entity_category: diagnostic
+    internal: true
     filters:
       - median:
           window_size: 5

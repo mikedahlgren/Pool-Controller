@@ -88,25 +88,3 @@ switch:
     web_server:
       sorting_group_id: sorting_group_diagnostics
       sorting_weight: 6
-
-# column labels for schedule glance
-text_sensor:
-  - platform: template
-    name: start_label
-    lambda: return{"Start"};
-
-  - platform: template
-    name: speed_label
-    lambda: return{"Speed"};
-
-  - platform: template
-    name: rpm_label
-    lambda: return{"RPM"};
-
-  - platform: template
-    name: waterfall_label
-    lambda: return{"Waterfall"};
-
-  - platform: template
-    name: blank_label
-    lambda: return{" "};
