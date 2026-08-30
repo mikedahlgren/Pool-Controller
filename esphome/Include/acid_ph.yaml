@@ -249,7 +249,7 @@ switch:
     id: acid_auto
     icon: "mdi:auto-fix"
     optimistic: true
-    restore_value: false
+    restore_mode: ALWAYS_OFF
     assumed_state: false
     web_server:
       sorting_group_id: sorting_group_acid
