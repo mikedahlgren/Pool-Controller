@@ -14,6 +14,7 @@ export { PoolLightAPI } from './api/pool-light.js';
 export { TemperatureAPI, TemperatureReadings } from './api/temperature.js';
 export { PumpAPI, PumpMetrics, ScheduleRpms, ScheduleStatuses } from './api/pump.js';
 export { ChlorinatorAPI, ChlorinatorMetrics, ChlorinatorAlarms } from './api/chlorinator.js';
+export { FilterPressureAPI, FilterPressureReadings } from './api/filter-pressure.js';
 export { SystemAPI, SystemInfo } from './api/system.js';
 export { PoolAutomationClient, createPoolClient } from './api/index.js';
 

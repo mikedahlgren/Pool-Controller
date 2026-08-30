@@ -1,8 +1,4 @@
-external_components:
-  - source: components/Pool_Automation/components
-    components: [pentair_if_ic]
-    refresh: 0s
-
+# pentair_if_ic is loaded by the parent yaml (local ../components or GitHub).
 uart:
   - id: uart_bus
     tx_pin: ${pentair_tx_pin}

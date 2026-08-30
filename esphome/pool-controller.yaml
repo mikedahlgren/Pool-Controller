@@ -7,6 +7,10 @@ substitutions:
   pentair_rx_pin: GPIO18
   right_arrow: "➡️"
   pentair_light_pin: GPIO46
+  # Yosoo 4-20mA 0-0.5MPa filter-tank transmitter on Pico GP4 (see FILTER_PRESSURE.md)
+  filter_pressure_pin: GPIO4
+  filter_pressure_shunt_ohms: "150.0"
+  filter_pressure_full_scale_mpa: "0.5"
 
 esphome:
   name: pool-controller
@@ -45,17 +49,23 @@ wifi:
 
 captive_portal:
 
+# In-repo compile: components live at the repository root.
+# For Home Assistant ESPHome Builder, copy esphome/ha-pool-controller.yaml instead
+# (it pulls this same code from GitHub — no file uploads).
 external_components:
-  - source: components
-    components: [custom_web_handler]
+  - source:
+      type: local
+      path: ../components
+    components: [pentair_if_ic, custom_web_handler]
 
-# Custom web handler for additional endpoints
-custom_web_handler:
-  endpoints:
-    # File endpoint - serve embedded HTML file
-    - path: /custom_page
-      content_type: text/html
-      file: Include/index.html
+# Optional poolside HTML page. Skip this unless you have built
+# web-dashboard into Include/index.html. Home Assistant + web_server v3
+# already expose every entity; see esphome/ha-pool-controller.yaml.
+# custom_web_handler:
+#   endpoints:
+#     - path: /custom_page
+#       content_type: text/html
+#       file: Include/index.html
 
 # Enable web server for direct access
 web_server:
@@ -71,6 +81,7 @@ packages:
   pump: !include Include/schedule.yaml
   chlorinator: !include Include/chlorinator.yaml
   pentair_light: !include Include/pentair_light.yaml
+  filter_pressure: !include Include/filter_pressure.yaml
 
 switch:
   - platform: factory_reset

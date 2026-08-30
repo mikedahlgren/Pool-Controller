@@ -22,6 +22,7 @@ This directory contains the ESPHome configuration for the pool controller based 
 - `pentair_tx_pin: GPIO17` - RS485 transmit to pump/chlorinator (built-in RS485)
 - `pentair_rx_pin: GPIO18` - RS485 receive from pump/chlorinator (built-in RS485)
 - `pentair_light_pin: GPIO46` - Pentair IntelliBrite light control (Relay CH6)
+- `filter_pressure_pin: GPIO4` - Filter tank 4–20 mA pressure transmitter (Pico GP4 ADC)
 
 ### Include Files
 
@@ -54,6 +55,15 @@ Pentair IntelliChlor salt water chlorinator integration:
 - Flow and low salt alarms
 - Uses the pentair_if_ic custom component
 
+#### **`filter_pressure.yaml`**
+Filter-tank head pressure from a 2-wire 4–20 mA transmitter (Yosoo 0–0.5 MPa G1/4 or equivalent):
+- ADC on GPIO4 (Pico GP4) via a 150 Ω shunt
+- Pressure in psi and bar, loop current diagnostic
+- Configurable clean-filter baseline and backwash rise
+- Fault and “needs backwash” binary sensors
+
+Full wiring, pinout, and plumbing notes: **[FILTER_PRESSURE.md](FILTER_PRESSURE.md)**
+
 #### **`pentair_light.yaml`**
 Pentair IntelliBrite pool light control:
 - 14 color/mode selections via power cycling
@@ -75,7 +85,7 @@ Pentair IntelliBrite pool light control:
 │  │ RELAY OUTPUTS (10A 250VAC / 30VDC each channel)                    │   │
 │  │ ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌──────┐              │   │
 │  │ │ CH1 │  │ CH2 │  │ CH3 │  │ CH4 │  │ CH5 │  │ CH6  │              │   │
-│  │ │GPIO1│  │GPIO2│  │GPIO3│  │GPIO4│  │GPIO5│  │GPIO46│              │   │
+│  │ │GPIO1│  │GPIO2│  │GPIO41│ │GPIO42│ │GPIO45│ │GPIO46│              │   │
 │  │ └──┬──┘  └─────┘  └─────┘  └─────┘  └─────┘  └───┬──┘              │   │
 │  │    │                                             │                 │   │
 │  │    │ Screw Terminals (NO/COM/NC per channel)     │                 │   │
@@ -105,6 +115,10 @@ Pentair IntelliBrite pool light control:
 │  │  GPIO10 ──> Dallas 1-Wire Bus (with 4.7kΩ pullup to 3.3V)          │   │
 │  │             ├─> Air Temperature Sensor (DS18B20)                   │   │
 │  │             └─> Water Temperature Sensor (DS18B20)                 │   │
+│  │                                                                    │   │
+│  │  GPIO4  ──> Filter pressure ADC (Pico GP4 / pin 6)                 │   │
+│  │             150Ω shunt from 4-20mA loop − to GND                   │   │
+│  │             Transmitter + from board VIN+ (12-24V), NOT 3.3V/5V    │   │
 │  └────────────────────────────────────────────────────────────────────┘   │
 │                                                                           │
 │  Power Supply: USB Type-C (5V) or Screw Terminal (7-36V DC)               │
@@ -151,6 +165,17 @@ EXTERNAL CONNECTIONS:
 └──────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────┐
+│  FILTER TANK 4-20mA PRESSURE TRANSMITTER (Yosoo 0-0.5 MPa)       │
+│                                                                  │
+│   Board VIN+ (12-24V) ── red ──> Transmitter +                   │
+│   Transmitter − (black) ──┬──> GPIO4 (Pico GP4 / pin 6)          │
+│                           └── [150Ω 1%] ──> Pico GND (pin 3/8)   │
+│                                                                  │
+│   Do NOT use RS485 G (isolated). Do NOT use 250Ω (5V at 20mA).   │
+│   Full details: FILTER_PRESSURE.md                               │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
 │  RELAY CONNECTIONS                                               │
 │                                                                  │
 │  CH1 (GPIO1) - Waterfall Valve:                                  │
@@ -185,6 +210,7 @@ EXTERNAL CONNECTIONS:
 | **Pentair IntelliChlor** | Built-in RS485 | GPIO17/18 | Shared RS485 bus with pump |
 | **Air Temperature** | 1-Wire (Dallas) | GPIO10 | DS18B20 sensor, needs 4.7kΩ pullup |
 | **Water Temperature** | 1-Wire (Dallas) | GPIO10 | DS18B20 sensor (same bus as air) |
+| **Filter tank pressure** | 4–20 mA → ADC | GPIO4 (Pico GP4) | 150 Ω shunt; loop powered from VIN 12–24 V |
 
 ### Notes
 
@@ -199,14 +225,42 @@ EXTERNAL CONNECTIONS:
 - Pool light uses power cycling to select modes; ensure relay can handle inrush current
 - Power supply options: USB Type-C (5V) or screw terminal (7-36V DC wide range)
 - All GPIO connections via the 40-pin Pico HAT compatible header
+- Filter pressure: see [FILTER_PRESSURE.md](FILTER_PRESSURE.md). GPIO4 is an ADC pin on the Pico header, not a relay. Relays are GPIO1, GPIO2, GPIO41, GPIO42, GPIO45, GPIO46.
 
-## Getting Started
+## Home Assistant ESPHome Builder (recommended)
 
-1. Update `secrets.yaml` with your WiFi credentials, API keys, and Dallas sensor addresses
-2. Modify pin assignments in `pool-controller.yaml` if using different GPIO pins
-3. Compile and upload using ESPHome CLI or Home Assistant ESPHome integration
-4. Access the web interface at `http://pool-controller.local` or the device's IP address
-5. View the custom dashboard at `http://pool-controller.local/custom_page`
+Do **not** upload this whole repository into Home Assistant. ESPHome Builder only needs **one YAML file**; it downloads the rest from GitHub when you click Install.
+
+1. Push this fork to GitHub (`mikedahlgren/Pool-Controller`).
+2. In ESPHome Builder, create or open `pool-controller` and paste **[`ha-pool-controller.yaml`](ha-pool-controller.yaml)** as the device config (you can keep that filename or rename it).
+3. Merge [`secrets.yaml.example`](secrets.yaml.example) into `/config/esphome/secrets.yaml` (Wi‑Fi entries are usually already there).
+4. Click **Install**. First compile pulls `pentair_if_ic` and the `esphome/Include/*.yaml` packages from GitHub.
+
+After that, day-to-day use is Home Assistant entities plus the built-in device page at `http://pool-controller.local` (ESPHome web_server v3). You do not need to compile the Node `web-dashboard` or copy `index.html`.
+
+If you just pushed YAML/component changes and the compile still uses old files, set `refresh: 0s` on `external_components` and `packages` in `ha-pool-controller.yaml`, compile once, then you can set `refresh: 1d` again.
+
+**Private GitHub repo:** ESPHome cannot use `github://` without auth. Use:
+
+```yaml
+external_components:
+  - source:
+      type: git
+      url: https://github.com/mikedahlgren/Pool-Controller
+      username: git
+      password: !secret github_token
+    components: [pentair_if_ic]
+```
+
+and the same `username` / `password` on the `packages:` git url. Create a PAT with `repo` read access.
+
+**Better than uploading files through the UI:** install the **Studio Code Server** (or Samba) add-on and edit `/config/esphome/ha-pool-controller.yaml` in place. Or make `/config/esphome` a git repo that contains only that one yaml plus `secrets.yaml`.
+
+## Getting Started (local clone / ESPHome CLI)
+
+1. Copy `secrets.yaml.example` to `esphome/secrets.yaml` and fill it in
+2. From the **repository root**: `esphome run esphome/pool-controller.yaml`
+3. Device UI: `http://pool-controller.local` (not `/custom_page` unless you embed a built dashboard)
 
 ## Dependencies
 

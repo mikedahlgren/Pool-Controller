@@ -34,6 +34,13 @@ Core HTTP client functionality used by all modules.
 - Local/remote control switching
 - Local and external program execution (Programs 1-4)
 
+### `api/filter-pressure.ts`
+**Filter Tank Head Pressure**
+- psi / bar readings from the 4–20 mA transmitter
+- Loop current and ADC voltage diagnostics
+- Clean-filter baseline, backwash rise, fault / needs-backwash flags
+- Save-clean-pressure button
+
 ### `api/chlorinator.ts`
 **Chlorinator Management**
 - Salt level monitoring
@@ -108,6 +115,7 @@ api/index.ts (Unified Client)
     ├── api/temperature.ts
     ├── api/pump.ts
     ├── api/chlorinator.ts
+    ├── api/filter-pressure.ts
     └── api/base.ts (shared by all)
 ```
 
