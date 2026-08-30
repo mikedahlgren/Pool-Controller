@@ -195,6 +195,7 @@ text_sensor:
     name: "Pool Light Status"
     id: pentair_light_status
     icon: "mdi:information-outline"
+    internal: true
     lambda: |-
       if (id(light_cycling)) {
         return std::string("Changing mode...");

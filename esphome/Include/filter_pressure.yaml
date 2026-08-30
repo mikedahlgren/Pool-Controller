@@ -175,6 +175,7 @@ sensor:
     state_class: measurement
     accuracy_decimals: 3
     icon: "mdi:gauge"
+    internal: true
     web_server:
       sorting_group_id: sorting_group_filter
       sorting_weight: 2
@@ -216,6 +217,7 @@ sensor:
     unit_of_measurement: "psi"
     accuracy_decimals: 1
     icon: "mdi:numeric-1-circle"
+    internal: true
     web_server:
       sorting_group_id: sorting_group_filter
       sorting_weight: 15
@@ -226,6 +228,7 @@ sensor:
     unit_of_measurement: "psi"
     accuracy_decimals: 1
     icon: "mdi:numeric-2-circle"
+    internal: true
     web_server:
       sorting_group_id: sorting_group_filter
       sorting_weight: 16
@@ -236,6 +239,7 @@ sensor:
     unit_of_measurement: "psi"
     accuracy_decimals: 1
     icon: "mdi:numeric-3-circle"
+    internal: true
     web_server:
       sorting_group_id: sorting_group_filter
       sorting_weight: 17
@@ -246,6 +250,7 @@ sensor:
     unit_of_measurement: "psi"
     accuracy_decimals: 1
     icon: "mdi:numeric-4-circle"
+    internal: true
     web_server:
       sorting_group_id: sorting_group_filter
       sorting_weight: 18
@@ -271,6 +276,7 @@ sensor:
     unit_of_measurement: "V"
     device_class: voltage
     entity_category: diagnostic
+    internal: true
     filters:
       - median:
           window_size: 5
