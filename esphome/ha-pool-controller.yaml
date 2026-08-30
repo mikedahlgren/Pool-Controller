@@ -1,0 +1,98 @@
+# Home Assistant ESPHome Builder — copy THIS FILE ONLY into /config/esphome/
+#
+# Do not upload the rest of the GitHub repo. At compile time ESPHome pulls
+# the C++ components and YAML packages from GitHub.
+#
+# Setup:
+#   1. Push your fork (filter pressure included) to GitHub.
+#   2. In ESPHome Builder: New device → Edit → replace the stub with this file.
+#   3. Add the keys from secrets.yaml.example to Home Assistant's
+#      /config/esphome/secrets.yaml (wifi keys are usually already there).
+#   4. Install / wirelessly update.
+#
+# After that, firmware updates are: edit this one file if needed, then Install.
+# To pick up YAML/component changes you pushed to GitHub, set refresh: 0s
+# once, compile, then you can set it back to 1d.
+#
+# Skip the Node webpage build. The device UI is ESPHome web_server v3 at
+# http://pool-controller.local and Home Assistant is the real dashboard.
+#
+# Private repo: replace the github:// lines with type: git, url, username,
+# and password: !secret github_token (a PAT with repo read access).
+
+substitutions:
+  waterfall_pin: GPIO1
+  one_wire_pin: GPIO10
+  air_temp_id: !secret air_temp_id
+  water_temp_id: !secret water_temp_id
+  pentair_tx_pin: GPIO17
+  pentair_rx_pin: GPIO18
+  right_arrow: "➡️"
+  pentair_light_pin: GPIO46
+  filter_pressure_pin: GPIO4
+  filter_pressure_shunt_ohms: "150.0"
+  filter_pressure_full_scale_mpa: "0.5"
+
+esphome:
+  name: pool-controller
+  friendly_name: Pool Controller
+  min_version: 2025.9.0
+  name_add_mac_suffix: false
+
+esp32:
+  variant: esp32s3
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  encryption:
+    key: !secret pool_controller_api_key
+
+ota:
+  - platform: esphome
+    id: my_ota
+    password: !secret pool_controller_ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Pool Controller Hotspot"
+    password: !secret ap_password
+
+captive_portal:
+
+external_components:
+  - source: github://mikedahlgren/Pool-Controller@main
+    components: [pentair_if_ic]
+    refresh: 1d
+
+web_server:
+  port: 80
+  version: 3
+  sorting_groups:
+    - id: sorting_group_diagnostics
+      name: "Diagnostics"
+      sorting_weight: -1
+
+packages:
+  pool_firmware:
+    url: https://github.com/mikedahlgren/Pool-Controller
+    ref: main
+    refresh: 1d
+    files:
+      - esphome/Include/temperature.yaml
+      - esphome/Include/schedule.yaml
+      - esphome/Include/pentair_light.yaml
+      - esphome/Include/filter_pressure.yaml
+      # Uncomment if you add an IntelliChlor-compatible SWG:
+      # - esphome/Include/chlorinator.yaml
+
+switch:
+  - platform: factory_reset
+    name: Factory Reset/Restart
+    web_server:
+      sorting_group_id: sorting_group_diagnostics
+      sorting_weight: 6

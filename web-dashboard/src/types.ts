@@ -73,6 +73,8 @@ export const POOL_ENTITIES = {
     lowVoltageAlarm: 'binary_sensor-low_voltage_alarm',
     lowTemperatureAlarm: 'binary_sensor-low_temperature_alarm',
     checkPcb: 'binary_sensor-check_pcb',
+    filterNeedsBackwash: 'binary_sensor-filter_needs_backwash',
+    filterPressureFault: 'binary_sensor-filter_pressure_fault',
   },
   
   sensors: {
@@ -99,6 +101,10 @@ export const POOL_ENTITIES = {
     chlorinatorStatus: 'sensor-chlorinator_status',
     chlorinatorError: 'sensor-chlorinator_error',
     chlorinatorOutput: 'sensor-chlorinator_output__',
+    filterTankPressure: 'sensor-filter_tank_pressure',
+    filterTankPressureBar: 'sensor-filter_tank_pressure_bar',
+    filterLoopCurrent: 'sensor-filter_loop_current',
+    filterPressureVoltage: 'sensor-filter_pressure_voltage',
   },
   
   switches: {
@@ -119,6 +125,7 @@ export const POOL_ENTITIES = {
   buttons: {
     syncPumpClock: 'button-sync_pump_clock',
     refreshChlorinator: 'button-refresh_chlorinator',
+    saveCleanFilterPressure: 'button-save_clean_filter_pressure',
     requestPumpStatus: 'button-request_pump_status',
     pumpRun: 'button-pump_run',
     pumpStop: 'button-pump_stop',
@@ -166,6 +173,8 @@ export const POOL_ENTITIES = {
     pumpSpeed5: 'number-pump_speed_5',
     chlorineOutput: 'number-chlorine_output',
     pumpSpeedTest: 'number-pump_speed_test__',
+    filterCleanPressure: 'number-filter_clean_pressure',
+    filterPressureRise: 'number-filter_pressure_rise',
   },
   
   times: {
@@ -207,6 +216,8 @@ export interface PoolAutomationState {
   lowVoltageAlarm: boolean;
   lowTemperatureAlarm: boolean;
   checkPcb: boolean;
+  filterNeedsBackwash: boolean;
+  filterPressureFault: boolean;
   
   // Sensors (temperature, measurements, etc.)
   airTemperature: number;
@@ -226,6 +237,10 @@ export interface PoolAutomationState {
   chlorinatorStatus: number;
   chlorinatorError: number;
   chlorinatorOutput: number;
+  filterTankPressure: number;
+  filterTankPressureBar: number;
+  filterLoopCurrent: number;
+  filterPressureVoltage: number;
   
   // Schedule RPMs
   schedule1Rpm: number;
@@ -274,6 +289,8 @@ export interface PoolAutomationState {
   pumpSpeed5: number;
   chlorineOutput: number;
   pumpSpeedTest: number;
+  filterCleanPressure: number;
+  filterPressureRise: number;
   
   // Selects
   mode: string;

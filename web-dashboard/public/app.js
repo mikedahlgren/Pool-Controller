@@ -421,7 +421,8 @@ async function refreshAll() {
         refreshPumpSpeeds(),
         refreshPoolLight(),
         refreshSwitches(),
-        refreshScheduleOverview()
+        refreshScheduleOverview(),
+        refreshFilterPressure()
     ]);
 }
 window.refreshAll = refreshAll;
@@ -496,6 +497,7 @@ window.refreshTemperatures = async function () {
 
 window.refreshAlarms = async function () {
     if (!pool) return;
+    const activeAlarms = [];
     try {
         const alarms = await pool.chlorinator.getChlorinatorAlarms();
         updateAlarm('alarm-no-flow', alarms.noFlowAlarm);
@@ -506,9 +508,7 @@ window.refreshAlarms = async function () {
         updateAlarm('alarm-low-voltage', alarms.lowVoltageAlarm);
         updateAlarm('alarm-low-temp', alarms.lowTemperatureAlarm);
         updateAlarm('alarm-check-pcb', alarms.checkPcb);
-        
-        // Update alarm banner
-        const activeAlarms = [];
+
         if (alarms.noFlowAlarm === true || alarms.noFlowAlarm === 'ON') activeAlarms.push('No Flow');
         if (alarms.lowSaltAlarm === true || alarms.lowSaltAlarm === 'ON') activeAlarms.push('Low Salt');
         if (alarms.highSaltAlarm === true || alarms.highSaltAlarm === 'ON') activeAlarms.push('High Salt');
@@ -517,16 +517,61 @@ window.refreshAlarms = async function () {
         if (alarms.lowVoltageAlarm === true || alarms.lowVoltageAlarm === 'ON') activeAlarms.push('Low Voltage');
         if (alarms.lowTemperatureAlarm === true || alarms.lowTemperatureAlarm === 'ON') activeAlarms.push('Low Temp');
         if (alarms.checkPcb === true || alarms.checkPcb === 'ON') activeAlarms.push('Check PCB');
-        
-        const banner = document.getElementById('alarm-banner');
-        if (banner) {
-            banner.classList.toggle('hidden', activeAlarms.length === 0);
-            if (activeAlarms.length > 0) {
-                document.getElementById('alarm-message').textContent = activeAlarms.join(', ');
-            }
-        }
     } catch (error) {
         console.log('Chlorinator not available:', error.message);
+    }
+
+    try {
+        const filter = await pool.filter.getStatus();
+        updateAlarm('alarm-filter-backwash', filter.needsBackwash);
+        updateAlarm('alarm-filter-fault', filter.fault);
+        if (filter.needsBackwash === true || filter.needsBackwash === 'ON') activeAlarms.push('Filter Backwash');
+        if (filter.fault === true || filter.fault === 'ON') activeAlarms.push('Filter Sensor Fault');
+    } catch (error) {
+        console.log('Filter pressure not available:', error.message);
+    }
+
+    const banner = document.getElementById('alarm-banner');
+    if (banner) {
+        banner.classList.toggle('hidden', activeAlarms.length === 0);
+        if (activeAlarms.length > 0) {
+            document.getElementById('alarm-message').textContent = activeAlarms.join(', ');
+        }
+    }
+};
+
+window.refreshFilterPressure = async function () {
+    if (!pool) return;
+    try {
+        const filter = await pool.filter.getStatus();
+        const psiText = Number.isFinite(filter.pressurePsi) ? filter.pressurePsi.toFixed(1) : '--';
+        document.getElementById('filter-psi').textContent = psiText;
+        document.getElementById('filter-pressure-psi').textContent = Number.isFinite(filter.pressurePsi) ? `${filter.pressurePsi.toFixed(1)} psi` : 'N/A';
+        document.getElementById('filter-pressure-bar').textContent = Number.isFinite(filter.pressureBar) ? `${filter.pressureBar.toFixed(2)} bar` : 'N/A';
+        document.getElementById('filter-loop-ma').textContent = Number.isFinite(filter.loopCurrentMa) ? `${filter.loopCurrentMa.toFixed(2)} mA` : 'N/A';
+        document.getElementById('filter-clean-psi').textContent = Number.isFinite(filter.cleanPsi) ? `${filter.cleanPsi.toFixed(1)} psi` : '-';
+        document.getElementById('filter-rise-psi').textContent = Number.isFinite(filter.risePsi) ? `${filter.risePsi.toFixed(1)} psi` : '-';
+        updateStatusBadge('filter-backwash', filter.needsBackwash);
+        const filterStat = document.getElementById('filter-stat');
+        if (filterStat) filterStat.classList.toggle('warn', !!(filter.needsBackwash || filter.fault));
+    } catch (error) {
+        console.log('Filter pressure not available:', error.message);
+        document.getElementById('filter-psi').textContent = 'N/A';
+        document.getElementById('filter-pressure-psi').textContent = 'N/A';
+        document.getElementById('filter-pressure-bar').textContent = 'N/A';
+        document.getElementById('filter-loop-ma').textContent = 'N/A';
+    }
+};
+
+window.saveCleanFilterPressure = async function () {
+    if (!pool) return;
+    try {
+        await pool.filter.saveCleanPressure();
+        showNotification('Clean filter pressure saved', 'success');
+        await refreshFilterPressure();
+    } catch (error) {
+        console.error('Error saving clean filter pressure:', error);
+        showNotification('Failed to save clean pressure', 'error');
     }
 };
 

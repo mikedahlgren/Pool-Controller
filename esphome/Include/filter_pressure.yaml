@@ -1,0 +1,169 @@
+# Filter tank head-pressure package
+#
+# Hardware: 2-wire 4-20mA silicon pressure transmitter (Yosoo 0-0.5 MPa / G1/4,
+# Amazon B07NQ36XTC or equivalent) on the Waveshare ESP32-S3-RELAY-6CH Pico header.
+#
+# The transmitter is loop-powered from the board's 7-36V VIN (8-32V required).
+# Current is converted to voltage with a 150Ω shunt on GPIO4 (ADC1, WiFi-safe).
+# See esphome/FILTER_PRESSURE.md for wiring, pinout, and plumbing notes.
+
+web_server:
+  sorting_groups:
+    - id: sorting_group_filter
+      name: "Filter Pressure"
+      sorting_weight: -8
+
+number:
+  - platform: template
+    name: "Filter Clean Pressure"
+    id: filter_clean_psi
+    min_value: 0
+    max_value: 50
+    step: 0.5
+    unit_of_measurement: "psi"
+    optimistic: true
+    restore_value: true
+    initial_value: 10
+    mode: box
+    icon: "mdi:gauge-empty"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 4
+
+  - platform: template
+    name: "Filter Pressure Rise"
+    id: filter_pressure_rise_psi
+    min_value: 2
+    max_value: 25
+    step: 0.5
+    unit_of_measurement: "psi"
+    optimistic: true
+    restore_value: true
+    initial_value: 10
+    mode: box
+    icon: "mdi:arrow-up-bold"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 5
+
+sensor:
+  - platform: template
+    name: "Filter Tank Pressure"
+    id: filter_tank_pressure
+    unit_of_measurement: "psi"
+    device_class: pressure
+    state_class: measurement
+    accuracy_decimals: 1
+    icon: "mdi:gauge"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 1
+
+  - platform: template
+    name: "Filter Tank Pressure Bar"
+    id: filter_tank_pressure_bar
+    unit_of_measurement: "bar"
+    device_class: pressure
+    state_class: measurement
+    accuracy_decimals: 3
+    icon: "mdi:gauge"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 2
+
+  - platform: template
+    name: "Filter Loop Current"
+    id: filter_loop_current
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    icon: "mdi:current-dc"
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 3
+
+  - platform: adc
+    pin: ${filter_pressure_pin}
+    name: "Filter Pressure Voltage"
+    id: filter_pressure_voltage
+    attenuation: 12db
+    samples: 16
+    update_interval: 2s
+    accuracy_decimals: 3
+    unit_of_measurement: "V"
+    device_class: voltage
+    entity_category: diagnostic
+    filters:
+      - median:
+          window_size: 5
+          send_every: 2
+          send_first_at: 1
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 6
+    on_value:
+      then:
+        - lambda: |-
+            const float r = ${filter_pressure_shunt_ohms};
+            const float fs_mpa = ${filter_pressure_full_scale_mpa};
+            const float ma = x / r * 1000.0f;
+            id(filter_loop_current).publish_state(ma);
+
+            // 4-20mA loop: below ~3.5mA is open/wire-break, above ~21mA is short/overrange
+            if (ma < 3.5f || ma > 21.0f) {
+              id(filter_tank_pressure).publish_state(NAN);
+              id(filter_tank_pressure_bar).publish_state(NAN);
+              id(filter_pressure_fault).publish_state(true);
+              id(filter_needs_backwash).publish_state(false);
+              return;
+            }
+
+            id(filter_pressure_fault).publish_state(false);
+            float psi = (ma - 4.0f) / 16.0f * (fs_mpa * 145.037738f);
+            if (psi < 0.0f) {
+              psi = 0.0f;
+            }
+            id(filter_tank_pressure).publish_state(psi);
+            id(filter_tank_pressure_bar).publish_state(psi / 14.503774f);
+
+            const float trip = id(filter_clean_psi).state + id(filter_pressure_rise_psi).state;
+            id(filter_needs_backwash).publish_state(psi >= trip);
+
+binary_sensor:
+  - platform: template
+    name: "Filter Needs Backwash"
+    id: filter_needs_backwash
+    device_class: problem
+    icon: "mdi:air-filter"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 7
+
+  - platform: template
+    name: "Filter Pressure Fault"
+    id: filter_pressure_fault
+    device_class: problem
+    icon: "mdi:alert-circle"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 8
+
+button:
+  - platform: template
+    name: "Save Clean Filter Pressure"
+    id: save_clean_filter_pressure
+    icon: "mdi:content-save"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 9
+    on_press:
+      then:
+        - lambda: |-
+            if (isnan(id(filter_tank_pressure).state)) {
+              ESP_LOGW("filter_pressure", "Not saving clean pressure: sensor reading is invalid");
+              return;
+            }
+            id(filter_clean_psi).publish_state(id(filter_tank_pressure).state);
+            ESP_LOGI("filter_pressure", "Saved clean filter pressure: %.1f psi", id(filter_tank_pressure).state);

@@ -101,6 +101,7 @@
             <div class="stat flow"><i class="mdi mdi-water-pump"></i><span id="pump-flow">--</span><small>m³/h</small></div>
             <div class="stat salt"><i class="mdi mdi-flask-outline"></i><span id="salt-level">--</span><small>Salt</small></div>
             <div class="stat chlor-temp"><i class="mdi mdi-thermometer-water"></i><span id="chlor-temp">--</span><small>SWG</small></div>
+            <div class="stat filter" id="filter-stat"><i class="mdi mdi-gauge"></i><span id="filter-psi">--</span><small>Filter psi</small></div>
         </div>
 
         <!-- Quick Controls -->
@@ -124,6 +125,23 @@
                     <div class="kv"><span>Time Left</span><span id="time-remaining">-</span></div>
                     <div class="kv"><span>Clock</span><span id="pump-clock-formatted">-</span></div>
                     <div class="kv"><span>Schedule</span><span id="current-schedule">-</span></div>
+                </div>
+            </section>
+
+            <!-- Filter Pressure -->
+            <section class="card narrow" draggable="true" data-card-id="filter">
+                <div class="card-head"><span><i class="mdi mdi-gauge"></i> Filter Pressure</span><button class="card-width-btn" onclick="cycleCardWidth(this)" title="Change width"><i class="mdi mdi-arrow-expand-horizontal"></i></button><i class="mdi mdi-drag drag-handle"></i></div>
+                <div class="card-grid cols2">
+                    <div class="kv"><span>Head</span><span id="filter-pressure-psi">-</span></div>
+                    <div class="kv"><span>Bar</span><span id="filter-pressure-bar">-</span></div>
+                    <div class="kv"><span>Loop</span><span id="filter-loop-ma">-</span></div>
+                    <div class="kv"><span>Clean</span><span id="filter-clean-psi">-</span></div>
+                    <div class="kv"><span>Rise</span><span id="filter-rise-psi">-</span></div>
+                    <div class="kv"><span>Backwash</span><span id="filter-backwash" class="pill">-</span></div>
+                </div>
+                <div class="sw-row" style="margin-top:8px">
+                    <span>Save clean psi</span>
+                    <button class="btn primary sm" onclick="saveCleanFilterPressure()">Save</button>
                 </div>
             </section>
 
@@ -219,6 +237,8 @@
                     <div class="alm" id="alarm-low-voltage"><i class="mdi mdi-battery-low"></i>Low Volt</div>
                     <div class="alm" id="alarm-low-temp"><i class="mdi mdi-snowflake"></i>Low Temp</div>
                     <div class="alm" id="alarm-check-pcb"><i class="mdi mdi-chip"></i>Check PCB</div>
+                    <div class="alm" id="alarm-filter-backwash"><i class="mdi mdi-air-filter"></i>Backwash</div>
+                    <div class="alm" id="alarm-filter-fault"><i class="mdi mdi-gauge-empty"></i>Filter Fault</div>
                 </div>
             </section>
 

@@ -15,6 +15,7 @@ A modern, responsive web interface for ESPHome Pool Automation system with full 
 - Schedule overview table (glance-style)
 - Complete pump speed configuration
 - Chlorinator monitoring and control
+- Filter tank head-pressure (4–20 mA transmitter)
 - Switch controls for waterfall and automation
 - System information display
 - Auto-refresh with configurable interval

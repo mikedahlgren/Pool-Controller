@@ -22,14 +22,18 @@ See [components/README.md](components/README.md) for details about the available
 - **custom_web_handler**: Add custom web endpoints to your ESPHome device, supporting multiple endpoint types and integration with the built-in web_server.
 - **pentair_if_ic**: Control Pentair IntelliFlo pumps and IntelliChlor chlorinators over RS485, with full Home Assistant sensor support and bus arbitration.
 
+## Home Assistant ESPHome Builder
+
+Copy **one file** into ESPHome Builder: [`esphome/ha-pool-controller.yaml`](esphome/ha-pool-controller.yaml). Do not upload `components/`, `web-dashboard/`, or the Include YAMLs. ESPHome pulls those from this GitHub repo at compile time. Use Home Assistant plus the device’s built-in web_server at `http://pool-controller.local` — you can skip the separate Node webpage build. Details: [esphome/README.md](esphome/README.md#home-assistant-esphome-builder-recommended).
+
 ## ESPHome Configuration
 
 See [esphome/README.md](esphome/README.md) for the complete hardware/firmware configuration:
 
 - **Hardware Platform**: Built for the Waveshare ESP32-S3-RELAY-6CH industrial module with 6 relay channels, built-in isolated RS485, and wide voltage input (7-36V DC)
 - **Modular YAML Configuration**: Main configuration file with separate includes for temperature sensors, pump scheduling, chlorinator control, and pool light modes
-- **Integrated Control**: Manages waterfall pump, Pentair IntelliBrite light (14 color modes via power cycling), RS485 communication with pump/chlorinator, and Dallas temperature sensors
-- **Complete Wiring Documentation**: Detailed diagrams showing all GPIO assignments and component connections
+- **Integrated Control**: Manages waterfall pump, Pentair IntelliBrite light (14 color modes via power cycling), RS485 communication with pump/chlorinator, Dallas temperature sensors, and filter-tank head pressure (4–20 mA)
+- **Complete Wiring Documentation**: Detailed diagrams showing all GPIO assignments and component connections, including the [filter pressure transmitter](esphome/FILTER_PRESSURE.md)
 
 ## Tools
 

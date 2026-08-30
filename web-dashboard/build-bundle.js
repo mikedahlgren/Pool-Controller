@@ -33,6 +33,7 @@ async function buildBundle() {
     const temperatureJS = readFileSync(join(__dirname, 'dist/api/temperature.js'), 'utf8');
     const pumpJS = readFileSync(join(__dirname, 'dist/api/pump.js'), 'utf8');
     const chlorinatorJS = readFileSync(join(__dirname, 'dist/api/chlorinator.js'), 'utf8');
+    const filterPressureJS = readFileSync(join(__dirname, 'dist/api/filter-pressure.js'), 'utf8');
     const systemJS = readFileSync(join(__dirname, 'dist/api/system.js'), 'utf8');
     const indexJS = readFileSync(join(__dirname, 'dist/api/index.js'), 'utf8');
     const esphomeApiJS = readFileSync(join(__dirname, 'dist/esphome-api.js'), 'utf8');
@@ -68,6 +69,7 @@ async function buildBundle() {
         stripExportsImports(temperatureJS),
         stripExportsImports(pumpJS),
         stripExportsImports(chlorinatorJS),
+        stripExportsImports(filterPressureJS),
         stripExportsImports(systemJS),
         stripExportsImports(indexJS),
         stripExportsImports(esphomeApiJS),
