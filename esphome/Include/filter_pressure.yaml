@@ -3,9 +3,10 @@
 # Hardware: 2-wire 4-20mA silicon pressure transmitter (Yosoo 0-0.5 MPa / G1/4,
 # Amazon B07NQ36XTC or equivalent) on the Waveshare ESP32-S3-RELAY-6CH Pico header.
 #
-# The transmitter is loop-powered from the board's 7-36V VIN (8-32V required).
-# Current is converted to voltage with a 150Ω shunt on GPIO4 (ADC1, WiFi-safe).
-# See esphome/FILTER_PRESSURE.md for wiring, pinout, and plumbing notes.
+# Clean baselines are learned per Speed 1–4: the lowest N-hour average while
+# the pump holds that speed (N = Filter Learn Hours, default 2). Unsaved speeds
+# are estimated from learned points using head ≈ a + b·RPM².
+# Triton II trip: +10 psi. See esphome/FILTER_PRESSURE.md.
 
 web_server:
   sorting_groups:
@@ -13,23 +14,125 @@ web_server:
       name: "Filter Pressure"
       sorting_weight: -8
 
+globals:
+  - id: g_filter_needs_backwash
+    type: bool
+    restore_value: yes
+    initial_value: "false"
+  - id: g_filter_learn_clear
+    type: int
+    restore_value: no
+    initial_value: "-1"
+  - id: g_filter_learn_hours
+    type: float
+    restore_value: no
+    initial_value: "0"
+  - id: g_filter_learn_speed
+    type: int
+    restore_value: no
+    initial_value: "0"
+
 number:
   - platform: template
-    name: "Filter Clean Pressure"
-    id: filter_clean_psi
+    name: "Filter Clean Speed 1"
+    id: filter_clean_speed1_psi
     min_value: 0
     max_value: 50
     step: 0.5
     unit_of_measurement: "psi"
     optimistic: true
     restore_value: true
-    initial_value: 10
+    initial_value: 0
     mode: box
-    icon: "mdi:gauge-empty"
+    icon: "mdi:numeric-1"
     entity_category: config
     web_server:
       sorting_group_id: sorting_group_filter
-      sorting_weight: 4
+      sorting_weight: 10
+    on_value:
+      then:
+        - script.execute: filter_recalc
+
+  - platform: template
+    name: "Filter Clean Speed 2"
+    id: filter_clean_speed2_psi
+    min_value: 0
+    max_value: 50
+    step: 0.5
+    unit_of_measurement: "psi"
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+    mode: box
+    icon: "mdi:numeric-2"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 11
+    on_value:
+      then:
+        - script.execute: filter_recalc
+
+  - platform: template
+    name: "Filter Clean Speed 3"
+    id: filter_clean_speed3_psi
+    min_value: 0
+    max_value: 50
+    step: 0.5
+    unit_of_measurement: "psi"
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+    mode: box
+    icon: "mdi:numeric-3"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 12
+    on_value:
+      then:
+        - script.execute: filter_recalc
+
+  - platform: template
+    name: "Filter Clean Speed 4"
+    id: filter_clean_speed4_psi
+    min_value: 0
+    max_value: 50
+    step: 0.5
+    unit_of_measurement: "psi"
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+    mode: box
+    icon: "mdi:numeric-4"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 13
+    on_value:
+      then:
+        - script.execute: filter_recalc
+
+  - platform: template
+    name: "Filter Learn Hours"
+    id: filter_learn_hours
+    min_value: 1
+    max_value: 48
+    step: 1
+    unit_of_measurement: "h"
+    optimistic: true
+    restore_value: true
+    initial_value: 2
+    mode: box
+    icon: "mdi:timer-sand"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 20
+    on_value:
+      then:
+        - lambda: id(g_filter_learn_clear) = 99;
+        - script.execute: filter_recalc
 
   - platform: template
     name: "Filter Pressure Rise"
@@ -46,7 +149,10 @@ number:
     entity_category: config
     web_server:
       sorting_group_id: sorting_group_filter
-      sorting_weight: 5
+      sorting_weight: 14
+    on_value:
+      then:
+        - script.execute: filter_recalc
 
 sensor:
   - platform: template
@@ -84,6 +190,76 @@ sensor:
       sorting_group_id: sorting_group_filter
       sorting_weight: 3
 
+  - platform: template
+    name: "Filter Clean Baseline"
+    id: filter_clean_baseline
+    unit_of_measurement: "psi"
+    accuracy_decimals: 1
+    icon: "mdi:gauge-empty"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 4
+
+  - platform: template
+    name: "Filter Pressure Over Clean"
+    id: filter_over_clean
+    unit_of_measurement: "psi"
+    accuracy_decimals: 1
+    icon: "mdi:delta"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 5
+
+  - platform: template
+    name: "Filter Est Speed 1"
+    id: filter_est_speed1
+    unit_of_measurement: "psi"
+    accuracy_decimals: 1
+    icon: "mdi:numeric-1-circle"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 15
+
+  - platform: template
+    name: "Filter Est Speed 2"
+    id: filter_est_speed2
+    unit_of_measurement: "psi"
+    accuracy_decimals: 1
+    icon: "mdi:numeric-2-circle"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 16
+
+  - platform: template
+    name: "Filter Est Speed 3"
+    id: filter_est_speed3
+    unit_of_measurement: "psi"
+    accuracy_decimals: 1
+    icon: "mdi:numeric-3-circle"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 17
+
+  - platform: template
+    name: "Filter Est Speed 4"
+    id: filter_est_speed4
+    unit_of_measurement: "psi"
+    accuracy_decimals: 1
+    icon: "mdi:numeric-4-circle"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 18
+
+  - platform: template
+    name: "Filter Learn Time"
+    id: filter_learn_time
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+    icon: "mdi:progress-clock"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 19
+
   - platform: adc
     pin: ${filter_pressure_pin}
     name: "Filter Pressure Voltage"
@@ -116,7 +292,10 @@ sensor:
               id(filter_tank_pressure).publish_state(NAN);
               id(filter_tank_pressure_bar).publish_state(NAN);
               id(filter_pressure_fault).publish_state(true);
-              id(filter_needs_backwash).publish_state(false);
+              id(filter_over_clean).publish_state(NAN);
+              id(filter_clean_baseline).publish_state(NAN);
+              id(filter_needs_backwash).publish_state(id(g_filter_needs_backwash));
+              id(filter_block_reason).publish_state("filter sensor fault");
               return;
             }
 
@@ -127,9 +306,8 @@ sensor:
             }
             id(filter_tank_pressure).publish_state(psi);
             id(filter_tank_pressure_bar).publish_state(psi / 14.503774f);
-
-            const float trip = id(filter_clean_psi).state + id(filter_pressure_rise_psi).state;
-            id(filter_needs_backwash).publish_state(psi >= trip);
+        - script.execute: filter_learn
+        - script.execute: filter_recalc
 
 binary_sensor:
   - platform: template
@@ -150,6 +328,15 @@ binary_sensor:
       sorting_group_id: sorting_group_filter
       sorting_weight: 8
 
+text_sensor:
+  - platform: template
+    name: "Filter Backwash Detail"
+    id: filter_block_reason
+    icon: "mdi:message-text"
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 9
+
 button:
   - platform: template
     name: "Save Clean Filter Pressure"
@@ -157,13 +344,326 @@ button:
     icon: "mdi:content-save"
     web_server:
       sorting_group_id: sorting_group_filter
-      sorting_weight: 9
+      sorting_weight: 19
     on_press:
       then:
         - lambda: |-
-            if (isnan(id(filter_tank_pressure).state)) {
-              ESP_LOGW("filter_pressure", "Not saving clean pressure: sensor reading is invalid");
+            const float psi = id(filter_tank_pressure).state;
+            if (isnan(psi)) {
+              ESP_LOGW("filter_pressure", "Not saving: invalid pressure");
               return;
             }
-            id(filter_clean_psi).publish_state(id(filter_tank_pressure).state);
-            ESP_LOGI("filter_pressure", "Saved clean filter pressure: %.1f psi", id(filter_tank_pressure).state);
+            if (!id(pump_running).state || isnan(id(pump_rpm).state) || id(pump_rpm).state < 400.0f) {
+              ESP_LOGW("filter_pressure", "Not saving: run the pump at Speed 1-4 first");
+              return;
+            }
+            const float rpm = id(pump_rpm).state;
+            const float speeds[4] = {
+              id(pump_speed_1).state,
+              id(pump_speed_2).state,
+              id(pump_speed_3).state,
+              id(pump_speed_4).state,
+            };
+            int best = 0;
+            float best_d = fabsf(rpm - speeds[0]);
+            for (int i = 1; i < 4; i++) {
+              const float d = fabsf(rpm - speeds[i]);
+              if (d < best_d) {
+                best_d = d;
+                best = i;
+              }
+            }
+            if (best_d > 250.0f) {
+              ESP_LOGW("filter_pressure", "Not saving: RPM %.0f is not near Speed 1-4", rpm);
+              return;
+            }
+            if (best == 0) id(filter_clean_speed1_psi).publish_state(psi);
+            else if (best == 1) id(filter_clean_speed2_psi).publish_state(psi);
+            else if (best == 2) id(filter_clean_speed3_psi).publish_state(psi);
+            else id(filter_clean_speed4_psi).publish_state(psi);
+            id(g_filter_learn_clear) = best;
+            ESP_LOGI("filter_pressure", "Saved clean %.1f psi as Speed %d (RPM %.0f)", psi, best + 1, rpm);
+
+  - platform: template
+    name: "Reset Filter Baselines"
+    id: reset_filter_baselines
+    icon: "mdi:restore"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_filter
+      sorting_weight: 21
+    on_press:
+      then:
+        - lambda: |-
+            id(filter_clean_speed1_psi).publish_state(0);
+            id(filter_clean_speed2_psi).publish_state(0);
+            id(filter_clean_speed3_psi).publish_state(0);
+            id(filter_clean_speed4_psi).publish_state(0);
+            id(g_filter_learn_clear) = 99;
+            id(g_filter_needs_backwash) = false;
+            ESP_LOGI("filter_pressure", "Baselines reset; will re-learn after Filter Learn Hours");
+
+script:
+  - id: filter_learn
+    mode: single
+    then:
+      - lambda: |-
+          const int MAX_B = 288;
+          const uint32_t BUCKET_MS = 300000;
+          static float bkt[4][MAX_B];
+          static uint16_t head[4] = {0, 0, 0, 0};
+          static uint16_t filled[4] = {0, 0, 0, 0};
+          static uint32_t bkt_ms[4] = {0, 0, 0, 0};
+          static float bkt_sum[4] = {0, 0, 0, 0};
+          static uint16_t bkt_n[4] = {0, 0, 0, 0};
+          static float min_mean[4] = {NAN, NAN, NAN, NAN};
+          static float last_set_rpm[4] = {0, 0, 0, 0};
+
+          auto clear_slot = [&](int i) {
+            head[i] = 0;
+            filled[i] = 0;
+            bkt_ms[i] = 0;
+            bkt_sum[i] = 0;
+            bkt_n[i] = 0;
+            min_mean[i] = NAN;
+          };
+
+          if (id(g_filter_learn_clear) == 99) {
+            for (int i = 0; i < 4; i++) clear_slot(i);
+            id(g_filter_learn_clear) = -1;
+          } else if (id(g_filter_learn_clear) >= 0 && id(g_filter_learn_clear) < 4) {
+            clear_slot(id(g_filter_learn_clear));
+            id(g_filter_learn_clear) = -1;
+          }
+
+          float hours = id(filter_learn_hours).state;
+          if (isnan(hours) || hours < 1.0f) hours = 2.0f;
+          if (hours > 48.0f) hours = 48.0f;
+          int W = (int) (hours * 60.0f / 5.0f);
+          if (W < 12) W = 12;
+          if (W > MAX_B) W = MAX_B;
+
+          const float rpms[4] = {
+            id(pump_speed_1).state,
+            id(pump_speed_2).state,
+            id(pump_speed_3).state,
+            id(pump_speed_4).state,
+          };
+          for (int i = 0; i < 4; i++) {
+            if (last_set_rpm[i] > 0 && fabsf(rpms[i] - last_set_rpm[i]) > 100.0f) {
+              clear_slot(i);
+            }
+            last_set_rpm[i] = rpms[i];
+          }
+
+          id(g_filter_learn_hours) = 0;
+          id(g_filter_learn_speed) = 0;
+
+          const float psi = id(filter_tank_pressure).state;
+          const bool running = id(pump_running).state && !isnan(id(pump_rpm).state) &&
+                               id(pump_rpm).state >= 400.0f && !isnan(psi);
+          if (!running || id(filter_pressure_fault).state) {
+            id(filter_learn_time).publish_state(0);
+            return;
+          }
+          if (millis() - id(g_pump_started_running_millis) < 600000) {
+            id(filter_learn_time).publish_state(0);
+            return;
+          }
+          if (psi < 3.0f || psi > 45.0f) {
+            return;
+          }
+
+          const float rpm = id(pump_rpm).state;
+          int best = 0;
+          float best_d = fabsf(rpm - rpms[0]);
+          for (int i = 1; i < 4; i++) {
+            const float d = fabsf(rpm - rpms[i]);
+            if (d < best_d) {
+              best_d = d;
+              best = i;
+            }
+          }
+          if (best_d > 200.0f) {
+            id(filter_learn_time).publish_state(0);
+            return;
+          }
+
+          const int i = best;
+          id(g_filter_learn_speed) = i + 1;
+          bkt_sum[i] += psi;
+          bkt_n[i] += 1;
+          if (bkt_ms[i] == 0) bkt_ms[i] = millis();
+
+          if (millis() - bkt_ms[i] >= BUCKET_MS && bkt_n[i] > 0) {
+            const float avg = bkt_sum[i] / bkt_n[i];
+            bkt[i][head[i]] = avg;
+            head[i] = (head[i] + 1) % (uint16_t) W;
+            if (filled[i] < W) filled[i]++;
+            bkt_sum[i] = 0;
+            bkt_n[i] = 0;
+            bkt_ms[i] = millis();
+
+            if (filled[i] >= W) {
+              float s = 0;
+              for (int k = 0; k < W; k++) s += bkt[i][k];
+              const float mean = s / (float) W;
+              if (isnan(min_mean[i]) || mean < min_mean[i]) min_mean[i] = mean;
+              float rounded = roundf(min_mean[i] * 2.0f) / 2.0f;
+              if (rounded < 0.5f) rounded = 0.5f;
+              float cur = 0;
+              if (i == 0) cur = id(filter_clean_speed1_psi).state;
+              else if (i == 1) cur = id(filter_clean_speed2_psi).state;
+              else if (i == 2) cur = id(filter_clean_speed3_psi).state;
+              else cur = id(filter_clean_speed4_psi).state;
+              if (isnan(cur) || cur < 0.5f || rounded + 0.05f < cur) {
+                if (i == 0) id(filter_clean_speed1_psi).publish_state(rounded);
+                else if (i == 1) id(filter_clean_speed2_psi).publish_state(rounded);
+                else if (i == 2) id(filter_clean_speed3_psi).publish_state(rounded);
+                else id(filter_clean_speed4_psi).publish_state(rounded);
+                ESP_LOGI("filter_pressure", "Learned Speed %d clean baseline %.1f psi (lowest %.0fh avg)",
+                         i + 1, rounded, hours);
+              }
+            }
+          }
+
+          const float have = (float) filled[i] * 5.0f / 60.0f;
+          id(g_filter_learn_hours) = have;
+          id(filter_learn_time).publish_state(have);
+
+  - id: filter_recalc
+    mode: restart
+    then:
+      - lambda: |-
+          const float rpm1 = id(pump_speed_1).state;
+          const float rpm2 = id(pump_speed_2).state;
+          const float rpm3 = id(pump_speed_3).state;
+          const float rpm4 = id(pump_speed_4).state;
+          const float saved[4] = {
+            id(filter_clean_speed1_psi).state,
+            id(filter_clean_speed2_psi).state,
+            id(filter_clean_speed3_psi).state,
+            id(filter_clean_speed4_psi).state,
+          };
+          const float rpms[4] = {rpm1, rpm2, rpm3, rpm4};
+
+          float xs[4];
+          float ys[4];
+          int n = 0;
+          for (int i = 0; i < 4; i++) {
+            if (rpms[i] >= 400.0f && saved[i] >= 0.5f) {
+              xs[n] = rpms[i] * rpms[i];
+              ys[n] = saved[i];
+              n++;
+            }
+          }
+
+          auto est_rpm = [&](float rpm) -> float {
+            if (isnan(rpm) || rpm < 400.0f || n == 0) return NAN;
+            const float x = rpm * rpm;
+            if (n == 1) {
+              if (xs[0] < 1.0f) return NAN;
+              float p = ys[0] * (x / xs[0]);
+              if (p < 0) p = 0;
+              if (p > 50) p = 50;
+              return p;
+            }
+            float sx = 0, sy = 0, sxx = 0, sxy = 0;
+            for (int i = 0; i < n; i++) {
+              sx += xs[i];
+              sy += ys[i];
+              sxx += xs[i] * xs[i];
+              sxy += xs[i] * ys[i];
+            }
+            const float nf = (float) n;
+            const float den = nf * sxx - sx * sx;
+            if (fabsf(den) < 1.0f) {
+              float p = ys[0] * (x / xs[0]);
+              if (p < 0) p = 0;
+              if (p > 50) p = 50;
+              return p;
+            }
+            float b = (nf * sxy - sx * sy) / den;
+            float a = (sy - b * sx) / nf;
+            if (b < 0) b = 0;
+            if (a < 0) a = 0;
+            float p = a + b * x;
+            if (p < 0) p = 0;
+            if (p > 50) p = 50;
+            return p;
+          };
+
+          auto effective = [&](int i) -> float {
+            if (saved[i] >= 0.5f) return saved[i];
+            return est_rpm(rpms[i]);
+          };
+
+          id(filter_est_speed1).publish_state(effective(0));
+          id(filter_est_speed2).publish_state(effective(1));
+          id(filter_est_speed3).publish_state(effective(2));
+          id(filter_est_speed4).publish_state(effective(3));
+
+          if (id(filter_pressure_fault).state) {
+            return;
+          }
+
+          const float psi = id(filter_tank_pressure).state;
+          const bool running = id(pump_running).state && !isnan(id(pump_rpm).state) && id(pump_rpm).state >= 400.0f;
+          float baseline = NAN;
+          std::string why = "ok";
+
+          if (n == 0) {
+            if (id(g_filter_learn_speed) > 0) {
+              char buf[72];
+              snprintf(buf, sizeof(buf), "learning Speed %d (%.1f / %.0f h)",
+                       id(g_filter_learn_speed), id(g_filter_learn_hours),
+                       id(filter_learn_hours).state);
+              why = buf;
+            } else {
+              why = "waiting to learn baseline at Speed 1-4";
+            }
+          } else if (!running) {
+            why = id(g_filter_needs_backwash) ? "backwash needed (pump off)" : "pump off";
+          } else {
+            const float rpm = id(pump_rpm).state;
+            int best = -1;
+            float best_d = 1e9f;
+            for (int i = 0; i < 4; i++) {
+              if (saved[i] < 0.5f) continue;
+              const float d = fabsf(rpm - rpms[i]);
+              if (d < best_d) {
+                best_d = d;
+                best = i;
+              }
+            }
+            if (best >= 0 && best_d <= 200.0f) {
+              baseline = saved[best];
+            } else {
+              baseline = est_rpm(rpm);
+            }
+          }
+
+          id(filter_clean_baseline).publish_state(baseline);
+
+          if (!isnan(psi) && !isnan(baseline)) {
+            const float over = psi - baseline;
+            id(filter_over_clean).publish_state(over);
+            const float trip = id(filter_pressure_rise_psi).state;
+            if (over >= trip) {
+              id(g_filter_needs_backwash) = true;
+              why = "backwash needed";
+            } else if (over < trip - 1.0f) {
+              id(g_filter_needs_backwash) = false;
+              why = "ok";
+            } else if (id(g_filter_needs_backwash)) {
+              why = "backwash needed";
+            }
+          } else {
+            id(filter_over_clean).publish_state(NAN);
+            if (!running && id(g_filter_needs_backwash)) {
+              why = "backwash needed (pump off)";
+            }
+          }
+
+          id(filter_needs_backwash).publish_state(id(g_filter_needs_backwash));
+          id(filter_block_reason).publish_state(why);

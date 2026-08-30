@@ -4,7 +4,7 @@
 # the C++ components and YAML packages from GitHub.
 #
 # Setup:
-#   1. Push your fork (filter pressure included) to GitHub.
+#   1. Push your fork (filter pressure + acid/pH included) to GitHub.
 #   2. In ESPHome Builder: New device → Edit → replace the stub with this file.
 #   3. Add the keys from secrets.yaml.example to Home Assistant's
 #      /config/esphome/secrets.yaml (wifi keys are usually already there).
@@ -14,8 +14,8 @@
 # To pick up YAML/component changes you pushed to GitHub, set refresh: 0s
 # once, compile, then you can set it back to 1d.
 #
-# Skip the Node webpage build. The device UI is ESPHome web_server v3 at
-# http://pool-controller.local and Home Assistant is the real dashboard.
+# Device UI is ESPHome web_server v3 at http://pool-controller.local
+# plus Home Assistant.
 #
 # Private repo: replace the github:// lines with type: git, url, username,
 # and password: !secret github_token (a PAT with repo read access).
@@ -32,6 +32,11 @@ substitutions:
   filter_pressure_pin: GPIO4
   filter_pressure_shunt_ohms: "150.0"
   filter_pressure_full_scale_mpa: "0.5"
+  acid_pump_pin: GPIO2          # Stenner 45M5 hot on CH2
+  ph_sensor_pin: GPIO5          # Atlas KIT-102P 4-20mA + (Pico GP5 / pin 7)
+  ph_shunt_ohms: "150.0"        # Dedicated 150Ω; not the Yosoo shunt; not 250Ω
+  ph_scale_low: "0"             # Atlas IND-pH: 4 mA = 0 pH
+  ph_scale_high: "14"           # Atlas IND-pH: 20 mA = 14 pH
 
 esphome:
   name: pool-controller
@@ -87,6 +92,7 @@ packages:
       - esphome/Include/schedule.yaml
       - esphome/Include/pentair_light.yaml
       - esphome/Include/filter_pressure.yaml
+      - esphome/Include/acid_ph.yaml
       # Uncomment if you add an IntelliChlor-compatible SWG:
       # - esphome/Include/chlorinator.yaml
 

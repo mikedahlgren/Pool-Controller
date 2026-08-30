@@ -52,9 +52,6 @@ web_server:
     - id: schedule4
       name: "Schedule 4"
       sorting_weight: -16
-    - id: schedule5
-      name: "Schedule 5"
-      sorting_weight: -15
     - id: pump_end
       name: "Pump End"
       sorting_weight: -14
@@ -219,9 +216,7 @@ number:
     restore_value: true
     initial_value: 3000
     icon: "mdi:speedometer"
-    web_server:
-      sorting_group_id: pump_speeds
-      sorting_weight: 5
+    internal: true
 
 # Global variables for schedule state
 globals:
@@ -258,15 +253,17 @@ switch:
     output: waterfall_relay
     id: waterfall_switch
     icon: "mdi:waterfall"
-    #restore_mode: RESTORE_DEFAULT_OFF
+    restore_mode: ALWAYS_OFF
 
-  # Auto waterfall based on pump RPM
+  # Auto waterfall based on pump RPM.
+  # This install has no waterfall — leave this switch OFF so CH1/GPIO1 never fires.
+  # Acid is on CH2 (GPIO2); do not move it here.
   - platform: template
     name: "Waterfall (Auto)"
     id: waterfall_auto_switch
     icon: "mdi:waterfall"
     optimistic: true
-    #restore_mode: RESTORE_DEFAULT_OFF
+    restore_value: false
     on_turn_on:
       - lambda: |-
           // Save current waterfall state before auto takes over
@@ -363,17 +360,6 @@ switch:
     restore_mode: RESTORE_DEFAULT_OFF
     web_server:
       sorting_group_id: schedule4
-      sorting_weight: 6
-
-  # Schedule 5 Waterfall
-  - platform: template
-    name: "Schedule 5 Waterfall"
-    id: schedule5_waterfall
-    icon: "mdi:waterfall"
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
-    web_server:
-      sorting_group_id: schedule5
       sorting_weight: 6
 
   # Pump Speed Switches
@@ -554,23 +540,6 @@ datetime:
         - lambda: |-
             ESP_LOGI("schedule", "Schedule 4 Start changed, validating order");
 
-  # Schedule 5 Start
-  - platform: template
-    name: "Schedule 5 Start"
-    id: schedule5_start
-    icon: "mdi:clock-start"
-    type: time
-    optimistic: true
-    restore_value: yes
-    initial_value: "21:00:00"
-    web_server:
-      sorting_group_id: schedule5
-      sorting_weight: 4
-    on_value:
-      then:
-        - lambda: |-
-            ESP_LOGI("schedule", "Schedule 5 Start changed, validating order");
-
   # Pump end time
   - platform: template
     name: "Pump End Time"
@@ -602,7 +571,6 @@ select:
       - "Speed 2"
       - "Speed 3"
       - "Speed 4"
-      - "Speed 5"
     initial_option: "Auto"
     on_value:
       then:
@@ -641,7 +609,6 @@ select:
       - "Speed 2"
       - "Speed 3"
       - "Speed 4"
-      - "Speed 5"
     initial_option: "Speed 1"
     restore_value: yes
     web_server:
@@ -660,7 +627,6 @@ select:
       - "Speed 2"
       - "Speed 3"
       - "Speed 4"
-      - "Speed 5"
     initial_option: "Speed 3"
     restore_value: yes
     web_server:
@@ -679,7 +645,6 @@ select:
       - "Speed 2"
       - "Speed 3"
       - "Speed 4"
-      - "Speed 5"
     initial_option: "Speed 2"
     restore_value: yes
     web_server:
@@ -698,30 +663,10 @@ select:
       - "Speed 2"
       - "Speed 3"
       - "Speed 4"
-      - "Speed 5"
     initial_option: "Speed 3"
     restore_value: yes
     web_server:
       sorting_group_id: schedule4
-      sorting_weight: 5
-
-  # Schedule 5 Speed
-  - platform: template
-    name: "Schedule 5 Speed"
-    id: schedule5_speed
-    icon: "mdi:speedometer"
-    optimistic: true
-    options:
-      - "Off"
-      - "Speed 1"
-      - "Speed 2"
-      - "Speed 3"
-      - "Speed 4"
-      - "Speed 5"
-    initial_option: "Speed 1"
-    restore_value: yes
-    web_server:
-      sorting_group_id: schedule5
       sorting_weight: 5
 
 # Sensors for monitoring
@@ -894,26 +839,6 @@ sensor:
       sorting_group_id: schedule4
       sorting_weight: 7
 
-  - platform: template
-    name: "Schedule 5 RPM"
-    id: schedule5_rpm
-    icon: "mdi:speedometer"
-    #unit_of_measurement: "RPM"
-    accuracy_decimals: 0
-    update_interval: 30s
-    lambda: |-
-      std::string speed = id(schedule5_speed).current_option();
-      if (speed == "Off") return 0;
-      if (speed == "Speed 1") return id(pump_speed_1).state;
-      if (speed == "Speed 2") return id(pump_speed_2).state;
-      if (speed == "Speed 3") return id(pump_speed_3).state;
-      if (speed == "Speed 4") return id(pump_speed_4).state;
-      if (speed == "Speed 5") return id(pump_speed_5).state;
-      return 0;
-    web_server:
-      sorting_group_id: schedule5
-      sorting_weight: 7
-
 text_sensor:
   - platform: pentair_if_ic
     program:
@@ -988,14 +913,7 @@ text_sensor:
       }
 
       // Find which schedule is currently active
-      // Check from Schedule 5 down to Schedule 1
-      int s5_start = id(schedule5_start).hour * 60 + id(schedule5_start).minute;
-      if (time_minutes >= s5_start && id(schedule5_speed).current_option() != "Off") {
-        std::string status = std::string("Schedule 5: ") + id(schedule5_speed).current_option();
-        if (id(schedule5_waterfall).state) status += " + Waterfall";
-        return {status};
-      }
-
+      // Check from Schedule 4 down to Schedule 1
       int s4_start = id(schedule4_start).hour * 60 + id(schedule4_start).minute;
       if (time_minutes >= s4_start && id(schedule4_speed).current_option() != "Off") {
         std::string status = std::string("Schedule 4: ") + id(schedule4_speed).current_option();
@@ -1039,7 +957,7 @@ text_sensor:
         int num;
       };
 
-      Schedule schedules[5];
+      Schedule schedules[4];
       schedules[0] = {id(schedule1_start).hour * 60 + id(schedule1_start).minute,
                       id(schedule1_speed).current_option() != "Off", 1};
       schedules[1] = {id(schedule2_start).hour * 60 + id(schedule2_start).minute,
@@ -1048,14 +966,12 @@ text_sensor:
                       id(schedule3_speed).current_option() != "Off", 3};
       schedules[3] = {id(schedule4_start).hour * 60 + id(schedule4_start).minute,
                       id(schedule4_speed).current_option() != "Off", 4};
-      schedules[4] = {id(schedule5_start).hour * 60 + id(schedule5_start).minute,
-                      id(schedule5_speed).current_option() != "Off", 5};
 
       int pump_end = id(pump_end_time).hour * 60 + id(pump_end_time).minute;
 
       // Check that enabled schedules are in ascending order
       int last_start = -1;
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < 4; i++) {
         if (!schedules[i].enabled) continue;
         if (last_start >= 0 && schedules[i].start <= last_start) {
           char msg[100];
@@ -1103,12 +1019,10 @@ text_sensor:
         int s2_start = id(schedule2_start).hour * 60 + id(schedule2_start).minute;
         int s3_start = id(schedule3_start).hour * 60 + id(schedule3_start).minute;
         int s4_start = id(schedule4_start).hour * 60 + id(schedule4_start).minute;
-        int s5_start = id(schedule5_start).hour * 60 + id(schedule5_start).minute;
         
         if ((time_minutes < s2_start || id(schedule2_speed).current_option() == "Off") &&
             (time_minutes < s3_start || id(schedule3_speed).current_option() == "Off") &&
-            (time_minutes < s4_start || id(schedule4_speed).current_option() == "Off") &&
-            (time_minutes < s5_start || id(schedule5_speed).current_option() == "Off")) {
+            (time_minutes < s4_start || id(schedule4_speed).current_option() == "Off")) {
           return {"${right_arrow}"};
         }
       }
@@ -1203,35 +1117,10 @@ text_sensor:
       
       int time_minutes = time.hour * 60 + time.minute;
       int s4_start = id(schedule4_start).hour * 60 + id(schedule4_start).minute;
-      int s5_start = id(schedule5_start).hour * 60 + id(schedule5_start).minute;
       int pump_end = id(pump_end_time).hour * 60 + id(pump_end_time).minute;
       
-      // Schedule 4 is active if: current time >= s4_start AND < s5_start (or s5 is off) AND < pump_end
+      // Schedule 4 is active if: current time >= s4_start AND < pump_end
       if (time_minutes >= s4_start && time_minutes < pump_end) {
-        if (id(schedule5_speed).current_option() == "Off" || time_minutes < s5_start) {
-          return {"${right_arrow}"};
-        }
-      }
-      return {""};
-
-  - platform: template
-    name: "Schedule 5 Status"
-    id: schedule_5_status
-    icon: "mdi:numeric-5-circle"
-    update_interval: 10s
-    lambda: |-
-      if (!id(schedule_enabled)) return {""};
-      if (id(schedule5_speed).current_option() == "Off") return {""};
-      
-      auto time = id(homeassistant_time).now();
-      if (!time.is_valid()) return {""};
-      
-      int time_minutes = time.hour * 60 + time.minute;
-      int s5_start = id(schedule5_start).hour * 60 + id(schedule5_start).minute;
-      int pump_end = id(pump_end_time).hour * 60 + id(pump_end_time).minute;
-      
-      // Schedule 5 is active if: current time >= s5_start AND < pump_end
-      if (time_minutes >= s5_start && time_minutes < pump_end) {
         return {"${right_arrow}"};
       }
       return {""};
@@ -1268,7 +1157,7 @@ interval:
             int num;
           };
 
-          Schedule schedules[5];
+          Schedule schedules[4];
           schedules[0] = {id(schedule1_start).hour * 60 + id(schedule1_start).minute,
                           id(schedule1_speed).current_option() != "Off",
                           id(schedule1_speed).current_option(),
@@ -1285,10 +1174,6 @@ interval:
                           id(schedule4_speed).current_option() != "Off",
                           id(schedule4_speed).current_option(),
                           id(schedule4_waterfall).state, 4};
-          schedules[4] = {id(schedule5_start).hour * 60 + id(schedule5_start).minute,
-                          id(schedule5_speed).current_option() != "Off",
-                          id(schedule5_speed).current_option(),
-                          id(schedule5_waterfall).state, 5};
 
           // Find which schedule is currently active
           // Start from the last schedule and work backwards to find the active one
@@ -1302,7 +1187,7 @@ interval:
             ESP_LOGD("schedule", "After pump end time (%02d:%02d)", pump_end/60, pump_end%60);
           } else {
             // Find the active schedule
-            for (int i = 4; i >= 0; i--) {
+            for (int i = 3; i >= 0; i--) {
               if (!schedules[i].enabled) continue;
               if (time_minutes >= schedules[i].start) {
                 // This is the active schedule
