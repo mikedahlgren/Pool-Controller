@@ -11,6 +11,13 @@ substitutions:
   filter_pressure_pin: GPIO4
   filter_pressure_shunt_ohms: "150.0"
   filter_pressure_full_scale_mpa: "0.5"
+  # Stenner 45M5 on CH2; Atlas Industrial pH Kit (KIT-102P) 4-wire 4-20mA on Pico GP5
+  # (see ACID_PH.md). Scale is 0–14 pH for this transmitter — do not change.
+  acid_pump_pin: GPIO2
+  ph_sensor_pin: GPIO5
+  ph_shunt_ohms: "150.0"
+  ph_scale_low: "0"
+  ph_scale_high: "14"
 
 esphome:
   name: pool-controller
@@ -56,18 +63,8 @@ external_components:
   - source:
       type: local
       path: ../components
-    components: [pentair_if_ic, custom_web_handler]
+    components: [pentair_if_ic]
 
-# Optional poolside HTML page. Skip this unless you have built
-# web-dashboard into Include/index.html. Home Assistant + web_server v3
-# already expose every entity; see esphome/ha-pool-controller.yaml.
-# custom_web_handler:
-#   endpoints:
-#     - path: /custom_page
-#       content_type: text/html
-#       file: Include/index.html
-
-# Enable web server for direct access
 web_server:
   port: 80
   version: 3
@@ -79,9 +76,11 @@ web_server:
 packages:
   temperature: !include Include/temperature.yaml
   pump: !include Include/schedule.yaml
-  chlorinator: !include Include/chlorinator.yaml
   pentair_light: !include Include/pentair_light.yaml
   filter_pressure: !include Include/filter_pressure.yaml
+  acid_ph: !include Include/acid_ph.yaml
+  # Uncomment if you add an IntelliChlor-compatible SWG:
+  # chlorinator: !include Include/chlorinator.yaml
 
 switch:
   - platform: factory_reset
@@ -89,23 +88,6 @@ switch:
     web_server:
       sorting_group_id: sorting_group_diagnostics
       sorting_weight: 6
-
-# Configuration Numbers
-number:
-  # Pump Speeds
-  - platform: template
-    name: "Pump Speed test  "
-    id: pump_speed_test
-    min_value: 0
-    max_value: 3450
-    step: 50
-    optimistic: true
-    restore_value: true
-    initial_value: 1000
-    icon: "mdi:speedometer"
-    mode: box
-
-text:
 
 # column labels for schedule glance
 text_sensor:
