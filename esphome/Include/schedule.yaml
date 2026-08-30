@@ -263,7 +263,7 @@ switch:
     id: waterfall_auto_switch
     icon: "mdi:waterfall"
     optimistic: true
-    restore_value: false
+    restore_mode: ALWAYS_OFF
     on_turn_on:
       - lambda: |-
           // Save current waterfall state before auto takes over
