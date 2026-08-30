@@ -89,15 +89,23 @@ button:
   
   - platform: template
     name: "Pump Run"
-    internal: true
+    id: pump_run
+    icon: "mdi:play"
     on_press:
       - lambda: id(my_pentair).run();
+    web_server:
+      sorting_group_id: sorting_group_pump_status
+      sorting_weight: 20
   
   - platform: template
     name: "Pump Stop"
-    internal: true
+    id: pump_stop
+    icon: "mdi:stop"
     on_press:
       - lambda: id(my_pentair).stop();
+    web_server:
+      sorting_group_id: sorting_group_pump_status
+      sorting_weight: 21
   
   - platform: template
     name: "Pump to Local Control"
