@@ -1,4 +1,5 @@
-# Dallas Temperature sensor package
+# Dallas DS18B20 temperature sensors. The chips report °C; convert here so
+# Home Assistant and web_server only show Fahrenheit.
 one_wire:
   - platform: gpio
     pin: ${one_wire_pin}
@@ -10,7 +11,12 @@ sensor:
     one_wire_id: temp_bus
     address: ${air_temp_id}
     name: Air Temperature
-    #unique_id: air_temperature
+    unit_of_measurement: "°F"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - lambda: return x * 1.8f + 32.0f;
     update_interval: 120s
 
   - platform: dallas_temp
@@ -18,21 +24,10 @@ sensor:
     one_wire_id: temp_bus
     address: ${water_temp_id}
     name: Water Temperature
-    #nique_id: water_temperature
+    unit_of_measurement: "°F"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - lambda: return x * 1.8f + 32.0f;
     update_interval: 120s
-
-  - platform: template
-    name: Air Temperature_F
-    id: air_temperature_f
-    #unique_id: air_temperature_f
-    unit_of_measurement: "°F"
-    lambda: return id(air_temperature).state * 9/5+32;
-    update_interval: 5s
-
-  - platform: template
-    name: Water Temperature_F
-    id: water_temperature_f
-    #unique_id: water_temperature_f
-    unit_of_measurement: "°F"
-    lambda: return id(water_temperature).state * 9/5+32;
-    update_interval: 5s

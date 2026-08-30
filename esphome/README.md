@@ -33,11 +33,7 @@ Both define:
 The configuration is modularized into separate YAML files in the `Include/` directory:
 
 #### **`temperature.yaml`**
-Configures Dallas DS18B20 temperature sensors on a 1-Wire bus:
-- Air temperature sensor
-- Water temperature sensor
-- Fahrenheit conversion templates
-- 120-second update interval for sensor readings
+Dallas DS18B20 sensors on a 1-Wire bus (GPIO10). Air and water are converted to **°F** on the device (no separate C / _F entities).
 
 #### **`schedule.yaml`**
 The most complex configuration file, handling:
