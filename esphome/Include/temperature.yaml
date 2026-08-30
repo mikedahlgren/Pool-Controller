@@ -1,9 +1,20 @@
 # Dallas DS18B20 temperature sensors. The chips report °C; convert here so
 # Home Assistant and web_server only show Fahrenheit.
+#
+# Device page layout: ESPHome web_server v3 (ha-pool-controller.yaml /
+# pool-controller.yaml). There is no custom HTML. Group order is
+# web_server.sorting_groups + each entity's sorting_weight.
+
 one_wire:
   - platform: gpio
     pin: ${one_wire_pin}
     id: temp_bus
+
+web_server:
+  sorting_groups:
+    - id: sorting_group_temps
+      name: "Temperature"
+      sorting_weight: -30
 
 sensor:
   - platform: dallas_temp
@@ -18,6 +29,9 @@ sensor:
     filters:
       - lambda: return x * 1.8f + 32.0f;
     update_interval: 120s
+    web_server:
+      sorting_group_id: sorting_group_temps
+      sorting_weight: 1
 
   - platform: dallas_temp
     id: water_temperature
@@ -31,3 +45,6 @@ sensor:
     filters:
       - lambda: return x * 1.8f + 32.0f;
     update_interval: 120s
+    web_server:
+      sorting_group_id: sorting_group_temps
+      sorting_weight: 2
