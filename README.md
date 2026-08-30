@@ -1,57 +1,35 @@
-# Pool Controller Project
+# Pool Controller
 
-A complete ESPHome-based pool automation platform that integrates custom hardware components, management tools, and a modern web dashboard for controlling and monitoring pool equipment.
- 
-I've also posted about the controller in the HomeAssistant community forums. you can find that post here: [ESPHome Pool Controller: Integration for Pentair IntelliFlo pumps, IntelliChlor chlorinators, IntelliBrite Lights, and other pool features](https://community.home-assistant.io/t/esphome-pool-controller-integration-for-pentair-intelliflo-pumps-intellichlor-chlorinators-intellibrite-lights-and-other-pool-features/974565)
+ESPHome firmware for a [Waveshare ESP32-S3-RELAY-6CH](https://www.waveshare.com/esp32-s3-relay-6ch.htm): Pentair IntelliFlo over onboard RS485, IntelliBrite-style lights, filter-tank pressure, Atlas industrial pH, and a Stenner acid pump.
 
-## Overview
+Day-to-day UI is **Home Assistant** plus the device page at `http://pool-controller.local` (ESPHome `web_server` v3).
 
-This project provides an end-to-end solution for pool automation:
+Upstream write-up: [ESPHome Pool Controller on the Home Assistant forums](https://community.home-assistant.io/t/esphome-pool-controller-integration-for-pentair-intelliflo-pumps-intellichlor-chlorinators-intellibrite-lights-and-other-pool-features/974565).
 
-- **Custom ESPHome Components** communicate directly with pool hardware (Pentair pumps and chlorinators) and extend ESPHome's capabilities with custom web endpoints
-- **ESPHome Configuration** provides complete firmware setup for the Waveshare ESP32-S3 relay module, including modular YAML files for all pool equipment
-- **Management Tools** help with device setup, diagnostics, and REST API integration
-- **Web Dashboard** provides a modern, responsive interface for monitoring and controlling your pool system from any browser
+## Flash from Home Assistant
 
-These components work together seamlessly: ESPHome firmware runs on your ESP32/ESP8266, exposing sensors and controls to both Home Assistant and the web dashboard. The tools help bridge setup and integration tasks.
+Copy **one file** into ESPHome Builder: [`esphome/ha-pool-controller.yaml`](esphome/ha-pool-controller.yaml). Do not upload this repository. ESPHome pulls `pentair_if_ic` and the Include YAMLs from GitHub at compile time.
 
-## Components
+Details: [esphome/README.md](esphome/README.md#home-assistant-esphome-builder-recommended).
 
-See [components/README.md](components/README.md) for details about the available ESPHome components:
+## What this install drives
 
-- **custom_web_handler**: Add custom web endpoints to your ESPHome device, supporting multiple endpoint types and integration with the built-in web_server.
-- **pentair_if_ic**: Control Pentair IntelliFlo pumps and IntelliChlor chlorinators over RS485, with full Home Assistant sensor support and bus arbitration.
+| Hardware | Connection |
+|----------|------------|
+| Pentair IntelliFlo | Isolated RS485 (GPIO17/18) |
+| IntelliBrite-style lights | Relay CH6 (GPIO46) |
+| Yosoo 4–20 mA filter pressure | Pico GP4 / GPIO4, 150 Ω shunt |
+| Atlas Industrial pH Kit (KIT-102P) | Pico GP5 / GPIO5, dedicated 150 Ω shunt (4-wire) |
+| Stenner 45M5 acid pump | Relay CH2 (GPIO2), hot only |
+| Dallas air / water temp | 1-Wire GPIO10 |
 
-## Home Assistant ESPHome Builder
+CircuPool RJ-60 PLUS is **not** on the IntelliFlo bus. Pentair IntelliChlor YAML is optional (`chlorinator.yaml`, commented out).
 
-Copy **one file** into ESPHome Builder: [`esphome/ha-pool-controller.yaml`](esphome/ha-pool-controller.yaml). Do not upload `components/`, `web-dashboard/`, or the Include YAMLs. ESPHome pulls those from this GitHub repo at compile time. Use Home Assistant plus the device’s built-in web_server at `http://pool-controller.local` — you can skip the separate Node webpage build. Details: [esphome/README.md](esphome/README.md#home-assistant-esphome-builder-recommended).
+Wiring: [esphome/README.md](esphome/README.md), [FILTER_PRESSURE.md](esphome/FILTER_PRESSURE.md), [ACID_PH.md](esphome/ACID_PH.md).
 
-## ESPHome Configuration
+## Layout
 
-See [esphome/README.md](esphome/README.md) for the complete hardware/firmware configuration:
-
-- **Hardware Platform**: Built for the Waveshare ESP32-S3-RELAY-6CH industrial module with 6 relay channels, built-in isolated RS485, and wide voltage input (7-36V DC)
-- **Modular YAML Configuration**: Main configuration file with separate includes for temperature sensors, pump scheduling, chlorinator control, and pool light modes
-- **Integrated Control**: Manages waterfall pump, Pentair IntelliBrite light (14 color modes via power cycling), RS485 communication with pump/chlorinator, Dallas temperature sensors, and filter-tank head pressure (4–20 mA)
-- **Complete Wiring Documentation**: Detailed diagrams showing all GPIO assignments and component connections, including the [filter pressure transmitter](esphome/FILTER_PRESSURE.md)
-
-## Tools
-
-See [Tools/README.md](Tools/README.md) for details about the available utilities:
-
-- **get_ids.py**: Retrieve ESPHome device information, list entities, generate REST API endpoints, and test connectivity. Supports encrypted connections and live endpoint testing.
-
-## Web Dashboard
-
-See [web-dashboard/README.md](web-dashboard/README.md) for installation and usage:
-
-- **Web Dashboard**: A modern, responsive web interface for your ESPHome pool automation system
-- **Features**: Real-time monitoring, pool light controls, pump configuration, chlorinator management, schedule overview
-- **Customizable Layout**: Drag-and-drop card reordering, adjustable card widths, card stacking for compact layouts
-- **Responsive Design**: Desktop (12-column grid), tablet (6-column grid), and mobile (single column) layouts
-- **Settings Management**: Connection configuration, auto-refresh with persistence, reset all settings button
-- **TypeScript REST API Client**: Full type definitions for all 103 ESPHome entities
-
----
-
-For setup and usage instructions, refer to the individual component, configuration, tool, and dashboard READMEs linked above.
+- [`esphome/ha-pool-controller.yaml`](esphome/ha-pool-controller.yaml) — the file ESPHome Builder uses
+- [`esphome/pool-controller.yaml`](esphome/pool-controller.yaml) — same firmware, local CLI compile from a clone
+- [`esphome/Include/`](esphome/Include/) — packages pulled from GitHub
+- [`components/pentair_if_ic`](components/pentair_if_ic) — IntelliFlo (and optional IntelliChlor) RS485 driver
