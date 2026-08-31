@@ -37,7 +37,7 @@ Dallas DS18B20 sensors on a 1-Wire bus (GPIO10). Air and water are converted to 
 
 #### **`schedule.yaml`**
 The most complex configuration file, handling:
-- Pentair IntelliFlo communication (via pentair_if_ic). Optional IntelliChlor is `chlorinator.yaml` (not used on this install).
+- Pentair IntelliFlo communication (via pentair_if_ic). IntelliChlor polling is off (`enable_intellichlor: false`). Optional IntelliChlor is `chlorinator.yaml` (not used on this install).
 - UART configuration for RS485 communication
 - Pump status monitoring and control
 - Automated scheduling system with 4 time periods plus a pump end time
@@ -48,7 +48,7 @@ The most complex configuration file, handling:
 
 #### **`chlorinator.yaml`** (optional)
 
-Pentair IntelliChlor on the IntelliFlo RS485 bus. **Not included** in `ha-pool-controller.yaml` — this pad uses a CircuPool RJ-60 PLUS, which does not speak IntelliChlor. Uncomment the package only if you add a compatible SWG.
+Pentair IntelliChlor on the IntelliFlo RS485 bus. **Not included** in `ha-pool-controller.yaml` — this pad uses a CircuPool RJ-60 PLUS, which does not speak IntelliChlor. Uncomment the package **and** set `enable_intellichlor: true` in `schedule.yaml` only if you add a compatible SWG.
 
 #### **`filter_pressure.yaml`**
 Filter-tank head pressure from a 2-wire 4–20 mA transmitter (Yosoo 0–0.5 MPa G1/4 or equivalent):
