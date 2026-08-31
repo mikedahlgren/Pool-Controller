@@ -8,11 +8,13 @@ namespace pentair_if_ic {
 static const char *TAG = "pentair_if_ic";
 
 void PentairIfIcComponent::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up Pentair IntelliFlo + IntelliChlor...");
-  
-  // Initialize IntelliChlor
-  this->read_all_chlorinator_info();
-  ESP_LOGCONFIG(TAG, "IntelliChlor Version: %s", this->ic_version_.c_str());
+  ESP_LOGCONFIG(TAG, "Setting up Pentair IntelliFlo%s...",
+                this->enable_intellichlor_ ? " + IntelliChlor" : " (IntelliChlor disabled)");
+
+  if (this->enable_intellichlor_) {
+    this->read_all_chlorinator_info();
+    ESP_LOGCONFIG(TAG, "IntelliChlor Version: %s", this->ic_version_.c_str());
+  }
   
   if (this->flow_control_pin_ != nullptr) {
     ESP_LOGCONFIG(TAG, "Using Flow Control");
@@ -27,7 +29,8 @@ void PentairIfIcComponent::setup() {
 
 void PentairIfIcComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Pentair IntelliFlo + IntelliChlor RS485 Component");
-  
+  ESP_LOGCONFIG(TAG, "  IntelliChlor polling: %s", YESNO(this->enable_intellichlor_));
+
   // IntelliChlor sensors
   LOG_TEXT_SENSOR("  ", "IC_VersionTextSensor", this->ic_version_text_sensor_);
   LOG_SWITCH("  ", "TakeoverModeSwitch", this->takeover_mode_switch_);
@@ -157,14 +160,18 @@ void PentairIfIcComponent::loop() {
 }
 
 void PentairIfIcComponent::update() {
-  // Poll both devices - IC first, IF after a delay
-  this->read_all_chlorinator_info();
-  
-  // Delay IF requests to avoid collision with IC packets
-  this->set_timeout(500, [this]() {
-    this->requestPumpStatus();
-    this->pumpToLocalControl();
-  });
+  if (this->enable_intellichlor_) {
+    this->read_all_chlorinator_info();
+    // Delay IF requests to avoid collision with IC packets
+    this->set_timeout(500, [this]() {
+      this->requestPumpStatus();
+      this->pumpToLocalControl();
+    });
+    return;
+  }
+
+  this->requestPumpStatus();
+  this->pumpToLocalControl();
 }
 
 // ========================================
@@ -172,6 +179,9 @@ void PentairIfIcComponent::update() {
 // ========================================
 
 void PentairIfIcComponent::read_all_chlorinator_info() {
+  if (!this->enable_intellichlor_) {
+    return;
+  }
   if (millis() - this->ic_last_loop_timestamp_ > 25000) {
     this->ic_last_loop_timestamp_ = millis();
     
@@ -188,6 +198,10 @@ void PentairIfIcComponent::read_all_chlorinator_info() {
 }
 
 void PentairIfIcComponent::refresh_chlorinator() {
+  if (!this->enable_intellichlor_) {
+    ESP_LOGD(TAG, "IntelliChlor disabled; ignoring refresh");
+    return;
+  }
   // Force immediate refresh, bypassing rate limiting
   ESP_LOGD(TAG, "Manual chlorinator refresh requested");
   this->ic_last_loop_timestamp_ = millis();
@@ -248,6 +262,9 @@ void PentairIfIcComponent::ic_set_percent_(uint8_t percent) {
 }
 
 void PentairIfIcComponent::send_ic_command_(const uint8_t *command, int command_len, uint8_t retries) {
+  if (!this->enable_intellichlor_) {
+    return;
+  }
   uint8_t crc = 0;
   std::vector<uint8_t> packet;
   packet.reserve(command_len + 5);

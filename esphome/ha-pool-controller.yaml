@@ -93,7 +93,8 @@ packages:
       - esphome/Include/pentair_light.yaml
       - esphome/Include/filter_pressure.yaml
       - esphome/Include/acid_ph.yaml
-      # Uncomment if you add an IntelliChlor-compatible SWG:
+      # Uncomment if you add an IntelliChlor-compatible SWG, and set
+      # enable_intellichlor: true in esphome/Include/schedule.yaml:
       # - esphome/Include/chlorinator.yaml
 
 switch:

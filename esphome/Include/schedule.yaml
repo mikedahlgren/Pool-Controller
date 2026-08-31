@@ -8,6 +8,10 @@ uart:
 pentair_if_ic:
   id: my_pentair
   uart_id: uart_bus
+  # CircuPool RJ-60 PLUS is not IntelliChlor. Leave false or the ESP polls a
+  # missing SWG and logs "IC No response ... removing from send queue".
+  # Set true only if you uncomment Include/chlorinator.yaml for a Pentair SWG.
+  enable_intellichlor: false
 
 binary_sensor:
   # pump running state from pump

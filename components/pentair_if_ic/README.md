@@ -43,6 +43,8 @@ pentair_if_ic:
   id: my_pentair
   uart_id: uart_bus
   update_interval: 30s
+  # Optional: poll IntelliChlor on this bus (default true). CircuPool / no SWG: false
+  # enable_intellichlor: false
   # Optional: flow_control_pin for RS485 direction control
   # flow_control_pin: GPIO4
 ```
@@ -54,6 +56,7 @@ pentair_if_ic:
 - **id** (*Required*, ID): Unique ID for the component instance
 - **uart_id** (*Required*, ID): ID of the UART bus
 - **update_interval** (*Optional*, Time): Polling interval (default: 30s)
+- **enable_intellichlor** (*Optional*, boolean): Queue IntelliChlor commands on the shared RS485 bus (default: `true`). Set `false` if the only device on the bus is an IntelliFlo (this install: CircuPool RJ-60 PLUS).
 - **flow_control_pin** (*Optional*, Pin): GPIO pin for RS485 direction control
 
 ### IntelliFlo Pump Sensors
@@ -372,13 +375,13 @@ button:
 ### IC No Response
 
 ```
-[E][pentair_if_ic]: IC No response removing from send queue
+[E][pentair_if_ic]: IC No response 3 > 4 removing from send queue
 ```
 
-- Chlorinator may be offline or in standby
-- Check chlorinator power
-- Verify RS485 connections
-- Try manual refresh: `id(my_pentair).refresh_chlorinator()`
+The driver polls IntelliChlor even when `chlorinator.yaml` is not included. CircuPool and other non-Pentair SWGs will never answer.
+
+- Set `enable_intellichlor: false` on `pentair_if_ic` (this install does that in `schedule.yaml`)
+- If you do have an IntelliChlor: check power and RS485, then `id(my_pentair).refresh_chlorinator()`
 
 ### Clock Setting Not Supported
 

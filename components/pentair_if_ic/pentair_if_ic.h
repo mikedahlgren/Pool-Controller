@@ -90,6 +90,7 @@ class PentairIfIcComponent : public PollingComponent, public uart::UARTDevice {
   void setPumpClock(int hour, int minute);
 
   void set_flow_control_pin(GPIOPin *flow_control_pin) { this->flow_control_pin_ = flow_control_pin; }
+  void set_enable_intellichlor(bool enable) { this->enable_intellichlor_ = enable; }
 
   // IntelliFlo sensor setters
   void set_if_power(sensor::Sensor *sensor) { if_power_ = sensor; }
@@ -103,6 +104,7 @@ class PentairIfIcComponent : public PollingComponent, public uart::UARTDevice {
 
  protected:
   GPIOPin *flow_control_pin_{nullptr};
+  bool enable_intellichlor_{true};
   
   // Common receive buffer
   std::vector<uint8_t> rx_buffer_;

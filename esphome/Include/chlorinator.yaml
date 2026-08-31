@@ -1,7 +1,5 @@
-#external_components:
-#  - source: components/Pool_Automation/components
-#    components: [pentair_if_ic]
-#    refresh: 0s
+# Pentair IntelliChlor on the IntelliFlo RS485 bus.
+# Also set enable_intellichlor: true on pentair_if_ic in schedule.yaml.
 
 #uart:
 #  - id: uart_bus

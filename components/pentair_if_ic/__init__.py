@@ -13,11 +13,16 @@ pentair_if_ic_ns = cg.esphome_ns.namespace("pentair_if_ic")
 PentairIfIcComponent = pentair_if_ic_ns.class_("PentairIfIcComponent", cg.PollingComponent, uart.UARTDevice)
 
 CONF_PENTAIR_IF_IC_ID = "pentair_if_ic_id"
+CONF_ENABLE_INTELLICHLOR = "enable_intellichlor"
 
 CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(PentairIfIcComponent),
         cv.Optional(CONF_FLOW_CONTROL_PIN): pins.gpio_output_pin_schema,
+        # Poll Pentair IntelliChlor on the shared RS485 bus. CircuPool and
+        # other non-IntelliChlor SWGs must set this false or the ESP logs
+        # "IC No response ... removing from send queue".
+        cv.Optional(CONF_ENABLE_INTELLICHLOR, default=True): cv.boolean,
     }
 ).extend(uart.UART_DEVICE_SCHEMA).extend(cv.polling_component_schema("30s"))
 
@@ -41,3 +46,5 @@ async def to_code(config):
     if CONF_FLOW_CONTROL_PIN in config:
         pin = await gpio_pin_expression(config[CONF_FLOW_CONTROL_PIN])
         cg.add(var.set_flow_control_pin(pin))
+
+    cg.add(var.set_enable_intellichlor(config[CONF_ENABLE_INTELLICHLOR]))
