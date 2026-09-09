@@ -13,11 +13,13 @@ substitutions:
   filter_pressure_full_scale_mpa: "0.5"
   # Stenner 45M5 on CH2; Atlas Industrial pH Kit (KIT-102P) 4-wire 4-20mA on Pico GP5
   # (see ACID_PH.md). Scale is 0–14 pH for this transmitter — do not change.
+  # ph_offset trims ESP/HA vs the Atlas display (negative = ESP was reading high).
   acid_pump_pin: GPIO2
   ph_sensor_pin: GPIO5
   ph_shunt_ohms: "150.0"
   ph_scale_low: "0"
   ph_scale_high: "14"
+  ph_offset: "-0.2"
 
 esphome:
   name: pool-controller

@@ -18,6 +18,9 @@
 # Auto-dose stays off until pH reads valid. Always-off restore; HA cannot
 # hold the pump on — only the pulse script can.
 
+substitutions:
+  ph_offset: "-0.2"   # ESP/HA vs Atlas display; override in ha-pool-controller.yaml
+
 web_server:
   sorting_groups:
     - id: sorting_group_acid
@@ -164,7 +167,24 @@ sensor:
     unit_of_measurement: "pH"
     accuracy_decimals: 2
     icon: "mdi:ph"
+    device_class: ph
     state_class: measurement
+    update_interval: 5s
+    lambda: |-
+      const float v = id(ph_loop_voltage).state;
+      if (isnan(v)) {
+        return NAN;
+      }
+      const float r = ${ph_shunt_ohms};
+      const float ph_lo = ${ph_scale_low};
+      const float ph_hi = ${ph_scale_high};
+      const float ma = v / r * 1000.0f;
+      if (ma < 3.5f || ma > 21.0f) {
+        return NAN;
+      }
+      float ph = ph_lo + (ma - 4.0f) / 16.0f * (ph_hi - ph_lo);
+      ph += ${ph_offset};
+      return ph;
     web_server:
       sorting_group_id: sorting_group_acid
       sorting_weight: 1
@@ -215,16 +235,8 @@ sensor:
         - lambda: |-
             // Atlas IND-pH (KIT-102P): 4 mA = ph_scale_low (0), 20 mA = ph_scale_high (14)
             const float r = ${ph_shunt_ohms};
-            const float ph_lo = ${ph_scale_low};
-            const float ph_hi = ${ph_scale_high};
             const float ma = x / r * 1000.0f;
             id(ph_loop_current).publish_state(ma);
-            if (ma < 3.5f || ma > 21.0f) {
-              id(pool_ph).publish_state(NAN);
-              return;
-            }
-            float ph = ph_lo + (ma - 4.0f) / 16.0f * (ph_hi - ph_lo);
-            id(pool_ph).publish_state(ph);
 
 switch:
   - platform: gpio
