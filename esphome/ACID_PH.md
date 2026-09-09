@@ -133,7 +133,7 @@ At 150 Ω (firmware `ph_shunt_ohms: "150.0"`):
 
 ESP32 ADC max is about 3.1 V at 12 dB attenuation, so 3.00 V at pH 14 is intentional headroom. **pH Loop Current** and **pH Loop Voltage** on the device page are the diagnostics.
 
-Below ~3.5 mA or above ~21 mA the firmware publishes `Pool pH` as unknown (open wire / short) and **Acid Interlock OK** stays off.
+Below ~3.5 mA or above ~21 mA the firmware publishes `Pool pH` as unknown (open wire / short) and **Acid Interlock** shows a probe fault.
 
 ### Substitutions (`ha-pool-controller.yaml` / `pool-controller.yaml`)
 
@@ -173,7 +173,7 @@ All must pass:
 
 **Acid Prime 10s** only requires the circulation pump at min RPM (for filling tubing).
 
-Until the pH loop reads ~4–20 mA, **Acid Interlock OK** stays off and auto-dose will not run.
+Until the pH loop reads ~4–20 mA, **Acid Interlock** is not `OK` and auto-dose will not run.
 
 ## First-week checkout
 
