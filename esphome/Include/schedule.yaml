@@ -742,7 +742,7 @@ sensor:
               }
     flow:
       id: pump_flow_m3h
-      name: "Flow m³/h"
+      name: "Pump Flow"
       unit_of_measurement: "m³/h"
       icon: "mdi:waves-arrow-right"
       web_server:

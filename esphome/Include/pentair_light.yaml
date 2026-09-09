@@ -37,10 +37,14 @@ globals:
     restore_value: no
     initial_value: '0'
 
-# GPIO output for the light relay
+# GPIO output for the light relay. CH6 is hardwired to GPIO46 on the
+# Waveshare ESP32-S3-RELAY-6CH. GPIO46 is a strapping pin; the relay is
+# an output with no extra pull resistors, so boot is unaffected.
 output:
   - platform: gpio
-    pin: ${pentair_light_pin}
+    pin:
+      number: ${pentair_light_pin}
+      ignore_strapping_warning: true
     id: pentair_light_output
 
 # Main light switch

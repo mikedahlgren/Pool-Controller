@@ -37,7 +37,7 @@ substitutions:
   ph_shunt_ohms: "150.0"        # Dedicated 150Ω; not the Yosoo shunt; not 250Ω
   ph_scale_low: "0"             # Atlas IND-pH: 4 mA = 0 pH
   ph_scale_high: "14"           # Atlas IND-pH: 20 mA = 14 pH
-  ph_offset: "-0.2"             # Trim ESP/HA vs Atlas display (ESP was ~0.2 high)
+  ph_offset: "0.2"              # Trim ESP/HA vs Atlas display (ESP was ~0.2 low)
 
 esphome:
   name: pool-controller
@@ -100,7 +100,7 @@ packages:
 
 switch:
   - platform: factory_reset
-    name: Factory Reset/Restart
+    name: Factory Reset
     web_server:
       sorting_group_id: sorting_group_diagnostics
       sorting_weight: 6
