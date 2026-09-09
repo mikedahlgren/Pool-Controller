@@ -407,9 +407,11 @@ interval:
               const uint32_t left_s = (settle - elapsed) / 1000;
               char buf[48];
               if (left_s >= 60) {
-                snprintf(buf, sizeof(buf), "waiting for settle (%u min)", (left_s + 59) / 60);
+                snprintf(buf, sizeof(buf), "waiting for settle (%u min)",
+                         (unsigned)((left_s + 59) / 60));
               } else {
-                snprintf(buf, sizeof(buf), "waiting for settle (%u s)", left_s > 0 ? left_s : 1);
+                snprintf(buf, sizeof(buf), "waiting for settle (%u s)",
+                         (unsigned)(left_s > 0 ? left_s : 1));
               }
               why = buf;
             } else {
