@@ -226,17 +226,6 @@ number:
     web_server:
       sorting_group_id: pump_speeds
       sorting_weight: 4
-  - platform: template
-    name: "Pump Speed 5"
-    id: pump_speed_5
-    min_value: 500
-    max_value: 3400
-    step: 100
-    optimistic: true
-    restore_value: true
-    initial_value: 3000
-    icon: "mdi:speedometer"
-    internal: true
 
 # Global variables for schedule state
 globals:
@@ -317,7 +306,6 @@ switch:
       - switch.turn_off: pump_speed_switch_2
       - switch.turn_off: pump_speed_switch_3
       - switch.turn_off: pump_speed_switch_4
-      - switch.turn_off: pump_speed_switch_5
       - switch.turn_off: waterfall_switch
       - lambda: 'id(manual_override_select).publish_state("Off");'
     turn_off_action:
@@ -401,7 +389,6 @@ switch:
       - switch.turn_off: pump_speed_switch_2
       - switch.turn_off: pump_speed_switch_3
       - switch.turn_off: pump_speed_switch_4
-      - switch.turn_off: pump_speed_switch_5
       - lambda: |-
           ESP_LOGD("pump", "Setting pump to Speed 1: %f RPM", id(pump_speed_1).state);
           id(my_pentair).commandRPM(id(pump_speed_1).state);
@@ -422,7 +409,6 @@ switch:
       - switch.turn_off: pump_speed_switch_1
       - switch.turn_off: pump_speed_switch_3
       - switch.turn_off: pump_speed_switch_4
-      - switch.turn_off: pump_speed_switch_5
       - lambda: |-
           ESP_LOGD("pump", "Setting pump to Speed 2: %f RPM", id(pump_speed_2).state);
           id(my_pentair).commandRPM(id(pump_speed_2).state);
@@ -443,7 +429,6 @@ switch:
       - switch.turn_off: pump_speed_switch_1
       - switch.turn_off: pump_speed_switch_2
       - switch.turn_off: pump_speed_switch_4
-      - switch.turn_off: pump_speed_switch_5
       - lambda: |-
           ESP_LOGD("pump", "Setting pump to Speed 3: %f RPM", id(pump_speed_3).state);
           id(my_pentair).commandRPM(id(pump_speed_3).state);
@@ -464,34 +449,12 @@ switch:
       - switch.turn_off: pump_speed_switch_1
       - switch.turn_off: pump_speed_switch_2
       - switch.turn_off: pump_speed_switch_3
-      - switch.turn_off: pump_speed_switch_5
       - lambda: |-
           ESP_LOGD("pump", "Setting pump to Speed 4: %f RPM", id(pump_speed_4).state);
           id(my_pentair).commandRPM(id(pump_speed_4).state);
       - script.execute:
           id: keep_alive_script
           speed: !lambda "return id(pump_speed_4).state;"
-    turn_off_action:
-      - script.stop: keep_alive_script
-
-  - platform: template
-    name: "Speed 5"
-    id: pump_speed_switch_5
-    internal: true
-    icon: "mdi:pump"
-    #restore_mode: RESTORE_DEFAULT_OFF
-    optimistic: true
-    turn_on_action:
-      - switch.turn_off: pump_speed_switch_1
-      - switch.turn_off: pump_speed_switch_2
-      - switch.turn_off: pump_speed_switch_3
-      - switch.turn_off: pump_speed_switch_4
-      - lambda: |-
-          ESP_LOGD("pump", "Setting pump to Speed 5: %f RPM", id(pump_speed_5).state);
-          id(my_pentair).commandRPM(id(pump_speed_5).state);
-      - script.execute:
-          id: keep_alive_script
-          speed: !lambda "return id(pump_speed_5).state;"
     turn_off_action:
       - script.stop: keep_alive_script
 
@@ -616,9 +579,6 @@ select:
               id(auto_schedule_switch).turn_off();
             } else if (x == "Speed 4") {
               id(pump_speed_switch_4).turn_on();
-              id(auto_schedule_switch).turn_off();
-            } else if (x == "Speed 5") {
-              id(pump_speed_switch_5).turn_on();
               id(auto_schedule_switch).turn_off();
             } else if (x == "Auto") {
               id(auto_schedule_switch).turn_on();
@@ -780,7 +740,6 @@ sensor:
       if (speed == "Speed 2") return id(pump_speed_2).state;
       if (speed == "Speed 3") return id(pump_speed_3).state;
       if (speed == "Speed 4") return id(pump_speed_4).state;
-      if (speed == "Speed 5") return id(pump_speed_5).state;
       return 0;
     web_server:
       sorting_group_id: schedule1
@@ -799,7 +758,6 @@ sensor:
       if (speed == "Speed 2") return id(pump_speed_2).state;
       if (speed == "Speed 3") return id(pump_speed_3).state;
       if (speed == "Speed 4") return id(pump_speed_4).state;
-      if (speed == "Speed 5") return id(pump_speed_5).state;
       return 0;
     web_server:
       sorting_group_id: schedule2
@@ -819,7 +777,6 @@ sensor:
       if (speed == "Speed 2") return id(pump_speed_2).state;
       if (speed == "Speed 3") return id(pump_speed_3).state;
       if (speed == "Speed 4") return id(pump_speed_4).state;
-      if (speed == "Speed 5") return id(pump_speed_5).state;
       return 0;
     web_server:
       sorting_group_id: schedule3
@@ -839,7 +796,6 @@ sensor:
       if (speed == "Speed 2") return id(pump_speed_2).state;
       if (speed == "Speed 3") return id(pump_speed_3).state;
       if (speed == "Speed 4") return id(pump_speed_4).state;
-      if (speed == "Speed 5") return id(pump_speed_5).state;
       return 0;
     web_server:
       sorting_group_id: schedule4
@@ -1222,21 +1178,16 @@ interval:
             } else if (target_speed == "Speed 4" && !id(pump_speed_switch_4).state) {
               ESP_LOGI("schedule", "Activating Speed 4");
               id(pump_speed_switch_4).turn_on();
-            } else if (target_speed == "Speed 5" && !id(pump_speed_switch_5).state) {
-              ESP_LOGI("schedule", "Activating Speed 5");
-              id(pump_speed_switch_5).turn_on();
             }
           } else {
             // No schedule active - turn off pump
-            if (id(pump_speed_switch_1).state || id(pump_speed_switch_2).state || 
-                id(pump_speed_switch_3).state || id(pump_speed_switch_4).state || 
-                id(pump_speed_switch_5).state) {
+            if (id(pump_speed_switch_1).state || id(pump_speed_switch_2).state ||
+                id(pump_speed_switch_3).state || id(pump_speed_switch_4).state) {
               ESP_LOGI("schedule", "Outside scheduled times - turning off pump");
               id(pump_speed_switch_1).turn_off();
               id(pump_speed_switch_2).turn_off();
               id(pump_speed_switch_3).turn_off();
               id(pump_speed_switch_4).turn_off();
-              id(pump_speed_switch_5).turn_off();
             }
           }
 
