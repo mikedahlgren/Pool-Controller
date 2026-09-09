@@ -160,18 +160,17 @@ void PentairIfIcComponent::loop() {
 }
 
 void PentairIfIcComponent::update() {
+  // Status only. Do not send pumpToLocalControl() here — that packet (0x04 0x00)
+  // unlocks the IntelliFlo keypad and the pump then ignores ESP run/RPM until
+  // remote control is taken again. After an ESP reboot the 30s poll was putting
+  // the pump back in local mode even while Auto schedule was trying to run it.
   if (this->enable_intellichlor_) {
     this->read_all_chlorinator_info();
-    // Delay IF requests to avoid collision with IC packets
-    this->set_timeout(500, [this]() {
-      this->requestPumpStatus();
-      this->pumpToLocalControl();
-    });
+    this->set_timeout(500, [this]() { this->requestPumpStatus(); });
     return;
   }
 
   this->requestPumpStatus();
-  this->pumpToLocalControl();
 }
 
 // ========================================
@@ -554,18 +553,21 @@ void PentairIfIcComponent::setPumpClock(int hour, int minute) {
 
 void PentairIfIcComponent::run() {
   ESP_LOGI(TAG, "IF Run Pump");
+  this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x06, 0x01, 0x0A};
   queue_if_packet_(pumpPowerPacket, 7);
 }
 
 void PentairIfIcComponent::stop() {
   ESP_LOGI(TAG, "IF Stop Pump");
+  this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x06, 0x01, 0x04};
   queue_if_packet_(pumpPowerPacket, 7);
 }
 
 void PentairIfIcComponent::commandLocalProgram(int prog) {
   ESP_LOGI(TAG, "IF Command local program %d", prog);
+  this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x05, 0x01, 0};
   pumpPowerPacket[6] = prog + 1;
   queue_if_packet_(pumpPowerPacket, 7);
@@ -573,6 +575,7 @@ void PentairIfIcComponent::commandLocalProgram(int prog) {
 
 void PentairIfIcComponent::commandExternalProgram(int prog) {
   ESP_LOGI(TAG, "IF Command external program %d", prog);
+  this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x01, 0x04, 0x03, 0x21, 0x00, 0x00};
   pumpPowerPacket[9] = prog * 8;
   queue_if_packet_(pumpPowerPacket, 10);
@@ -589,6 +592,7 @@ void PentairIfIcComponent::saveValueForProgram(int prog, int value) {
 
 void PentairIfIcComponent::commandRPM(int rpm) {
   ESP_LOGI(TAG, "IF Command RPM: %d rpm", rpm);
+  this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x01, 0x04, 0x02, 0xC4, 0, 0};
   pumpPowerPacket[8] = floor(rpm / 256);
   pumpPowerPacket[9] = rpm % 256;
