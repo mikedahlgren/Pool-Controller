@@ -20,6 +20,7 @@
 
 substitutions:
   ph_offset: "0.2"   # ESP/HA vs Atlas display; override in ha-pool-controller.yaml
+  ph_update_interval: "5s"
 
 web_server:
   sorting_groups:
@@ -169,7 +170,7 @@ sensor:
     icon: "mdi:ph"
     device_class: ph
     state_class: measurement
-    update_interval: 5s
+    update_interval: ${ph_update_interval}
     lambda: |-
       const float v = id(ph_loop_voltage).state;
       if (isnan(v)) {
@@ -216,12 +217,11 @@ sensor:
     id: ph_loop_voltage
     attenuation: 12db
     samples: 16
-    update_interval: 5s
+    update_interval: ${ph_update_interval}
     accuracy_decimals: 3
     unit_of_measurement: "V"
     device_class: voltage
     entity_category: diagnostic
-    internal: true
     filters:
       - median:
           window_size: 5

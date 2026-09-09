@@ -146,6 +146,7 @@ ph_shunt_ohms: "150.0"
 ph_scale_low: "0"
 ph_scale_high: "14"
 ph_offset: "0.2"    # added to the 4–20 mA scale so ESP/HA match the Atlas display
+ph_update_interval: "5s"  # Pool pH, loop voltage, and loop current
 ```
 
 ### Calibrate on the transmitter, then trim the loop
