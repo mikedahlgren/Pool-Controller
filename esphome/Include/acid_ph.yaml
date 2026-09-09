@@ -21,6 +21,7 @@
 substitutions:
   ph_offset: "0.2"   # ESP/HA vs Atlas display; override in ha-pool-controller.yaml
   ph_update_interval: "5s"
+  acid_pump_gpd: "25"  # Gallons per day at dial 10 while the relay is on
 
 web_server:
   sorting_groups:
@@ -57,6 +58,10 @@ globals:
     type: bool
     restore_value: no
     initial_value: "false"
+  - id: g_acid_gallons_total
+    type: float
+    restore_value: yes
+    initial_value: "0"
 
 number:
   - platform: template
@@ -211,6 +216,29 @@ sensor:
       sorting_group_id: sorting_group_acid
       sorting_weight: 3
 
+  - platform: template
+    name: "Acid Dispensed Today"
+    id: acid_dispensed_today_oz
+    unit_of_measurement: "fl oz"
+    accuracy_decimals: 1
+    icon: "mdi:cup"
+    state_class: total
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 3.2
+
+  - platform: template
+    name: "Acid Dispensed Total"
+    id: acid_dispensed_total_gal
+    unit_of_measurement: "gal"
+    accuracy_decimals: 3
+    icon: "mdi:barrel"
+    device_class: volume
+    state_class: total_increasing
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 3.3
+
   - platform: adc
     pin: ${ph_sensor_pin}   # Pico GP5 / pin 7; Atlas 4–20 mA + through 150Ω to GND
     name: "pH Loop Voltage"
@@ -336,8 +364,11 @@ script:
                 id(g_acid_dosing) = false;
                 id(g_acid_last_dose_ms) = millis();
                 id(g_acid_seconds_today) += id(acid_pulse_seconds).state;
+                id(g_acid_gallons_total) +=
+                    id(acid_pulse_seconds).state * ${acid_pump_gpd} / 86400.0f;
                 id(acid_runtime_today).publish_state(id(g_acid_seconds_today));
-                ESP_LOGI("acid", "Pulse done, today=%.0f s", id(g_acid_seconds_today));
+                ESP_LOGI("acid", "Pulse done, today=%.0f s (%.1f fl oz)", id(g_acid_seconds_today),
+                         id(g_acid_seconds_today) * ${acid_pump_gpd} / 86400.0f * 128.0f);
           else:
             - logger.log:
                 level: WARN
@@ -362,6 +393,7 @@ script:
                 id(g_acid_dosing) = false;
                 id(g_acid_last_dose_ms) = millis();
                 id(g_acid_seconds_today) += 10.0f;
+                id(g_acid_gallons_total) += 10.0f * ${acid_pump_gpd} / 86400.0f;
                 id(acid_runtime_today).publish_state(id(g_acid_seconds_today));
           else:
             - logger.log:
@@ -424,6 +456,9 @@ interval:
           id(acid_interlock_ok).publish_state(ok && !id(g_acid_dosing));
           id(acid_block_reason).publish_state(why);
           id(acid_pump_running).publish_state(id(acid_pump).state);
+          const float gpd = ${acid_pump_gpd};
+          id(acid_dispensed_today_oz).publish_state(id(g_acid_seconds_today) * gpd / 86400.0f * 128.0f);
+          id(acid_dispensed_total_gal).publish_state(id(g_acid_gallons_total));
 
           const uint32_t pulse_lim = (uint32_t)((id(acid_pulse_seconds).state + 8.0f) * 1000.0f);
           const uint32_t max_ms = pulse_lim > 18000u ? pulse_lim : 18000u;

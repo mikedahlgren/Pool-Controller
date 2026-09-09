@@ -147,6 +147,7 @@ ph_scale_low: "0"
 ph_scale_high: "14"
 ph_offset: "0.2"    # added to the 4–20 mA scale so ESP/HA match the Atlas display
 ph_update_interval: "5s"  # Pool pH, loop voltage, and loop current
+acid_pump_gpd: "25"       # Stenner GPD at dial 10 (this install is a 25 GPD pump)
 ```
 
 ### Calibrate on the transmitter, then trim the loop
