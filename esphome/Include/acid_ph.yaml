@@ -19,12 +19,12 @@
 # hold the pump on — only the pulse script can.
 
 substitutions:
-  ph_offset: "-0.2"   # ESP/HA vs Atlas display; override in ha-pool-controller.yaml
+  ph_offset: "0.2"   # ESP/HA vs Atlas display; override in ha-pool-controller.yaml
 
 web_server:
   sorting_groups:
     - id: sorting_group_acid
-      name: "pH / Acid"
+      name: "pH and Acid"
       sorting_weight: -7
 
 globals:

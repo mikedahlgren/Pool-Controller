@@ -145,7 +145,7 @@ ph_sensor_pin: GPIO5
 ph_shunt_ohms: "150.0"
 ph_scale_low: "0"
 ph_scale_high: "14"
-ph_offset: "-0.2"   # ESP/HA minus Atlas display; do not change the 0–14 scale
+ph_offset: "0.2"    # added to the 4–20 mA scale so ESP/HA match the Atlas display
 ```
 
 ### Calibrate on the transmitter, then trim the loop
@@ -155,7 +155,7 @@ The ESP does not store pH calibration. Buffers are done **on the Atlas** (displa
 1. Probe in pH 7. Hold the **orange** button ~1.5 s (`CAL7` → `donE`).
 2. Rinse, pH 4, **red** button. Optional pH 10, **blue** button.
 3. Trim 4–20 mA so Home Assistant matches: hold **red + blue** ~1.5 s. Adjust 20 mA until **Pool pH** just hits 14.000, save; then 4 mA until 0.000. Use **pH Loop Current** as a check (pH 7 buffer → 12.00 mA).
-4. If the ESP page / Home Assistant still sit a fixed amount above the Atlas display (ADC and shunt error), set `ph_offset` in `ha-pool-controller.yaml` (default `-0.2`) and reflash. Do not change `ph_scale_low` / `ph_scale_high`.
+4. If the ESP page / Home Assistant still sit a fixed amount away from the Atlas display (ADC and shunt error), set `ph_offset` in `ha-pool-controller.yaml` (default `0.2`, added to the 4–20 mA value) and reflash. Do not change `ph_scale_low` / `ph_scale_high`.
 
 A two-point 7 then 4 is enough for a pool. The kit pouches are one first cal; keep bottles of 7 and 4 on the pad.
 
