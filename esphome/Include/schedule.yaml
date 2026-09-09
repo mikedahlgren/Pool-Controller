@@ -177,9 +177,9 @@ number:
   - platform: template
     name: "Pump Speed 1"
     id: pump_speed_1
-    min_value: 450
-    max_value: 3450
-    step: 50
+    min_value: 500
+    max_value: 3400
+    step: 100
     optimistic: true
     restore_value: true
     initial_value: 1000
@@ -190,9 +190,9 @@ number:
   - platform: template
     name: "Pump Speed 2"
     id: pump_speed_2
-    min_value: 450
-    max_value: 3450
-    step: 50
+    min_value: 500
+    max_value: 3400
+    step: 100
     optimistic: true
     restore_value: true
     initial_value: 1500
@@ -203,9 +203,9 @@ number:
   - platform: template
     name: "Pump Speed 3"
     id: pump_speed_3
-    min_value: 450
-    max_value: 3450
-    step: 50
+    min_value: 500
+    max_value: 3400
+    step: 100
     optimistic: true
     restore_value: true
     initial_value: 2000
@@ -216,9 +216,9 @@ number:
   - platform: template
     name: "Pump Speed 4"
     id: pump_speed_4
-    min_value: 450
-    max_value: 3450
-    step: 50
+    min_value: 500
+    max_value: 3400
+    step: 100
     optimistic: true
     restore_value: true
     initial_value: 2500
@@ -229,9 +229,9 @@ number:
   - platform: template
     name: "Pump Speed 5"
     id: pump_speed_5
-    min_value: 450
-    max_value: 3450
-    step: 50
+    min_value: 500
+    max_value: 3400
+    step: 100
     optimistic: true
     restore_value: true
     initial_value: 3000
