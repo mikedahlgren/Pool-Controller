@@ -275,10 +275,7 @@ binary_sensor:
     name: "Acid Interlock OK"
     id: acid_interlock_ok
     device_class: safety
-    icon: "mdi:shield-check"
-    web_server:
-      sorting_group_id: sorting_group_acid
-      sorting_weight: 12
+    internal: true
 
   - platform: template
     name: "Acid Pump Running"
@@ -290,9 +287,9 @@ binary_sensor:
 
 text_sensor:
   - platform: template
-    name: "Acid Block Reason"
+    name: "Acid Interlock"
     id: acid_block_reason
-    icon: "mdi:message-alert"
+    icon: "mdi:shield-check"
     web_server:
       sorting_group_id: sorting_group_acid
       sorting_weight: 14
@@ -403,7 +400,7 @@ interval:
           } else if (id(g_acid_dosing)) {
             why = "dosing";
           } else {
-            why = "ok";
+            why = "OK";
           }
           id(g_acid_block_reason) = why;
           id(acid_interlock_ok).publish_state(ok && !id(g_acid_dosing));
