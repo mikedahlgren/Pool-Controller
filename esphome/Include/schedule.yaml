@@ -96,7 +96,32 @@ button:
     id: pump_run
     icon: "mdi:play"
     on_press:
-      - lambda: id(my_pentair).run();
+      - lambda: |-
+          // Resume last Auto/Speed 1–4. Off has no RPM; IntelliFlo VS needs one.
+          std::string mode = id(manual_override_select).current_option();
+          if (mode == "Off" || mode.empty()) {
+            mode = id(g_last_pump_mode);
+          }
+          if (mode.empty() || mode == "Off") {
+            mode = "Auto";
+          }
+          if (mode == id(manual_override_select).current_option()) {
+            if (mode == "Auto") {
+              id(auto_schedule_switch).turn_on();
+            } else if (mode == "Speed 1") {
+              id(pump_speed_switch_1).turn_on();
+            } else if (mode == "Speed 2") {
+              id(pump_speed_switch_2).turn_on();
+            } else if (mode == "Speed 3") {
+              id(pump_speed_switch_3).turn_on();
+            } else if (mode == "Speed 4") {
+              id(pump_speed_switch_4).turn_on();
+            }
+          } else {
+            auto call = id(manual_override_select).make_call();
+            call.set_option(mode);
+            call.perform();
+          }
     web_server:
       sorting_group_id: sorting_group_pump_status
       sorting_weight: 20
@@ -106,7 +131,10 @@ button:
     id: pump_stop
     icon: "mdi:stop"
     on_press:
-      - lambda: id(my_pentair).stop();
+      - lambda: |-
+          auto call = id(manual_override_select).make_call();
+          call.set_option("Off");
+          call.perform();
     web_server:
       sorting_group_id: sorting_group_pump_status
       sorting_weight: 21
@@ -247,6 +275,11 @@ globals:
     type: bool
     restore_value: no
     initial_value: "false"
+  # Last Mode that was not Off (Auto or Speed 1–4). Pump Run restores this.
+  - id: g_last_pump_mode
+    type: std::string
+    restore_value: yes
+    initial_value: '"Auto"'
 
 # GPIO outputs for controlling pump speeds
 # Adjust GPIO pins based on your hardware setup
@@ -307,7 +340,9 @@ switch:
       - switch.turn_off: pump_speed_switch_3
       - switch.turn_off: pump_speed_switch_4
       - switch.turn_off: waterfall_switch
-      - lambda: 'id(manual_override_select).publish_state("Off");'
+      - lambda: |-
+          id(my_pentair).stop();
+          id(manual_override_select).publish_state("Off");
     turn_off_action:
       - lambda: 'id(manual_override_select).publish_state("Auto");'
 
@@ -554,6 +589,7 @@ select:
     id: manual_override_select
     icon: "mdi:speedometer"
     optimistic: true
+    restore_value: true
     options:
       - "Auto"
       - "Off"
@@ -565,6 +601,9 @@ select:
     on_value:
       then:
         - lambda: |-
+            if (x != "Off") {
+              id(g_last_pump_mode) = x;
+            }
             if (x == "Off") {
               id(pump_off_switch).turn_on();
               id(auto_schedule_switch).turn_off();
