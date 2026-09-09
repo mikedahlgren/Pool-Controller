@@ -1,4 +1,12 @@
 # pentair_if_ic is loaded by the parent yaml (local ../components or GitHub).
+
+esphome:
+  on_boot:
+    - priority: -100
+      then:
+        - delay: 5s
+        - script.execute: refresh_speed_labels
+
 uart:
   - id: uart_bus
     tx_pin: ${pentair_tx_pin}
@@ -98,14 +106,28 @@ button:
     on_press:
       - lambda: |-
           // Resume last Auto/Speed 1–4. Off has no RPM; IntelliFlo VS needs one.
-          std::string mode = id(manual_override_select).current_option();
+          auto starts = [](const std::string &s, const char *p) -> bool {
+            return s.rfind(p, 0) == 0;
+          };
+          std::string mode = std::string(id(manual_override_select).current_option());
           if (mode == "Off" || mode.empty()) {
             mode = id(g_last_pump_mode);
           }
-          if (mode.empty() || mode == "Off") {
-            mode = "Auto";
-          }
-          if (mode == id(manual_override_select).current_option()) {
+          if (starts(mode, "Speed 1")) mode = "Speed 1";
+          else if (starts(mode, "Speed 2")) mode = "Speed 2";
+          else if (starts(mode, "Speed 3")) mode = "Speed 3";
+          else if (starts(mode, "Speed 4")) mode = "Speed 4";
+          else if (starts(mode, "Auto")) mode = "Auto";
+          if (mode.empty() || mode == "Off") mode = "Auto";
+
+          std::string option = mode;
+          if (mode == "Speed 1") option = id(g_label_s1);
+          else if (mode == "Speed 2") option = id(g_label_s2);
+          else if (mode == "Speed 3") option = id(g_label_s3);
+          else if (mode == "Speed 4") option = id(g_label_s4);
+
+          std::string cur = std::string(id(manual_override_select).current_option());
+          if (option == cur) {
             if (mode == "Auto") {
               id(auto_schedule_switch).turn_on();
             } else if (mode == "Speed 1") {
@@ -119,7 +141,7 @@ button:
             }
           } else {
             auto call = id(manual_override_select).make_call();
-            call.set_option(mode);
+            call.set_option(option);
             call.perform();
           }
     web_server:
@@ -212,6 +234,9 @@ number:
     restore_value: true
     initial_value: 1000
     icon: "mdi:speedometer"
+    on_value:
+      then:
+        - script.execute: refresh_speed_labels
     web_server:
       sorting_group_id: pump_speeds
       sorting_weight: 1
@@ -225,6 +250,9 @@ number:
     restore_value: true
     initial_value: 1500
     icon: "mdi:speedometer"
+    on_value:
+      then:
+        - script.execute: refresh_speed_labels
     web_server:
       sorting_group_id: pump_speeds
       sorting_weight: 2
@@ -238,6 +266,9 @@ number:
     restore_value: true
     initial_value: 2000
     icon: "mdi:speedometer"
+    on_value:
+      then:
+        - script.execute: refresh_speed_labels
     web_server:
       sorting_group_id: pump_speeds
       sorting_weight: 3
@@ -251,6 +282,9 @@ number:
     restore_value: true
     initial_value: 2500
     icon: "mdi:speedometer"
+    on_value:
+      then:
+        - script.execute: refresh_speed_labels
     web_server:
       sorting_group_id: pump_speeds
       sorting_weight: 4
@@ -280,6 +314,26 @@ globals:
     type: std::string
     restore_value: yes
     initial_value: '"Auto"'
+  - id: g_refreshing_speed_labels
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: g_label_s1
+    type: std::string
+    restore_value: no
+    initial_value: '"Speed 1"'
+  - id: g_label_s2
+    type: std::string
+    restore_value: no
+    initial_value: '"Speed 2"'
+  - id: g_label_s3
+    type: std::string
+    restore_value: no
+    initial_value: '"Speed 3"'
+  - id: g_label_s4
+    type: std::string
+    restore_value: no
+    initial_value: '"Speed 4"'
 
 # GPIO outputs for controlling pump speeds
 # Adjust GPIO pins based on your hardware setup
@@ -601,26 +655,32 @@ select:
     on_value:
       then:
         - lambda: |-
-            if (x != "Off") {
-              id(g_last_pump_mode) = x;
-            }
-            if (x == "Off") {
-              id(pump_off_switch).turn_on();
-              id(auto_schedule_switch).turn_off();
-            } else if (x == "Speed 1") {
+            if (id(g_refreshing_speed_labels)) return;
+            auto starts = [](const std::string &s, const char *p) -> bool {
+              return s.rfind(p, 0) == 0;
+            };
+            if (starts(x, "Auto")) {
+              id(g_last_pump_mode) = "Auto";
+              id(auto_schedule_switch).turn_on();
+            } else if (starts(x, "Speed 1")) {
+              id(g_last_pump_mode) = "Speed 1";
               id(pump_speed_switch_1).turn_on();
               id(auto_schedule_switch).turn_off();
-            } else if (x == "Speed 2") {
+            } else if (starts(x, "Speed 2")) {
+              id(g_last_pump_mode) = "Speed 2";
               id(pump_speed_switch_2).turn_on();
               id(auto_schedule_switch).turn_off();
-            } else if (x == "Speed 3") {
+            } else if (starts(x, "Speed 3")) {
+              id(g_last_pump_mode) = "Speed 3";
               id(pump_speed_switch_3).turn_on();
               id(auto_schedule_switch).turn_off();
-            } else if (x == "Speed 4") {
+            } else if (starts(x, "Speed 4")) {
+              id(g_last_pump_mode) = "Speed 4";
               id(pump_speed_switch_4).turn_on();
               id(auto_schedule_switch).turn_off();
-            } else if (x == "Auto") {
-              id(auto_schedule_switch).turn_on();
+            } else if (x == "Off") {
+              id(pump_off_switch).turn_on();
+              id(auto_schedule_switch).turn_off();
             }
 
   # Schedule 1 Speed
@@ -773,12 +833,12 @@ sensor:
     accuracy_decimals: 0
     update_interval: 30s
     lambda: |-
-      std::string speed = id(schedule1_speed).current_option();
+      std::string speed = std::string(id(schedule1_speed).current_option());
       if (speed == "Off") return 0;
-      if (speed == "Speed 1") return id(pump_speed_1).state;
-      if (speed == "Speed 2") return id(pump_speed_2).state;
-      if (speed == "Speed 3") return id(pump_speed_3).state;
-      if (speed == "Speed 4") return id(pump_speed_4).state;
+      if (speed.rfind("Speed 1", 0) == 0) return id(pump_speed_1).state;
+      if (speed.rfind("Speed 2", 0) == 0) return id(pump_speed_2).state;
+      if (speed.rfind("Speed 3", 0) == 0) return id(pump_speed_3).state;
+      if (speed.rfind("Speed 4", 0) == 0) return id(pump_speed_4).state;
       return 0;
     web_server:
       sorting_group_id: schedule1
@@ -791,12 +851,12 @@ sensor:
     accuracy_decimals: 0
     update_interval: 30s
     lambda: |-
-      std::string speed = id(schedule2_speed).current_option();
+      std::string speed = std::string(id(schedule2_speed).current_option());
       if (speed == "Off") return 0;
-      if (speed == "Speed 1") return id(pump_speed_1).state;
-      if (speed == "Speed 2") return id(pump_speed_2).state;
-      if (speed == "Speed 3") return id(pump_speed_3).state;
-      if (speed == "Speed 4") return id(pump_speed_4).state;
+      if (speed.rfind("Speed 1", 0) == 0) return id(pump_speed_1).state;
+      if (speed.rfind("Speed 2", 0) == 0) return id(pump_speed_2).state;
+      if (speed.rfind("Speed 3", 0) == 0) return id(pump_speed_3).state;
+      if (speed.rfind("Speed 4", 0) == 0) return id(pump_speed_4).state;
       return 0;
     web_server:
       sorting_group_id: schedule2
@@ -810,12 +870,12 @@ sensor:
     accuracy_decimals: 0
     update_interval: 30s
     lambda: |-
-      std::string speed = id(schedule3_speed).current_option();
+      std::string speed = std::string(id(schedule3_speed).current_option());
       if (speed == "Off") return 0;
-      if (speed == "Speed 1") return id(pump_speed_1).state;
-      if (speed == "Speed 2") return id(pump_speed_2).state;
-      if (speed == "Speed 3") return id(pump_speed_3).state;
-      if (speed == "Speed 4") return id(pump_speed_4).state;
+      if (speed.rfind("Speed 1", 0) == 0) return id(pump_speed_1).state;
+      if (speed.rfind("Speed 2", 0) == 0) return id(pump_speed_2).state;
+      if (speed.rfind("Speed 3", 0) == 0) return id(pump_speed_3).state;
+      if (speed.rfind("Speed 4", 0) == 0) return id(pump_speed_4).state;
       return 0;
     web_server:
       sorting_group_id: schedule3
@@ -829,12 +889,12 @@ sensor:
     accuracy_decimals: 0
     update_interval: 30s
     lambda: |-
-      std::string speed = id(schedule4_speed).current_option();
+      std::string speed = std::string(id(schedule4_speed).current_option());
       if (speed == "Off") return 0;
-      if (speed == "Speed 1") return id(pump_speed_1).state;
-      if (speed == "Speed 2") return id(pump_speed_2).state;
-      if (speed == "Speed 3") return id(pump_speed_3).state;
-      if (speed == "Speed 4") return id(pump_speed_4).state;
+      if (speed.rfind("Speed 1", 0) == 0) return id(pump_speed_1).state;
+      if (speed.rfind("Speed 2", 0) == 0) return id(pump_speed_2).state;
+      if (speed.rfind("Speed 3", 0) == 0) return id(pump_speed_3).state;
+      if (speed.rfind("Speed 4", 0) == 0) return id(pump_speed_4).state;
       return 0;
     web_server:
       sorting_group_id: schedule4
@@ -1205,16 +1265,16 @@ interval:
 
           // Apply pump speed
           if (active_schedule >= 0) {
-            if (target_speed == "Speed 1" && !id(pump_speed_switch_1).state) {
+            if (target_speed.rfind("Speed 1", 0) == 0 && !id(pump_speed_switch_1).state) {
               ESP_LOGI("schedule", "Activating Speed 1");
               id(pump_speed_switch_1).turn_on();
-            } else if (target_speed == "Speed 2" && !id(pump_speed_switch_2).state) {
+            } else if (target_speed.rfind("Speed 2", 0) == 0 && !id(pump_speed_switch_2).state) {
               ESP_LOGI("schedule", "Activating Speed 2");
               id(pump_speed_switch_2).turn_on();
-            } else if (target_speed == "Speed 3" && !id(pump_speed_switch_3).state) {
+            } else if (target_speed.rfind("Speed 3", 0) == 0 && !id(pump_speed_switch_3).state) {
               ESP_LOGI("schedule", "Activating Speed 3");
               id(pump_speed_switch_3).turn_on();
-            } else if (target_speed == "Speed 4" && !id(pump_speed_switch_4).state) {
+            } else if (target_speed.rfind("Speed 4", 0) == 0 && !id(pump_speed_switch_4).state) {
               ESP_LOGI("schedule", "Activating Speed 4");
               id(pump_speed_switch_4).turn_on();
             }
@@ -1244,6 +1304,64 @@ interval:
           }
 
 script:
+  - id: refresh_speed_labels
+    mode: restart
+    then:
+      - lambda: |-
+          auto fmt = [](int n, float rpm) -> std::string {
+            char buf[40];
+            if (isnan(rpm)) {
+              snprintf(buf, sizeof(buf), "Speed %d", n);
+            } else {
+              snprintf(buf, sizeof(buf), "Speed %d - %.0f RPM", n, rpm);
+            }
+            return std::string(buf);
+          };
+          id(g_label_s1) = fmt(1, id(pump_speed_1).state);
+          id(g_label_s2) = fmt(2, id(pump_speed_2).state);
+          id(g_label_s3) = fmt(3, id(pump_speed_3).state);
+          id(g_label_s4) = fmt(4, id(pump_speed_4).state);
+
+          id(manual_override_select).traits.set_options({
+              "Auto", "Off", id(g_label_s1).c_str(), id(g_label_s2).c_str(),
+              id(g_label_s3).c_str(), id(g_label_s4).c_str()});
+          id(schedule1_speed).traits.set_options({
+              "Off", id(g_label_s1).c_str(), id(g_label_s2).c_str(),
+              id(g_label_s3).c_str(), id(g_label_s4).c_str()});
+          id(schedule2_speed).traits.set_options({
+              "Off", id(g_label_s1).c_str(), id(g_label_s2).c_str(),
+              id(g_label_s3).c_str(), id(g_label_s4).c_str()});
+          id(schedule3_speed).traits.set_options({
+              "Off", id(g_label_s1).c_str(), id(g_label_s2).c_str(),
+              id(g_label_s3).c_str(), id(g_label_s4).c_str()});
+          id(schedule4_speed).traits.set_options({
+              "Off", id(g_label_s1).c_str(), id(g_label_s2).c_str(),
+              id(g_label_s3).c_str(), id(g_label_s4).c_str()});
+
+          auto remap = [](const std::string &cur) -> std::string {
+            if (cur.empty()) return cur;
+            if (cur == "Off") return "Off";
+            if (cur.rfind("Auto", 0) == 0) return "Auto";
+            if (cur.rfind("Speed 1", 0) == 0) return id(g_label_s1);
+            if (cur.rfind("Speed 2", 0) == 0) return id(g_label_s2);
+            if (cur.rfind("Speed 3", 0) == 0) return id(g_label_s3);
+            if (cur.rfind("Speed 4", 0) == 0) return id(g_label_s4);
+            return cur;
+          };
+
+          id(g_refreshing_speed_labels) = true;
+          id(manual_override_select).publish_state(
+              remap(std::string(id(manual_override_select).current_option())));
+          id(schedule1_speed).publish_state(
+              remap(std::string(id(schedule1_speed).current_option())));
+          id(schedule2_speed).publish_state(
+              remap(std::string(id(schedule2_speed).current_option())));
+          id(schedule3_speed).publish_state(
+              remap(std::string(id(schedule3_speed).current_option())));
+          id(schedule4_speed).publish_state(
+              remap(std::string(id(schedule4_speed).current_option())));
+          id(g_refreshing_speed_labels) = false;
+
   - id: keep_alive_script
     mode: restart
     parameters:
