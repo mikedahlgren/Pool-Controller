@@ -21,6 +21,7 @@ substitutions:
   ph_scale_high: "14"
   ph_offset: "0.2"
   ph_update_interval: "5s"
+  acid_pump_gpd: "25"
 
 esphome:
   name: pool-controller

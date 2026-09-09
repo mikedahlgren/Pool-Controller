@@ -39,6 +39,7 @@ substitutions:
   ph_scale_high: "14"           # Atlas IND-pH: 20 mA = 14 pH
   ph_offset: "0.2"              # Trim ESP/HA vs Atlas display (ESP was ~0.2 low)
   ph_update_interval: "5s"      # ADC + Pool pH poll; pH Loop Current follows voltage
+  acid_pump_gpd: "25"           # Stenner output at dial 10 while CH2 is on (25 GPD model)
 
 esphome:
   name: pool-controller
