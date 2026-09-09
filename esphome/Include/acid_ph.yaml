@@ -399,6 +399,22 @@ interval:
             why = "daily acid cap reached";
           } else if (id(g_acid_dosing)) {
             why = "dosing";
+          } else if (id(g_acid_last_dose_ms) != 0) {
+            const uint32_t settle = (uint32_t)(id(acid_settle_minutes).state * 60000.0f);
+            const uint32_t elapsed = millis() - id(g_acid_last_dose_ms);
+            if (elapsed < settle) {
+              ok = false;
+              const uint32_t left_s = (settle - elapsed) / 1000;
+              char buf[48];
+              if (left_s >= 60) {
+                snprintf(buf, sizeof(buf), "waiting for settle (%u min)", (left_s + 59) / 60);
+              } else {
+                snprintf(buf, sizeof(buf), "waiting for settle (%u s)", left_s > 0 ? left_s : 1);
+              }
+              why = buf;
+            } else {
+              why = "OK";
+            }
           } else {
             why = "OK";
           }
