@@ -391,9 +391,6 @@ interval:
           } else if (isnan(id(pump_rpm).state) || id(pump_rpm).state < id(acid_min_rpm).state) {
             ok = false;
             why = "pump RPM too low";
-          } else if (id(filter_pressure_fault).state) {
-            ok = false;
-            why = "filter sensor fault";
           } else if (isnan(id(pool_ph).state) || id(pool_ph).state < 6.8f || id(pool_ph).state > 8.6f) {
             ok = false;
             why = "pH invalid or probe fault";

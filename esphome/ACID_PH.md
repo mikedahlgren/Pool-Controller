@@ -164,7 +164,6 @@ A two-point 7 then 4 is enough for a pool. The kit pouches are one first cal; ke
 All must pass:
 
 - IntelliFlo running and RPM ≥ **Acid Min Pump RPM** (default 1200)
-- Filter loop not in fault
 - pH between **6.8 and 8.6** (probe in water, not failed)
 - pH not already below **7.1**
 - Today’s runtime under **Acid Max Seconds Today**
