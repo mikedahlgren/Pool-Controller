@@ -44,11 +44,11 @@ globals:
     initial_value: "0"
   - id: g_acid_seconds_today
     type: float
-    restore_value: no
+    restore_value: yes
     initial_value: "0"
   - id: g_acid_day_of_year
     type: int
-    restore_value: no
+    restore_value: yes
     initial_value: "-1"
   - id: g_acid_block_reason
     type: std::string
@@ -212,6 +212,7 @@ sensor:
     unit_of_measurement: "s"
     accuracy_decimals: 0
     icon: "mdi:clock-outline"
+    state_class: total_increasing
     web_server:
       sorting_group_id: sorting_group_acid
       sorting_weight: 3
@@ -222,7 +223,8 @@ sensor:
     unit_of_measurement: "fl oz"
     accuracy_decimals: 1
     icon: "mdi:cup"
-    state_class: total
+    # total_increasing: midnight/reboot drop to 0 is a meter reset, not negative acid.
+    state_class: total_increasing
     web_server:
       sorting_group_id: sorting_group_acid
       sorting_weight: 3.2
