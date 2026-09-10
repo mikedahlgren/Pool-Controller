@@ -87,6 +87,7 @@ time:
 button:
   - platform: template
     name: "Sync Pump Clock"
+    internal: true
     on_press:
       then:
         - lambda: |-
@@ -927,29 +928,6 @@ text_sensor:
       web_server:
         sorting_group_id: sorting_group_diagnostics
         sorting_weight: 3
-
-  - platform: template
-    name: "Pump Clock Formatted"
-    id: pump_clock_formatted
-    icon: "mdi:clock-outline"
-    update_interval: 60s
-    lambda: |-
-      if (id(pump_clock).has_state()) {
-        int total_minutes = (int)id(pump_clock).state;
-        int hours = total_minutes / 60;
-        int minutes = total_minutes % 60;
-        char buffer[20];
-        // Format as 12-hour time with AM/PM
-        int display_hour = hours % 12;
-        if (display_hour == 0) display_hour = 12;
-        const char* period = (hours < 12) ? "AM" : "PM";
-        snprintf(buffer, sizeof(buffer), "%d:%02d %s", display_hour, minutes, period);
-        return {buffer};
-      }
-      return {"--:-- --"};
-    web_server:
-      sorting_group_id: sorting_group_pump_status
-      sorting_weight: 10
 
   - platform: template
     name: "Current Schedule"
