@@ -1,11 +1,230 @@
 #include "pentair_if_ic.h"
 #include "esphome/core/log.h"
 #include <cinttypes>
+#include <cstdio>
+#include <string>
 
 namespace esphome {
 namespace pentair_if_ic {
 
 static const char *TAG = "pentair_if_ic";
+
+namespace {
+
+const char *if_run_state_name(uint8_t value) {
+  switch (value) {
+    case STOPPED:
+      return "stopped";
+    case RUNNING:
+      return "running";
+    default:
+      return "unknown";
+  }
+}
+
+const char *if_program_name(uint8_t value) {
+  switch (value) {
+    case NO_PROG:
+      return "none";
+    case LOCAL1:
+      return "Local 1";
+    case LOCAL2:
+      return "Local 2";
+    case LOCAL3:
+      return "Local 3";
+    case LOCAL4:
+      return "Local 4";
+    case EXT1:
+      return "External 1";
+    case EXT2:
+      return "External 2";
+    case EXT3:
+      return "External 3";
+    case EXT4:
+      return "External 4";
+    case TIMEOUT:
+      return "Time Out";
+    case PRIMING:
+      return "Priming";
+    case QUICKCLEAN:
+      return "Quick Clean";
+    default:
+      return "unknown";
+  }
+}
+
+std::string ic_alarm_text(uint8_t error_field) {
+  if (error_field == 0) {
+    return "no alarms";
+  }
+  std::string out;
+  auto add = [&](bool bit, const char *name) {
+    if (!bit) {
+      return;
+    }
+    if (!out.empty()) {
+      out += ", ";
+    }
+    out += name;
+  };
+  add(GETBIT8(error_field, 0), "no flow");
+  add(GETBIT8(error_field, 1), "low salt");
+  add(GETBIT8(error_field, 2), "high salt");
+  add(GETBIT8(error_field, 3), "clean cell");
+  add(GETBIT8(error_field, 4), "high current");
+  add(GETBIT8(error_field, 5), "low voltage");
+  add(GETBIT8(error_field, 6), "low temperature");
+  add(GETBIT8(error_field, 7), "check PCB");
+  return out.empty() ? "no alarms" : out;
+}
+
+std::string describe_if_packet(const std::vector<uint8_t> &raw) {
+  const uint8_t *p = raw.data();
+  size_t n = raw.size();
+  if (n >= 4 && p[0] == 0xFF && p[1] == 0x00 && p[2] == 0xFF) {
+    p += 3;
+    n -= 3;
+  }
+  if (n < 6 || p[0] != 0xA5) {
+    return "unrecognized pump packet";
+  }
+
+  const uint8_t src = p[3];
+  const uint8_t action = p[4];
+  const uint8_t len = p[5];
+  const uint8_t *d = (n >= 6u + len) ? p + 6 : nullptr;
+  const bool from_pump = (src == 0x60 || src == 0x61);
+  char buf[192];
+
+  switch (action) {
+    case 0x01:
+      if (d != nullptr && len >= 4 && d[0] == 0x02 && d[1] == 0xC4) {
+        snprintf(buf, sizeof(buf), "set speed to %d RPM", (d[2] * 256) + d[3]);
+        return buf;
+      }
+      if (d != nullptr && len >= 4 && d[0] == 0x03 && d[1] == 0x21) {
+        snprintf(buf, sizeof(buf), "run external program %d", d[3] / 8);
+        return buf;
+      }
+      if (d != nullptr && len >= 4 && d[0] == 0x03 && d[1] >= 0x26 && d[1] <= 0x2A) {
+        snprintf(buf, sizeof(buf), "save %d RPM to program %d", (d[2] * 256) + d[3],
+                 (d[1] - 0x26) + 1);
+        return buf;
+      }
+      return "write pump setting";
+    case 0x03:
+      if (d != nullptr && len >= 2) {
+        snprintf(buf, sizeof(buf), "set pump clock to %02u:%02u", (unsigned) d[0], (unsigned) d[1]);
+        return buf;
+      }
+      return "set pump clock";
+    case 0x04:
+      if (d != nullptr && len >= 1) {
+        if (d[0] == 0xFF) {
+          return "request remote control";
+        }
+        if (d[0] == 0x00) {
+          return "release to local control";
+        }
+      }
+      return "set pump control mode";
+    case 0x05:
+      if (d != nullptr && len >= 1) {
+        snprintf(buf, sizeof(buf), "run local program %u", (unsigned) d[0]);
+        return buf;
+      }
+      return "run local program";
+    case 0x06:
+      if (d != nullptr && len >= 1) {
+        if (d[0] == RUNNING) {
+          return "run pump";
+        }
+        if (d[0] == STOPPED) {
+          return "stop pump";
+        }
+      }
+      return "set pump run/stop";
+    case 0x07:
+      if (from_pump) {
+        if (n > 20) {
+          snprintf(buf, sizeof(buf),
+                   "pump status: %s, %d RPM, %d W, program %s, clock %02u:%02u",
+                   if_run_state_name(p[6]), (p[11] * 256) + p[12], (p[9] * 256) + p[10],
+                   if_program_name(p[7]), (unsigned) p[19], (unsigned) p[20]);
+          return buf;
+        }
+        return "pump status";
+      }
+      return "request pump status";
+    case 0x09:
+      if (d != nullptr && len >= 4) {
+        snprintf(buf, sizeof(buf), "set flow to %.1f m3/h", d[3] / 10.0);
+        return buf;
+      }
+      return "set pump flow";
+    case 0xFF:
+      if (d != nullptr && len >= 1 && d[0] == 0x19) {
+        return "pump rejected command (not supported on this model)";
+      }
+      return "pump reported an error";
+    default:
+      return "unrecognized pump packet";
+  }
+}
+
+std::string describe_ic_packet(const std::vector<uint8_t> &raw) {
+  if (raw.size() < 4) {
+    return "incomplete chlorinator packet";
+  }
+  const uint8_t *p = raw.data();
+  const size_t n = raw.size();
+  char buf[192];
+
+  switch (p[3]) {
+    case 0x00:
+      return "chlorinator takeover";
+    case 0x01:
+      return "chlorinator takeover reply";
+    case 0x03: {
+      std::string ver;
+      for (int i = 5; i <= static_cast<int>(n) - 4; i++) {
+        ver += static_cast<char>(p[i]);
+      }
+      if (ver.empty()) {
+        return "chlorinator version reply";
+      }
+      snprintf(buf, sizeof(buf), "chlorinator version %s", ver.c_str());
+      return buf;
+    }
+    case 0x11:
+      if (n > 4) {
+        snprintf(buf, sizeof(buf), "set chlorinator output to %u%%", (unsigned) p[4]);
+        return buf;
+      }
+      return "set chlorinator output";
+    case 0x12:
+      if (n > 5) {
+        snprintf(buf, sizeof(buf), "chlorinator status: %u ppm salt, %s",
+                 (unsigned) p[4] * 50, ic_alarm_text(p[5]).c_str());
+        return buf;
+      }
+      return "chlorinator status";
+    case 0x14:
+      return "request chlorinator version";
+    case 0x15:
+      return "request chlorinator temperature";
+    case 0x16:
+      if (n > 4) {
+        snprintf(buf, sizeof(buf), "chlorinator temperature %u °F", (unsigned) p[4]);
+        return buf;
+      }
+      return "chlorinator temperature";
+    default:
+      return "unrecognized chlorinator packet";
+  }
+}
+
+}  // namespace
 
 void PentairIfIcComponent::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Pentair IntelliFlo%s...",
@@ -80,14 +299,14 @@ void PentairIfIcComponent::loop() {
         }
       } else {
         // Invalid packet start
-        ESP_LOGW(TAG, "Invalid packet start: %02X", this->rx_buffer_[0]);
+        ESP_LOGW(TAG, "RS485 noise, dropped packet");
         this->rx_buffer_.clear();
       }
     }
     // Start new packet - determine type by first byte
     else if (c == 0xFF || c == 0x10) {
       // Start new packet (IntelliFlo or IntelliChlor)
-      ESP_LOGD(TAG, "Starting new packet with byte: %02X", c);
+      ESP_LOGD(TAG, "Starting %s packet", c == 0xFF ? "IntelliFlo" : "IntelliChlor");
       this->rx_buffer_.push_back(c);
     }
     // Unknown/noise - ignore
@@ -130,8 +349,8 @@ void PentairIfIcComponent::loop() {
             this->flow_control_pin_->digital_write(true);
           }
           
-          std::string pretty_cmd = format_hex_pretty(data);
-          ESP_LOGI(TAG, "IC Sent: %s", pretty_cmd.c_str());
+          ESP_LOGV(TAG, "IC Sent: %s", format_hex_pretty(data).c_str());
+          ESP_LOGI(TAG, "IC sent: %s", describe_ic_packet(data).c_str());
           this->write_array(data);
           this->flush();
           
@@ -148,8 +367,8 @@ void PentairIfIcComponent::loop() {
         this->flush();
         this->write_array(&data[0], data.size());
         
-        std::string pretty_cmd = format_hex_pretty(data);
-        ESP_LOGI(TAG, "IF Sent: %s", pretty_cmd.c_str());
+        ESP_LOGV(TAG, "IF Sent: %s", format_hex_pretty(data).c_str());
+        ESP_LOGI(TAG, "IF sent: %s", describe_if_packet(data).c_str());
         
         this->last_received_byte_millis_ = millis();
         this->last_tx_millis_ = millis();
@@ -160,7 +379,7 @@ void PentairIfIcComponent::loop() {
 }
 
 void PentairIfIcComponent::update() {
-  // Status only. Do not send pumpToLocalControl() here — that packet (0x04 0x00)
+  // Status only. Do not send pumpToLocalControl() here — that packet
   // unlocks the IntelliFlo keypad and the pump then ignores ESP run/RPM until
   // remote control is taken again. After an ESP reboot the 30s poll was putting
   // the pump back in local mode even while Auto schedule was trying to run it.
@@ -298,14 +517,14 @@ bool PentairIfIcComponent::parse_ic_packet_() {
   
   // Validate header
   if (this->rx_buffer_[0] != 0x10) {
-    ESP_LOGW(TAG, "IC Invalid header");
+    ESP_LOGW(TAG, "IntelliChlor packet has a bad header, dropping");
     return true;  // Complete (invalid)
   }
   
   if (this->rx_buffer_[1] != 0x02) {
     // Still building
     if (len >= 64) {
-      ESP_LOGW(TAG, "IC Buffer overflow");
+      ESP_LOGW(TAG, "IntelliChlor packet too long, dropping");
       return true;  // Complete (error)
     }
     return false;
@@ -318,8 +537,8 @@ bool PentairIfIcComponent::parse_ic_packet_() {
         // Complete IntelliChlor packet received
         this->ic_last_recv_timestamp_ = millis();
         
-        std::string pretty_cmd = format_hex_pretty(this->rx_buffer_);
-        ESP_LOGI(TAG, "IC Package received: %s", pretty_cmd.c_str());
+        ESP_LOGV(TAG, "IC Package received: %s", format_hex_pretty(this->rx_buffer_).c_str());
+        ESP_LOGI(TAG, "IC received: %s", describe_ic_packet(this->rx_buffer_).c_str());
         
         uint8_t *buffer = &this->rx_buffer_[0];
         int pos = len - 1;
@@ -345,7 +564,7 @@ bool PentairIfIcComponent::parse_ic_packet_() {
         // Set response with salt and error
         uint16_t saltPPM = buffer[4] * 50;
         auto errorField = buffer[5];
-        ESP_LOGD(TAG, "IC SetResp Salt:%u Error:%02X", saltPPM, errorField);
+        ESP_LOGD(TAG, "IC salt %u ppm, %s", saltPPM, ic_alarm_text(errorField).c_str());
         
         if (this->no_flow_binary_sensor_ != nullptr)
           this->no_flow_binary_sensor_->publish_state(GETBIT8(errorField, 0));
@@ -373,7 +592,7 @@ bool PentairIfIcComponent::parse_ic_packet_() {
       } else if (pos >= 4 && buffer[3] == 0x01) {
         // Takeover response
         auto status = buffer[3];
-        ESP_LOGD(TAG, "IC TakeoverResp Status:%02X", status);
+        ESP_LOGD(TAG, "IC takeover reply");
         if (this->ic_status_sensor_ != nullptr)
           this->ic_status_sensor_->publish_state(status);
       }
@@ -391,8 +610,7 @@ bool PentairIfIcComponent::parse_ic_packet_() {
   
   // Check for buffer overflow
   if (len >= 64) {
-    ESP_LOGW(TAG, "IC Clearing Buffer after error. Buffer size: %d, Contents: %s", 
-             len, format_hex_pretty(this->rx_buffer_).c_str());
+    ESP_LOGW(TAG, "IntelliChlor packet too long, dropping");
     return true;  // Complete (error)
   }
   
@@ -429,7 +647,7 @@ bool PentairIfIcComponent::validate_if_received_message_() {
   
   uint16_t packet_checksum = (data[3 + 6 + packet_size] << 8) + data[3 + 7 + packet_size];
   if (checksum != packet_checksum) {
-    ESP_LOGW(TAG, "IF CHECKSUM MISMATCH");
+    ESP_LOGW(TAG, "IF checksum mismatch, dropping packet");
     return false;
   }
   
@@ -438,8 +656,8 @@ bool PentairIfIcComponent::validate_if_received_message_() {
   rx_buffer_.erase(rx_buffer_.begin());
   rx_buffer_.erase(rx_buffer_.begin());
   
-  std::string pretty_cmd = format_hex_pretty(rx_buffer_);
-  ESP_LOGI(TAG, "IF Package received: %s", pretty_cmd.c_str());
+  ESP_LOGV(TAG, "IF Package received: %s", format_hex_pretty(rx_buffer_).c_str());
+  ESP_LOGI(TAG, "IF received: %s", describe_if_packet(rx_buffer_).c_str());
   
   parse_if_packet_(rx_buffer_);
   
@@ -458,7 +676,7 @@ void PentairIfIcComponent::parse_if_packet_(const std::vector<uint8_t> &data) {
           this->if_running_->publish_state(true);
           break;
         default:
-          ESP_LOGW(TAG, "IF Received unknown running value %02x", data[6]);
+          ESP_LOGW(TAG, "IF received unknown run state");
           break;
       }
     }
@@ -502,7 +720,7 @@ void PentairIfIcComponent::parse_if_packet_(const std::vector<uint8_t> &data) {
           this->if_program_->publish_state("Quick Clean");
           break;
         default:
-          ESP_LOGW(TAG, "IF Received unknown program value %02x", data[7]);
+          ESP_LOGW(TAG, "IF received unknown program");
           break;
       }
     }
@@ -523,28 +741,26 @@ void PentairIfIcComponent::parse_if_packet_(const std::vector<uint8_t> &data) {
 }
 
 void PentairIfIcComponent::requestPumpStatus() {
-  ESP_LOGI(TAG, "IF Requesting pump status");
+  ESP_LOGD(TAG, "IF Requesting pump status");
   uint8_t statusPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x07, 0x00};
   queue_if_packet_(statusPacket, 6);
 }
 
 void PentairIfIcComponent::pumpToLocalControl() {
-  ESP_LOGI(TAG, "IF Requesting local control");
+  ESP_LOGD(TAG, "IF Requesting local control");
   uint8_t localControlPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x04, 0x01, 0x00};
   queue_if_packet_(localControlPacket, 7);
 }
 
 void PentairIfIcComponent::pumpToRemoteControl() {
-  ESP_LOGI(TAG, "IF Requesting remote control");
+  ESP_LOGD(TAG, "IF Requesting remote control");
   uint8_t remoteControlPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x04, 0x01, 0xFF};
   queue_if_packet_(remoteControlPacket, 7);
 }
 
 void PentairIfIcComponent::setPumpClock(int hour, int minute) {
-  ESP_LOGW(TAG, "IF Setting pump clock to %02d:%02d - NOTE: Many IntelliFlo models don't support clock setting via RS485", hour, minute);
-  // This command is not supported on all IntelliFlo models
-  // Some models return error 0xFF 0x19 indicating the command is rejected
-  // The clock may be read-only and must be set via the pump's physical interface
+  ESP_LOGW(TAG, "IF setting pump clock to %02d:%02d; many IntelliFlo models reject this and the clock must be set on the pump keypad", hour, minute);
+  // Not supported on all IntelliFlo models; the pump may reply that the command is not supported.
   uint8_t setClockPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x03, 0x02, 0, 0};
   setClockPacket[6] = hour;
   setClockPacket[7] = minute;
@@ -552,21 +768,21 @@ void PentairIfIcComponent::setPumpClock(int hour, int minute) {
 }
 
 void PentairIfIcComponent::run() {
-  ESP_LOGI(TAG, "IF Run Pump");
+  ESP_LOGD(TAG, "IF Run Pump");
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x06, 0x01, 0x0A};
   queue_if_packet_(pumpPowerPacket, 7);
 }
 
 void PentairIfIcComponent::stop() {
-  ESP_LOGI(TAG, "IF Stop Pump");
+  ESP_LOGD(TAG, "IF Stop Pump");
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x06, 0x01, 0x04};
   queue_if_packet_(pumpPowerPacket, 7);
 }
 
 void PentairIfIcComponent::commandLocalProgram(int prog) {
-  ESP_LOGI(TAG, "IF Command local program %d", prog);
+  ESP_LOGD(TAG, "IF Command local program %d", prog);
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x05, 0x01, 0};
   pumpPowerPacket[6] = prog + 1;
@@ -574,7 +790,7 @@ void PentairIfIcComponent::commandLocalProgram(int prog) {
 }
 
 void PentairIfIcComponent::commandExternalProgram(int prog) {
-  ESP_LOGI(TAG, "IF Command external program %d", prog);
+  ESP_LOGD(TAG, "IF Command external program %d", prog);
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x01, 0x04, 0x03, 0x21, 0x00, 0x00};
   pumpPowerPacket[9] = prog * 8;
@@ -582,7 +798,7 @@ void PentairIfIcComponent::commandExternalProgram(int prog) {
 }
 
 void PentairIfIcComponent::saveValueForProgram(int prog, int value) {
-  ESP_LOGI(TAG, "IF saveValueForProgram %d: %d", prog, value);
+  ESP_LOGD(TAG, "IF saveValueForProgram %d: %d", prog, value);
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x01, 0x04, 0x03, 0, 0, 0};
   pumpPowerPacket[7] = 0x26 + prog;
   pumpPowerPacket[8] = floor(value / 256);
@@ -591,7 +807,7 @@ void PentairIfIcComponent::saveValueForProgram(int prog, int value) {
 }
 
 void PentairIfIcComponent::commandRPM(int rpm) {
-  ESP_LOGI(TAG, "IF Command RPM: %d rpm", rpm);
+  ESP_LOGD(TAG, "IF Command RPM: %d rpm", rpm);
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x01, 0x04, 0x02, 0xC4, 0, 0};
   pumpPowerPacket[8] = floor(rpm / 256);
@@ -600,7 +816,7 @@ void PentairIfIcComponent::commandRPM(int rpm) {
 }
 
 void PentairIfIcComponent::commandFlow(int flow) {
-  ESP_LOGI(TAG, "IF Command Flow: %.1f m3/h", ((double) flow) / 10);
+  ESP_LOGD(TAG, "IF Command Flow: %.1f m3/h", ((double) flow) / 10);
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x09, 0x04, 0x02, 0xC4, 0x00, 0};
   pumpPowerPacket[9] = flow;
   queue_if_packet_(pumpPowerPacket, 10);
@@ -630,7 +846,7 @@ void PentairIfIcComponent::queue_if_packet_(uint8_t message[], int messageLength
   
   bool validPacket = (packetchecksum == databytes);
   if (!validPacket) {
-    ESP_LOGW(TAG, "IF Asking to queue malformed packet");
+    ESP_LOGW(TAG, "IF not queueing a malformed pump packet");
   } else {
     this->tx_queue_.push(std::make_tuple(PACKET_TYPE_IF, (uint8_t)0, (uint8_t)0, packet));
   }
