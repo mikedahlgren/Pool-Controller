@@ -369,7 +369,7 @@ script:
                 id(g_acid_gallons_total) +=
                     id(acid_pulse_seconds).state * ${acid_pump_gpd} / 86400.0f;
                 id(acid_runtime_today).publish_state(id(g_acid_seconds_today));
-                ESP_LOGI("acid", "Pulse done, today=%.0f s (%.1f fl oz)", id(g_acid_seconds_today),
+                ESP_LOGI("acid", POOL_LOG_PH "Pulse done, today=%.0f s (%.1f fl oz)" POOL_LOG_END, id(g_acid_seconds_today),
                          id(g_acid_seconds_today) * ${acid_pump_gpd} / 86400.0f * 128.0f);
           else:
             - logger.log:

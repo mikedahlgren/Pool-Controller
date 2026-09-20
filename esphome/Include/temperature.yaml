@@ -10,6 +10,10 @@ one_wire:
     pin: ${one_wire_pin}
     id: temp_bus
 
+logger:
+  logs:
+    dallas.temp.sensor: WARN
+
 web_server:
   sorting_groups:
     - id: sorting_group_temps
@@ -29,6 +33,10 @@ sensor:
     filters:
       - lambda: return x * 1.8f + 32.0f;
     update_interval: 120s
+    on_value:
+      then:
+        - lambda: |-
+            ESP_LOGI("temp", POOL_LOG_TEMP "Air Temperature: %.1f °F" POOL_LOG_END, x);
     web_server:
       sorting_group_id: sorting_group_temps
       sorting_weight: 1
@@ -45,6 +53,10 @@ sensor:
     filters:
       - lambda: return x * 1.8f + 32.0f;
     update_interval: 120s
+    on_value:
+      then:
+        - lambda: |-
+            ESP_LOGI("temp", POOL_LOG_TEMP "Water Temperature: %.1f °F" POOL_LOG_END, x);
     web_server:
       sorting_group_id: sorting_group_temps
       sorting_weight: 2

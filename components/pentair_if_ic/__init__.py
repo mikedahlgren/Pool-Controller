@@ -38,6 +38,9 @@ FINAL_VALIDATE_SCHEMA = uart.final_validate_device_schema(
 
 async def to_code(config):
     from esphome.cpp_helpers import gpio_pin_expression
+
+    # So YAML lambdas can use POOL_LOG_TX / POOL_LOG_RX / sensor colors.
+    cg.add_global(cg.RawStatement('#include "esphome/components/pentair_if_ic/log_color.h"'))
     
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)

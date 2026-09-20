@@ -36,6 +36,10 @@ esp32:
 
 # Enable logging
 logger:
+  # Device log body colors: yellow ESP→pump, cyan pump→ESP,
+  # blue temp, magenta filter, green pH/acid, white schedule/lights.
+  logs:
+    dallas.temp.sensor: WARN
   #level: VERY_VERBOSE
   #level: INFO
 
