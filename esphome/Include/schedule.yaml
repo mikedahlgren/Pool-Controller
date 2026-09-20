@@ -396,10 +396,11 @@ switch:
       - switch.turn_off: pump_speed_switch_4
       - switch.turn_off: waterfall_switch
       - lambda: |-
+          // Mode is already Off (Pump Stop / Mode select). Do not publish_state("Off")
+          // here: that retriggers Mode on_value → this switch → stop() in a tight loop
+          // until the ESP hangs.
           id(my_pentair).stop();
-          id(manual_override_select).publish_state("Off");
-    turn_off_action:
-      - lambda: 'id(manual_override_select).publish_state("Auto");'
+    turn_off_action: []
 
   # Enable/Disable automatic scheduling
   - platform: template
@@ -1257,7 +1258,8 @@ interval:
               id(pump_speed_switch_4).turn_on();
             }
           } else {
-            // No schedule active - turn off pump
+            // No schedule active (before first slot or after pump end).
+            // Keep Mode Auto so tomorrow's schedule still runs; actually stop the IntelliFlo.
             if (id(pump_speed_switch_1).state || id(pump_speed_switch_2).state ||
                 id(pump_speed_switch_3).state || id(pump_speed_switch_4).state) {
               ESP_LOGI("schedule", "Outside scheduled times - turning off pump");
@@ -1265,6 +1267,10 @@ interval:
               id(pump_speed_switch_2).turn_off();
               id(pump_speed_switch_3).turn_off();
               id(pump_speed_switch_4).turn_off();
+            }
+            if (id(pump_running).state) {
+              ESP_LOGI("schedule", "Stopping IntelliFlo (outside schedule)");
+              id(my_pentair).stop();
             }
           }
 
