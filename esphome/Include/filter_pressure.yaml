@@ -388,7 +388,7 @@ button:
             else if (best == 2) id(filter_clean_speed3_psi).publish_state(psi);
             else id(filter_clean_speed4_psi).publish_state(psi);
             id(g_filter_learn_clear) = best;
-            ESP_LOGI("filter_pressure", "Saved clean %.1f psi as Speed %d (RPM %.0f)", psi, best + 1, rpm);
+            ESP_LOGI("filter_pressure", POOL_LOG_FILTER "Saved clean %.1f psi as Speed %d (RPM %.0f)" POOL_LOG_END, psi, best + 1, rpm);
 
   - platform: template
     name: "Reset Filter Baselines"
@@ -407,7 +407,7 @@ button:
             id(filter_clean_speed4_psi).publish_state(0);
             id(g_filter_learn_clear) = 99;
             id(g_filter_needs_backwash) = false;
-            ESP_LOGI("filter_pressure", "Baselines reset; will re-learn after Filter Learn Hours");
+            ESP_LOGI("filter_pressure", POOL_LOG_FILTER "Baselines reset; will re-learn after Filter Learn Hours" POOL_LOG_END);
 
 script:
   - id: filter_learn
@@ -527,7 +527,7 @@ script:
                 else if (i == 1) id(filter_clean_speed2_psi).publish_state(rounded);
                 else if (i == 2) id(filter_clean_speed3_psi).publish_state(rounded);
                 else id(filter_clean_speed4_psi).publish_state(rounded);
-                ESP_LOGI("filter_pressure", "Learned Speed %d clean baseline %.1f psi (lowest %.0fh avg)",
+                ESP_LOGI("filter_pressure", POOL_LOG_FILTER "Learned Speed %d clean baseline %.1f psi (lowest %.0fh avg)" POOL_LOG_END,
                          i + 1, rounded, hours);
               }
             }
