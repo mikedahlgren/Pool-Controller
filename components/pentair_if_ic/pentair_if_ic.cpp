@@ -815,6 +815,10 @@ void PentairIfIcComponent::commandRPM(int rpm) {
   pumpPowerPacket[8] = floor(rpm / 256);
   pumpPowerPacket[9] = rpm % 256;
   queue_if_packet_(pumpPowerPacket, 10);
+  // After stop(), action 0x01 only stores External 1. The motor stays off until
+  // run (0x06 / 0x0A). Mode Speed 1–4 and keep-alive only call commandRPM().
+  uint8_t runPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x06, 0x01, 0x0A};
+  queue_if_packet_(runPacket, 7);
 }
 
 void PentairIfIcComponent::commandFlow(int flow) {
