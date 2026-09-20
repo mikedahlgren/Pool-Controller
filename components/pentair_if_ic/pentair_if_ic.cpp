@@ -8,6 +8,8 @@ namespace esphome {
 namespace pentair_if_ic {
 
 static const char *TAG = "pentair_if_ic";
+static const char *TAG_TX = "if.tx";
+static const char *TAG_RX = "if.rx";
 
 namespace {
 
@@ -306,7 +308,7 @@ void PentairIfIcComponent::loop() {
     // Start new packet - determine type by first byte
     else if (c == 0xFF || c == 0x10) {
       // Start new packet (IntelliFlo or IntelliChlor)
-      ESP_LOGD(TAG, POOL_LOG_RX "Starting %s packet" POOL_LOG_END, c == 0xFF ? "IntelliFlo" : "IntelliChlor");
+      ESP_LOGD(TAG_RX, "Starting %s packet", c == 0xFF ? "IntelliFlo" : "IntelliChlor");
       this->rx_buffer_.push_back(c);
     }
     // Unknown/noise - ignore
@@ -350,7 +352,7 @@ void PentairIfIcComponent::loop() {
           }
           
           ESP_LOGV(TAG, "IC Sent: %s", format_hex_pretty(data).c_str());
-          ESP_LOGI(TAG, POOL_LOG_TX "IC sent: %s" POOL_LOG_END, describe_ic_packet(data).c_str());
+          ESP_LOGI(TAG_TX, "IC sent: %s", describe_ic_packet(data).c_str());
           this->write_array(data);
           this->flush();
           
@@ -368,7 +370,7 @@ void PentairIfIcComponent::loop() {
         this->write_array(&data[0], data.size());
         
         ESP_LOGV(TAG, "IF Sent: %s", format_hex_pretty(data).c_str());
-        ESP_LOGI(TAG, POOL_LOG_TX "IF sent: %s" POOL_LOG_END, describe_if_packet(data).c_str());
+        ESP_LOGI(TAG_TX, "IF sent: %s", describe_if_packet(data).c_str());
         
         this->last_received_byte_millis_ = millis();
         this->last_tx_millis_ = millis();
@@ -538,7 +540,7 @@ bool PentairIfIcComponent::parse_ic_packet_() {
         this->ic_last_recv_timestamp_ = millis();
         
         ESP_LOGV(TAG, "IC Package received: %s", format_hex_pretty(this->rx_buffer_).c_str());
-        ESP_LOGI(TAG, POOL_LOG_RX "IC received: %s" POOL_LOG_END, describe_ic_packet(this->rx_buffer_).c_str());
+        ESP_LOGI(TAG_RX, "IC received: %s", describe_ic_packet(this->rx_buffer_).c_str());
         
         uint8_t *buffer = &this->rx_buffer_[0];
         int pos = len - 1;
@@ -657,7 +659,7 @@ bool PentairIfIcComponent::validate_if_received_message_() {
   rx_buffer_.erase(rx_buffer_.begin());
   
   ESP_LOGV(TAG, "IF Package received: %s", format_hex_pretty(rx_buffer_).c_str());
-  ESP_LOGI(TAG, POOL_LOG_RX "IF received: %s" POOL_LOG_END, describe_if_packet(rx_buffer_).c_str());
+  ESP_LOGI(TAG_RX, "IF received: %s", describe_if_packet(rx_buffer_).c_str());
   
   parse_if_packet_(rx_buffer_);
   
@@ -741,19 +743,19 @@ void PentairIfIcComponent::parse_if_packet_(const std::vector<uint8_t> &data) {
 }
 
 void PentairIfIcComponent::requestPumpStatus() {
-  ESP_LOGD(TAG, POOL_LOG_TX "IF Requesting pump status" POOL_LOG_END);
+  ESP_LOGD(TAG_TX, "IF Requesting pump status");
   uint8_t statusPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x07, 0x00};
   queue_if_packet_(statusPacket, 6);
 }
 
 void PentairIfIcComponent::pumpToLocalControl() {
-  ESP_LOGD(TAG, POOL_LOG_TX "IF Requesting local control" POOL_LOG_END);
+  ESP_LOGD(TAG_TX, "IF Requesting local control");
   uint8_t localControlPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x04, 0x01, 0x00};
   queue_if_packet_(localControlPacket, 7);
 }
 
 void PentairIfIcComponent::pumpToRemoteControl() {
-  ESP_LOGD(TAG, POOL_LOG_TX "IF Requesting remote control" POOL_LOG_END);
+  ESP_LOGD(TAG_TX, "IF Requesting remote control");
   uint8_t remoteControlPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x04, 0x01, 0xFF};
   queue_if_packet_(remoteControlPacket, 7);
 }
@@ -768,21 +770,21 @@ void PentairIfIcComponent::setPumpClock(int hour, int minute) {
 }
 
 void PentairIfIcComponent::run() {
-  ESP_LOGD(TAG, POOL_LOG_TX "IF Run Pump" POOL_LOG_END);
+  ESP_LOGD(TAG_TX, "IF Run Pump");
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x06, 0x01, 0x0A};
   queue_if_packet_(pumpPowerPacket, 7);
 }
 
 void PentairIfIcComponent::stop() {
-  ESP_LOGD(TAG, POOL_LOG_TX "IF Stop Pump" POOL_LOG_END);
+  ESP_LOGD(TAG_TX, "IF Stop Pump");
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x06, 0x01, 0x04};
   queue_if_packet_(pumpPowerPacket, 7);
 }
 
 void PentairIfIcComponent::commandLocalProgram(int prog) {
-  ESP_LOGD(TAG, POOL_LOG_TX "IF Command local program %d" POOL_LOG_END, prog);
+  ESP_LOGD(TAG_TX, "IF Command local program %d", prog);
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x05, 0x01, 0};
   pumpPowerPacket[6] = prog + 1;
@@ -790,7 +792,7 @@ void PentairIfIcComponent::commandLocalProgram(int prog) {
 }
 
 void PentairIfIcComponent::commandExternalProgram(int prog) {
-  ESP_LOGD(TAG, POOL_LOG_TX "IF Command external program %d" POOL_LOG_END, prog);
+  ESP_LOGD(TAG_TX, "IF Command external program %d", prog);
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x01, 0x04, 0x03, 0x21, 0x00, 0x00};
   pumpPowerPacket[9] = prog * 8;
@@ -807,7 +809,7 @@ void PentairIfIcComponent::saveValueForProgram(int prog, int value) {
 }
 
 void PentairIfIcComponent::commandRPM(int rpm) {
-  ESP_LOGD(TAG, POOL_LOG_TX "IF Command RPM: %d rpm" POOL_LOG_END, rpm);
+  ESP_LOGD(TAG_TX, "IF Command RPM: %d rpm", rpm);
   this->pumpToRemoteControl();
   uint8_t pumpPowerPacket[] = {0xA5, 0x00, 0x60, 0x10, 0x01, 0x04, 0x02, 0xC4, 0, 0};
   pumpPowerPacket[8] = floor(rpm / 256);

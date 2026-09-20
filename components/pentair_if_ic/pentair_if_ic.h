@@ -10,7 +10,6 @@
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/automation.h"
 #include "esphome/core/helpers.h"
-#include "log_color.h"
 #include <queue>
 
 namespace esphome {
