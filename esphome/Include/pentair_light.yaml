@@ -59,13 +59,13 @@ switch:
       - lambda: |-
           // When turning on, go to the last selected mode
           if (!id(light_cycling)) {
-            ESP_LOGI("pentair_light", POOL_LOG_LIGHT "Light turned on - will be in mode %d" POOL_LOG_END, id(light_current_mode));
+            ESP_LOGI("pentair_light", "Light turned on - will be in mode %d", id(light_current_mode));
           }
     on_turn_off:
       - script.stop: light_mode_cycle_script
       - lambda: |-
           id(light_cycling) = false;
-          ESP_LOGI("pentair_light", POOL_LOG_LIGHT "Light turned off" POOL_LOG_END);
+          ESP_LOGI("pentair_light", "Light turned off");
 
 # Select component for choosing color modes
 select:
@@ -102,7 +102,7 @@ select:
               }
             }
             
-            ESP_LOGI("pentair_light", POOL_LOG_LIGHT "Changing to mode: %s (mode %d)" POOL_LOG_END, x.c_str(), target_mode);
+            ESP_LOGI("pentair_light", "Changing to mode: %s (mode %d)", x.c_str(), target_mode);
             
             // Store the target mode
             id(light_mode_target).publish_state(target_mode);
@@ -136,7 +136,7 @@ script:
           
           int target = (int)id(light_mode_target).state;
           
-          ESP_LOGI("pentair_light", POOL_LOG_LIGHT "Setting absolute mode %d" POOL_LOG_END, target);
+          ESP_LOGI("pentair_light", "Setting absolute mode %d", target);
           
           // To set absolute mode, we need to:
           // 1. Turn light off for 4+ seconds to reset
@@ -146,7 +146,7 @@ script:
           // Cycles needed = target (since turning on returns to mode 1)
           int cycles_needed = target;
           
-          ESP_LOGI("pentair_light", POOL_LOG_LIGHT "Will reset, then cycle %d times" POOL_LOG_END, cycles_needed);
+          ESP_LOGI("pentair_light", "Will reset, then cycle %d times", cycles_needed);
           
           // Store cycles needed in a variable we can access in the while loop
           id(light_cycles_remaining) = cycles_needed;
@@ -178,7 +178,7 @@ script:
             
             - lambda: |-
                 id(light_cycles_remaining)--;
-                ESP_LOGI("pentair_light", POOL_LOG_LIGHT "Cycle complete, %d remaining" POOL_LOG_END, id(light_cycles_remaining));
+                ESP_LOGI("pentair_light", "Cycle complete, %d remaining", id(light_cycles_remaining));
       
       # Update current mode and finish
       - lambda: |-
@@ -191,7 +191,7 @@ script:
             id(pentair_light_mode).publish_state(options[id(light_current_mode) - 1]);
           }
           
-          ESP_LOGI("pentair_light", POOL_LOG_LIGHT "Mode change complete. Now in mode %d" POOL_LOG_END, id(light_current_mode));
+          ESP_LOGI("pentair_light", "Mode change complete. Now in mode %d", id(light_current_mode));
 
 # Text sensor to show current light status
 text_sensor:

@@ -36,7 +36,7 @@ sensor:
     on_value:
       then:
         - lambda: |-
-            ESP_LOGI("temp", POOL_LOG_TEMP "Air Temperature: %.1f °F" POOL_LOG_END, x);
+            ESP_LOGI("temp", "Air Temperature: %.1f °F", x);
     web_server:
       sorting_group_id: sorting_group_temps
       sorting_weight: 1
@@ -56,7 +56,7 @@ sensor:
     on_value:
       then:
         - lambda: |-
-            ESP_LOGI("temp", POOL_LOG_TEMP "Water Temperature: %.1f °F" POOL_LOG_END, x);
+            ESP_LOGI("temp", "Water Temperature: %.1f °F", x);
     web_server:
       sorting_group_id: sorting_group_temps
       sorting_weight: 2

@@ -368,19 +368,19 @@ switch:
       - lambda: |-
           // Save current waterfall state before auto takes over
           id(g_waterfall_manual_state) = id(waterfall_switch).state;
-          ESP_LOGI("waterfall", POOL_LOG_SCHED "Auto mode enabled, saved manual state: %s" POOL_LOG_END, id(g_waterfall_manual_state) ? "ON" : "OFF");
+          ESP_LOGI("waterfall", "Auto mode enabled, saved manual state: %s", id(g_waterfall_manual_state) ? "ON" : "OFF");
     on_turn_off:
       - lambda: |-
           // Restore previous manual state when auto is disabled
           if (id(g_waterfall_manual_state)) {
             if (!id(waterfall_switch).state) {
               id(waterfall_switch).turn_on();
-              ESP_LOGI("waterfall", POOL_LOG_SCHED "Auto mode disabled, restoring manual state: ON" POOL_LOG_END);
+              ESP_LOGI("waterfall", "Auto mode disabled, restoring manual state: ON");
             }
           } else {
             if (id(waterfall_switch).state) {
               id(waterfall_switch).turn_off();
-              ESP_LOGI("waterfall", POOL_LOG_SCHED "Auto mode disabled, restoring manual state: OFF" POOL_LOG_END);
+              ESP_LOGI("waterfall", "Auto mode disabled, restoring manual state: OFF");
             }
           }
 
@@ -482,7 +482,7 @@ switch:
       - switch.turn_off: pump_speed_switch_3
       - switch.turn_off: pump_speed_switch_4
       - lambda: |-
-          ESP_LOGD("pump", POOL_LOG_TX "Setting pump to Speed 1: %f RPM" POOL_LOG_END, id(pump_speed_1).state);
+          ESP_LOGD("pump", "Setting pump to Speed 1: %f RPM", id(pump_speed_1).state);
           id(my_pentair).commandRPM(id(pump_speed_1).state);
       - script.execute:
           id: keep_alive_script
@@ -502,7 +502,7 @@ switch:
       - switch.turn_off: pump_speed_switch_3
       - switch.turn_off: pump_speed_switch_4
       - lambda: |-
-          ESP_LOGD("pump", POOL_LOG_TX "Setting pump to Speed 2: %f RPM" POOL_LOG_END, id(pump_speed_2).state);
+          ESP_LOGD("pump", "Setting pump to Speed 2: %f RPM", id(pump_speed_2).state);
           id(my_pentair).commandRPM(id(pump_speed_2).state);
       - script.execute:
           id: keep_alive_script
@@ -522,7 +522,7 @@ switch:
       - switch.turn_off: pump_speed_switch_2
       - switch.turn_off: pump_speed_switch_4
       - lambda: |-
-          ESP_LOGD("pump", POOL_LOG_TX "Setting pump to Speed 3: %f RPM" POOL_LOG_END, id(pump_speed_3).state);
+          ESP_LOGD("pump", "Setting pump to Speed 3: %f RPM", id(pump_speed_3).state);
           id(my_pentair).commandRPM(id(pump_speed_3).state);
       - script.execute:
           id: keep_alive_script
@@ -542,7 +542,7 @@ switch:
       - switch.turn_off: pump_speed_switch_2
       - switch.turn_off: pump_speed_switch_3
       - lambda: |-
-          ESP_LOGD("pump", POOL_LOG_TX "Setting pump to Speed 4: %f RPM" POOL_LOG_END, id(pump_speed_4).state);
+          ESP_LOGD("pump", "Setting pump to Speed 4: %f RPM", id(pump_speed_4).state);
           id(my_pentair).commandRPM(id(pump_speed_4).state);
       - script.execute:
           id: keep_alive_script
@@ -569,7 +569,7 @@ datetime:
     on_value:
       then:
         - lambda: |-
-            ESP_LOGI("schedule", POOL_LOG_SCHED "Schedule 1 Start changed, validating order" POOL_LOG_END);
+            ESP_LOGI("schedule", "Schedule 1 Start changed, validating order");
 
   # Schedule 2 Start
   - platform: template
@@ -586,7 +586,7 @@ datetime:
     on_value:
       then:
         - lambda: |-
-            ESP_LOGI("schedule", POOL_LOG_SCHED "Schedule 2 Start changed, validating order" POOL_LOG_END);
+            ESP_LOGI("schedule", "Schedule 2 Start changed, validating order");
 
   # Schedule 3 Start
   - platform: template
@@ -603,7 +603,7 @@ datetime:
     on_value:
       then:
         - lambda: |-
-            ESP_LOGI("schedule", POOL_LOG_SCHED "Schedule 3 Start changed, validating order" POOL_LOG_END);
+            ESP_LOGI("schedule", "Schedule 3 Start changed, validating order");
 
   # Schedule 4 Start
   - platform: template
@@ -620,7 +620,7 @@ datetime:
     on_value:
       then:
         - lambda: |-
-            ESP_LOGI("schedule", POOL_LOG_SCHED "Schedule 4 Start changed, validating order" POOL_LOG_END);
+            ESP_LOGI("schedule", "Schedule 4 Start changed, validating order");
 
   # Pump end time
   - platform: template
@@ -636,7 +636,7 @@ datetime:
     on_value:
       then:
         - lambda: |-
-            ESP_LOGI("schedule", POOL_LOG_SCHED "Pump End Time changed" POOL_LOG_END);
+            ESP_LOGI("schedule", "Pump End Time changed");
 
 # Schedule settings - speeds and manual override
 select:
@@ -800,7 +800,7 @@ sensor:
               bool should_be_on = (x >= 1950.0 && x < 3440.0);
               if (should_be_on != id(waterfall_switch).state) {
                 id(waterfall_switch).state ? id(waterfall_switch).turn_off() : id(waterfall_switch).turn_on();
-                ESP_LOGI("waterfall", POOL_LOG_SCHED "AUTO: %s (RPM: %.0f)" POOL_LOG_END, should_be_on ? "ON" : "OFF", x);
+                ESP_LOGI("waterfall", "AUTO: %s (RPM: %.0f)", should_be_on ? "ON" : "OFF", x);
               }
     flow:
       id: pump_flow_m3h
@@ -1172,13 +1172,13 @@ interval:
     then:
       - lambda: |-
           if (!id(schedule_enabled)) {
-            ESP_LOGD("schedule", POOL_LOG_SCHED "Schedule disabled via global switch" POOL_LOG_END);
+            ESP_LOGD("schedule", "Schedule disabled via global switch");
             return;
           }
 
           auto time = id(homeassistant_time).now();
           if (!time.is_valid()) {
-            ESP_LOGD("schedule", POOL_LOG_SCHED "Time not valid yet" POOL_LOG_END);
+            ESP_LOGD("schedule", "Time not valid yet");
             return;
           }
 
@@ -1225,7 +1225,7 @@ interval:
           // Check if we're before the first enabled schedule or after pump end time
           if (time_minutes >= pump_end) {
             // After pump end time - turn everything off
-            ESP_LOGD("schedule", POOL_LOG_SCHED "After pump end time (%02d:%02d)" POOL_LOG_END, pump_end/60, pump_end%60);
+            ESP_LOGD("schedule", "After pump end time (%02d:%02d)", pump_end/60, pump_end%60);
           } else {
             // Find the active schedule
             for (int i = 3; i >= 0; i--) {
@@ -1235,7 +1235,7 @@ interval:
                 active_schedule = i;
                 target_speed = schedules[i].speed;
                 waterfall_active = schedules[i].waterfall;
-                ESP_LOGD("schedule", POOL_LOG_SCHED "Schedule %d active: %s, Waterfall: %s (%02d:%02d - %02d:%02d)" POOL_LOG_END, 
+                ESP_LOGD("schedule", "Schedule %d active: %s, Waterfall: %s (%02d:%02d - %02d:%02d)", 
                          schedules[i].num, target_speed.c_str(), waterfall_active ? "On" : "Off",
                          schedules[i].start/60, schedules[i].start%60, pump_end/60, pump_end%60);
                 break;
@@ -1246,16 +1246,16 @@ interval:
           // Apply pump speed
           if (active_schedule >= 0) {
             if (target_speed.rfind("Speed 1", 0) == 0 && !id(pump_speed_switch_1).state) {
-              ESP_LOGI("schedule", POOL_LOG_SCHED "Activating Speed 1" POOL_LOG_END);
+              ESP_LOGI("schedule", "Activating Speed 1");
               id(pump_speed_switch_1).turn_on();
             } else if (target_speed.rfind("Speed 2", 0) == 0 && !id(pump_speed_switch_2).state) {
-              ESP_LOGI("schedule", POOL_LOG_SCHED "Activating Speed 2" POOL_LOG_END);
+              ESP_LOGI("schedule", "Activating Speed 2");
               id(pump_speed_switch_2).turn_on();
             } else if (target_speed.rfind("Speed 3", 0) == 0 && !id(pump_speed_switch_3).state) {
-              ESP_LOGI("schedule", POOL_LOG_SCHED "Activating Speed 3" POOL_LOG_END);
+              ESP_LOGI("schedule", "Activating Speed 3");
               id(pump_speed_switch_3).turn_on();
             } else if (target_speed.rfind("Speed 4", 0) == 0 && !id(pump_speed_switch_4).state) {
-              ESP_LOGI("schedule", POOL_LOG_SCHED "Activating Speed 4" POOL_LOG_END);
+              ESP_LOGI("schedule", "Activating Speed 4");
               id(pump_speed_switch_4).turn_on();
             }
           } else {
@@ -1263,14 +1263,14 @@ interval:
             // Keep Mode Auto so tomorrow's schedule still runs; actually stop the IntelliFlo.
             if (id(pump_speed_switch_1).state || id(pump_speed_switch_2).state ||
                 id(pump_speed_switch_3).state || id(pump_speed_switch_4).state) {
-              ESP_LOGI("schedule", POOL_LOG_SCHED "Outside scheduled times - turning off pump" POOL_LOG_END);
+              ESP_LOGI("schedule", "Outside scheduled times - turning off pump");
               id(pump_speed_switch_1).turn_off();
               id(pump_speed_switch_2).turn_off();
               id(pump_speed_switch_3).turn_off();
               id(pump_speed_switch_4).turn_off();
             }
             if (id(pump_running).state) {
-              ESP_LOGI("schedule", POOL_LOG_TX "Stopping IntelliFlo (outside schedule)" POOL_LOG_END);
+              ESP_LOGI("schedule", "Stopping IntelliFlo (outside schedule)");
               id(my_pentair).stop();
             }
           }
@@ -1279,10 +1279,10 @@ interval:
           if (!id(waterfall_auto_switch).state) {
             if (waterfall_active != id(waterfall_switch).state) {
               if (waterfall_active) {
-                ESP_LOGI("schedule", POOL_LOG_SCHED "Activating Waterfall" POOL_LOG_END);
+                ESP_LOGI("schedule", "Activating Waterfall");
                 id(waterfall_switch).turn_on();
               } else {
-                ESP_LOGI("schedule", POOL_LOG_SCHED "Turning off waterfall" POOL_LOG_END);
+                ESP_LOGI("schedule", "Turning off waterfall");
                 id(waterfall_switch).turn_off();
               }
             }
@@ -1357,6 +1357,6 @@ script:
             lambda: "return true;"
           then:
             - lambda: |-
-                ESP_LOGD("pump_test", POOL_LOG_TX "Keep-alive: Sending pump speed %d RPM" POOL_LOG_END, speed);
+                ESP_LOGD("pump_test", "Keep-alive: Sending pump speed %d RPM", speed);
                 id(my_pentair).commandRPM(speed);
             - delay: 30s
