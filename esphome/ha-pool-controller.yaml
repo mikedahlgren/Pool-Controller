@@ -11,8 +11,8 @@
 #   4. Install / wirelessly update.
 #
 # After that, firmware updates are: edit this one file if needed, then Install.
-# To pick up YAML/component changes you pushed to GitHub, set refresh: 0s
-# once, compile, then you can set it back to 1d.
+# Leave refresh: 0s on external_components and packages so every compile
+# pulls GitHub (do not use 1d while iterating; it caches yesterday's C++).
 #
 # Device UI is ESPHome web_server v3 at http://pool-controller.local
 # plus Home Assistant.
@@ -79,7 +79,7 @@ captive_portal:
 external_components:
   - source: github://mikedahlgren/Pool-Controller@main
     components: [pentair_if_ic]
-    refresh: 1d
+    refresh: 0s
 
 web_server:
   port: 80
@@ -94,7 +94,7 @@ packages:
   pool_firmware:
     url: https://github.com/mikedahlgren/Pool-Controller
     ref: main
-    refresh: 1d
+    refresh: 0s
     files:
       - esphome/Include/temperature.yaml
       - esphome/Include/schedule.yaml
