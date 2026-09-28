@@ -1,0 +1,25 @@
+# Once an hour, post Pool pH and water temperature (°F) to PoolVera.
+# secrets.yaml must contain the device key from the pool's Settings page:
+#   poolvera_authorization: "Bearer pt_..."
+# A measurement left out of the post keeps the last value already on the site.
+
+http_request:
+  verify_ssl: true
+
+interval:
+  - interval: 60min
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return !isnan(id(pool_ph).state) || !isnan(id(water_temperature).state);
+          then:
+            - http_request.post:
+                url: https://pool-tracker-web.vercel.app/api/device/readings
+                request_headers:
+                  Content-Type: application/json
+                  Authorization: !secret poolvera_authorization
+                json: |-
+                  if (!isnan(id(pool_ph).state)) root["ph"] = id(pool_ph).state;
+                  if (!isnan(id(water_temperature).state)) root["tempF"] = id(water_temperature).state;
+                  root["timeLabel"] = "controller";
