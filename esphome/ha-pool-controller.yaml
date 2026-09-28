@@ -14,6 +14,11 @@
 # Leave refresh: 0s on external_components and packages so every compile
 # pulls GitHub (do not use 1d while iterating; it caches yesterday's C++).
 #
+# PoolVera (Sync to the Cloud, plus the hourly pH and water-temperature post)
+# is written in this file, in the PoolVera section below. It is the first
+# group on http://pool-controller.local. secrets.yaml must contain
+# poolvera_authorization or Install fails.
+#
 # Device UI is ESPHome web_server v3 at http://pool-controller.local
 # plus Home Assistant.
 #
@@ -86,6 +91,9 @@ web_server:
   version: 3
   ota: false
   sorting_groups:
+    - id: sorting_group_poolvera
+      name: "PoolVera"
+      sorting_weight: -40
     - id: sorting_group_diagnostics
       name: "Diagnostics"
       sorting_weight: -1
@@ -101,10 +109,63 @@ packages:
       - esphome/Include/pentair_light.yaml
       - esphome/Include/filter_pressure.yaml
       - esphome/Include/acid_ph.yaml
-      - esphome/Include/poolvera.yaml
       # Uncomment if you add an IntelliChlor-compatible SWG, and set
       # enable_intellichlor: true in esphome/Include/schedule.yaml:
       # - esphome/Include/chlorinator.yaml
+
+# PoolVera — this section is in this file on purpose. The device page shows it
+# as the first group, "PoolVera", with Sync to the Cloud. Once an hour, and
+# when that button is pressed, Pool pH and Water Temperature (°F) are posted
+# to the site. secrets.yaml needs:
+#   poolvera_authorization: "Bearer pt_..."
+# Install fails until that line exists. A measurement left out of the post
+# keeps the last value already on the site.
+
+http_request:
+  verify_ssl: true
+
+script:
+  - id: poolvera_post
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return !isnan(id(pool_ph).state) || !isnan(id(water_temperature).state);
+          then:
+            - logger.log:
+                tag: poolvera
+                format: "PoolVera sync starting"
+            - http_request.post:
+                url: https://pool-tracker-web.vercel.app/api/device/readings
+                request_headers:
+                  Content-Type: application/json
+                  Authorization: !secret poolvera_authorization
+                json: |-
+                  if (!isnan(id(pool_ph).state)) root["ph"] = id(pool_ph).state;
+                  if (!isnan(id(water_temperature).state)) root["tempF"] = id(water_temperature).state;
+                  root["timeLabel"] = "controller";
+          else:
+            - logger.log:
+                level: WARN
+                tag: poolvera
+                format: "PoolVera sync skipped: pH and water temperature are unavailable"
+
+button:
+  - platform: template
+    name: "Sync to the Cloud"
+    id: poolvera_sync
+    icon: "mdi:cloud-upload"
+    on_press:
+      - script.execute: poolvera_post
+    web_server:
+      sorting_group_id: sorting_group_poolvera
+      sorting_weight: 1
+
+interval:
+  - interval: 60min
+    then:
+      - script.execute: poolvera_post
 
 switch:
   - platform: factory_reset
