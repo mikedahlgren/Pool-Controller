@@ -1,4 +1,5 @@
-# Once an hour, post Pool pH and water temperature (°F) to PoolVera.
+# Post Pool pH and water temperature (°F) to PoolVera once an hour,
+# or immediately from the Sync to the Cloud button.
 # secrets.yaml must contain the device key from the pool's Settings page:
 #   poolvera_authorization: "Bearer pt_..."
 # A measurement left out of the post keeps the last value already on the site.
@@ -6,8 +7,15 @@
 http_request:
   verify_ssl: true
 
-interval:
-  - interval: 60min
+web_server:
+  sorting_groups:
+    - id: sorting_group_poolvera
+      name: "PoolVera"
+      sorting_weight: -20
+
+script:
+  - id: poolvera_post
+    mode: single
     then:
       - if:
           condition:
@@ -19,7 +27,35 @@ interval:
                 request_headers:
                   Content-Type: application/json
                   Authorization: !secret poolvera_authorization
+                capture_response: true
                 json: |-
                   if (!isnan(id(pool_ph).state)) root["ph"] = id(pool_ph).state;
                   if (!isnan(id(water_temperature).state)) root["tempF"] = id(water_temperature).state;
                   root["timeLabel"] = "controller";
+                on_response:
+                  then:
+                    - logger.log:
+                        tag: poolvera
+                        format: "PoolVera sync HTTP %d"
+                        args: ["response->status_code"]
+          else:
+            - logger.log:
+                level: WARN
+                tag: poolvera
+                format: "PoolVera sync skipped: pH and water temperature are unavailable"
+
+button:
+  - platform: template
+    name: "Sync to the Cloud"
+    id: poolvera_sync
+    icon: "mdi:cloud-upload"
+    on_press:
+      - script.execute: poolvera_post
+    web_server:
+      sorting_group_id: sorting_group_poolvera
+      sorting_weight: 1
+
+interval:
+  - interval: 60min
+    then:
+      - script.execute: poolvera_post
