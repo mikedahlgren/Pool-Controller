@@ -78,6 +78,9 @@ web_server:
   version: 3
   ota: false
   sorting_groups:
+    - id: sorting_group_poolvera
+      name: "PoolVera"
+      sorting_weight: -40
     - id: sorting_group_diagnostics
       name: "Diagnostics"
       sorting_weight: -1

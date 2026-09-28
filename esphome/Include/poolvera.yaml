@@ -1,5 +1,6 @@
-# Post Pool pH and water temperature (°F) to PoolVera once an hour,
-# or immediately from Sync to the Cloud under Temperature on the device page.
+# Local CLI build (pool-controller.yaml). Home Assistant uses the same
+# section written directly in ha-pool-controller.yaml, so the file you paste
+# into ESPHome Builder shows PoolVera without depending on this download.
 # secrets.yaml must contain the device key from the pool's Settings page:
 #   poolvera_authorization: "Bearer pt_..."
 # A measurement left out of the post keeps the last value already on the site.
@@ -42,8 +43,8 @@ button:
     on_press:
       - script.execute: poolvera_post
     web_server:
-      sorting_group_id: sorting_group_temps
-      sorting_weight: 0
+      sorting_group_id: sorting_group_poolvera
+      sorting_weight: 1
 
 interval:
   - interval: 60min
