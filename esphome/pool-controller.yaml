@@ -88,6 +88,7 @@ packages:
   pentair_light: !include Include/pentair_light.yaml
   filter_pressure: !include Include/filter_pressure.yaml
   acid_ph: !include Include/acid_ph.yaml
+  poolvera: !include Include/poolvera.yaml
   # Uncomment if you add an IntelliChlor-compatible SWG, and set
   # enable_intellichlor: true in Include/schedule.yaml:
   # chlorinator: !include Include/chlorinator.yaml
