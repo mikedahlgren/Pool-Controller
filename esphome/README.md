@@ -269,9 +269,9 @@ Do **not** upload this whole repository into Home Assistant. ESPHome Builder onl
 
 After that, day-to-day use is Home Assistant entities plus the built-in device page at `http://pool-controller.local` (ESPHome web_server v3).
 
-Once an hour the controller posts **Pool pH** and **Water Temperature** (°F) to PoolVera. **Sync to the Cloud** on the device page sends that reading immediately. Before the next Install, add `poolvera_authorization` from [`secrets.yaml.example`](secrets.yaml.example): `Bearer ` plus the key from that pool’s Settings page on https://pool-tracker-web.vercel.app. If this device’s YAML was copied before that package existed, add `esphome/Include/poolvera.yaml` to its `packages.files` list, or paste [`ha-pool-controller.yaml`](ha-pool-controller.yaml) again. Each post is a new log row. Measurements the controller does not send stay at their last recorded value.
+Once an hour the controller posts **Pool pH** and **Water Temperature** (°F) to PoolVera. **Sync to the Cloud** is the first control under **Temperature** on the device page and sends that reading immediately. Before Install, set both `refresh:` values in the device YAML to `0s`. A value of `1d` reuses the previous GitHub download and will leave this button off the device. Also add `poolvera_authorization` from [`secrets.yaml.example`](secrets.yaml.example): `Bearer ` plus the key from that pool’s Settings page on https://pool-tracker-web.vercel.app. The device YAML must list `esphome/Include/poolvera.yaml` under `packages.files`. Each post is a new log row. Measurements the controller does not send stay at their last recorded value.
 
-If you just pushed YAML/component changes and the compile still uses old files, set `refresh: 0s` on `external_components` and `packages` in `ha-pool-controller.yaml`, compile once, then you can set `refresh: 1d` again.
+`ha-pool-controller.yaml` keeps `refresh: 0s` so every Install pulls the latest GitHub YAML.
 
 **Private GitHub repo:** ESPHome cannot use `github://` without auth. Use:
 
