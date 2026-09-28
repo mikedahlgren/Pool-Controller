@@ -45,6 +45,8 @@ substitutions:
   ph_offset: "0.2"              # Trim ESP/HA vs Atlas display (ESP was ~0.2 low)
   ph_update_interval: "5s"      # ADC + Pool pH poll; pH Loop Current follows voltage
   acid_pump_gpd: "25"           # Stenner output at dial 10 while CH2 is on (25 GPD model)
+  # The pool Settings page shows this key. Paste it as shown.
+  poolvera_authorization: !secret poolvera_authorization
 
 esphome:
   name: pool-controller
@@ -117,7 +119,7 @@ packages:
 # as the first group, "PoolVera", with Sync to the Cloud. Once an hour, and
 # when that button is pressed, Pool pH and Water Temperature (°F) are posted
 # to the site. secrets.yaml needs:
-#   poolvera_authorization: "Bearer pt_..."
+#   poolvera_authorization: "pt_..."
 # Install fails until that line exists. A measurement left out of the post
 # keeps the last value already on the site.
 
@@ -140,7 +142,12 @@ script:
                 url: https://pool-tracker-web.vercel.app/api/device/readings
                 request_headers:
                   Content-Type: application/json
-                  Authorization: !secret poolvera_authorization
+                  Authorization: !lambda |-
+                    static std::string header;
+                    const std::string key = "${poolvera_authorization}";
+                    if (key.size() >= 7 && (key.compare(0, 7, "Bearer ") == 0 || key.compare(0, 7, "bearer ") == 0)) header = key;
+                    else header = "Bearer " + key;
+                    return header.c_str();
                 json: |-
                   if (!isnan(id(pool_ph).state)) root["ph"] = id(pool_ph).state;
                   if (!isnan(id(water_temperature).state)) root["tempF"] = id(water_temperature).state;
