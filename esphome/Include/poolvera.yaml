@@ -1,17 +1,29 @@
 # Local CLI build (pool-controller.yaml). Home Assistant uses the same
-# section written directly in ha-pool-controller.yaml, so the file you paste
-# into ESPHome Builder shows PoolVera without depending on this download.
+# section written directly in ha-pool-controller.yaml.
 # secrets.yaml must contain the device key from the pool's Settings page:
 #   poolvera_authorization: "pt_..."
-# A measurement left out of the post keeps the last value already on the site.
+# The post stores only the values included here. The site overview keeps the
+# last kit reading for anything left out.
 
 http_request:
   verify_ssl: true
+
+text_sensor:
+  - platform: template
+    name: "Last cloud sync"
+    id: poolvera_status
+    icon: "mdi:cloud-check"
+    web_server:
+      sorting_group_id: sorting_group_poolvera
+      sorting_weight: 2
 
 script:
   - id: poolvera_post
     mode: single
     then:
+      - lambda: |-
+          id(poolvera_status).publish_state("Syncing");
+      - delay: 1ms
       - if:
           condition:
             lambda: |-
@@ -19,9 +31,9 @@ script:
           then:
             - logger.log:
                 tag: poolvera
-                format: "PoolVera sync starting"
+                format: "PoolVeras sync starting"
             - http_request.post:
-                url: https://pool-tracker-web.vercel.app/api/device/readings
+                url: https://poolveras.com/api/device/readings
                 request_headers:
                   Content-Type: application/json
                   Authorization: !lambda |-
@@ -34,11 +46,35 @@ script:
                   if (!isnan(id(pool_ph).state)) root["ph"] = id(pool_ph).state;
                   if (!isnan(id(water_temperature).state)) root["tempF"] = id(water_temperature).state;
                   root["timeLabel"] = "controller";
+                  auto clock = id(homeassistant_time).now();
+                  if (clock.year >= 2024) {
+                    char date_buf[11];
+                    snprintf(date_buf, sizeof(date_buf), "%04d-%02d-%02d", (int) clock.year, (int) clock.month, (int) clock.day_of_month);
+                    root["testedOn"] = date_buf;
+                    root["unix"] = (double) clock.timestamp;
+                  }
+                on_response:
+                  then:
+                    - lambda: |-
+                        std::string text = "HTTP " + std::to_string(response->status_code);
+                        auto clock = id(homeassistant_time).now();
+                        if (clock.year >= 2024) {
+                          char when[9];
+                          snprintf(when, sizeof(when), "%02d:%02d ", (int) clock.hour, (int) clock.minute);
+                          text = std::string(when) + text;
+                        }
+                        id(poolvera_status).publish_state(text);
+                on_error:
+                  then:
+                    - lambda: |-
+                        id(poolvera_status).publish_state("Could not reach the site");
           else:
+            - lambda: |-
+                id(poolvera_status).publish_state("No pH or temperature");
             - logger.log:
                 level: WARN
                 tag: poolvera
-                format: "PoolVera sync skipped: pH and water temperature are unavailable"
+                format: "PoolVeras sync skipped: pH and water temperature are unavailable"
 
 button:
   - platform: template
@@ -46,7 +82,8 @@ button:
     id: poolvera_sync
     icon: "mdi:cloud-upload"
     on_press:
-      - script.execute: poolvera_post
+      - lambda: |-
+          id(poolvera_post).execute();
     web_server:
       sorting_group_id: sorting_group_poolvera
       sorting_weight: 1
@@ -54,4 +91,5 @@ button:
 interval:
   - interval: 60min
     then:
-      - script.execute: poolvera_post
+      - lambda: |-
+          id(poolvera_post).execute();
