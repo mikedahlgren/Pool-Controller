@@ -1,7 +1,7 @@
 # Local CLI build (pool-controller.yaml). Home Assistant uses the same
 # section written directly in ha-pool-controller.yaml.
 # secrets.yaml must contain the device key from the pool's Settings page:
-#   poolvera_authorization: "pt_..."
+#   poolveras_authorization: "pt_..."
 # The post stores only the values included here. The site overview keeps the
 # last kit reading for anything left out.
 
@@ -11,18 +11,18 @@ http_request:
 text_sensor:
   - platform: template
     name: "Last cloud sync"
-    id: poolvera_status
+    id: poolveras_status
     icon: "mdi:cloud-check"
     web_server:
-      sorting_group_id: sorting_group_poolvera
+      sorting_group_id: sorting_group_poolveras
       sorting_weight: 2
 
 script:
-  - id: poolvera_post
+  - id: poolveras_post
     mode: single
     then:
       - lambda: |-
-          id(poolvera_status).publish_state("Syncing");
+          id(poolveras_status).publish_state("Syncing");
       - delay: 1ms
       - if:
           condition:
@@ -30,7 +30,7 @@ script:
               return !isnan(id(pool_ph).state) || !isnan(id(water_temperature).state);
           then:
             - logger.log:
-                tag: poolvera
+                tag: poolveras
                 format: "PoolVeras sync starting"
             - http_request.post:
                 url: https://poolveras.com/api/device/readings
@@ -38,7 +38,7 @@ script:
                   Content-Type: application/json
                   Authorization: !lambda |-
                     static std::string header;
-                    const std::string key = "${poolvera_authorization}";
+                    const std::string key = "${poolveras_authorization}";
                     if (key.size() >= 7 && (key.compare(0, 7, "Bearer ") == 0 || key.compare(0, 7, "bearer ") == 0)) header = key;
                     else header = "Bearer " + key;
                     return header.c_str();
@@ -63,33 +63,33 @@ script:
                           snprintf(when, sizeof(when), "%02d:%02d ", (int) clock.hour, (int) clock.minute);
                           text = std::string(when) + text;
                         }
-                        id(poolvera_status).publish_state(text);
+                        id(poolveras_status).publish_state(text);
                 on_error:
                   then:
                     - lambda: |-
-                        id(poolvera_status).publish_state("Could not reach the site");
+                        id(poolveras_status).publish_state("Could not reach the site");
           else:
             - lambda: |-
-                id(poolvera_status).publish_state("No pH or temperature");
+                id(poolveras_status).publish_state("No pH or temperature");
             - logger.log:
                 level: WARN
-                tag: poolvera
+                tag: poolveras
                 format: "PoolVeras sync skipped: pH and water temperature are unavailable"
 
 button:
   - platform: template
     name: "Sync to the Cloud"
-    id: poolvera_sync
+    id: poolveras_sync
     icon: "mdi:cloud-upload"
     on_press:
       - lambda: |-
-          id(poolvera_post).execute();
+          id(poolveras_post).execute();
     web_server:
-      sorting_group_id: sorting_group_poolvera
+      sorting_group_id: sorting_group_poolveras
       sorting_weight: 1
 
 interval:
   - interval: 60min
     then:
       - lambda: |-
-          id(poolvera_post).execute();
+          id(poolveras_post).execute();

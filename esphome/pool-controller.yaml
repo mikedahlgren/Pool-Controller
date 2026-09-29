@@ -22,7 +22,7 @@ substitutions:
   ph_offset: "0.2"
   ph_update_interval: "5s"
   acid_pump_gpd: "25"
-  poolvera_authorization: !secret poolvera_authorization
+  poolveras_authorization: !secret poolveras_authorization
 
 esphome:
   name: pool-controller
@@ -79,7 +79,7 @@ web_server:
   version: 3
   ota: false
   sorting_groups:
-    - id: sorting_group_poolvera
+    - id: sorting_group_poolveras
       name: "PoolVeras"
       sorting_weight: -40
     - id: sorting_group_diagnostics
@@ -92,7 +92,7 @@ packages:
   pentair_light: !include Include/pentair_light.yaml
   filter_pressure: !include Include/filter_pressure.yaml
   acid_ph: !include Include/acid_ph.yaml
-  poolvera: !include Include/poolvera.yaml
+  poolveras: !include Include/poolveras.yaml
   # Uncomment if you add an IntelliChlor-compatible SWG, and set
   # enable_intellichlor: true in Include/schedule.yaml:
   # chlorinator: !include Include/chlorinator.yaml
