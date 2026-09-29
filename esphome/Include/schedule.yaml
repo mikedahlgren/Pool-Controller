@@ -107,45 +107,44 @@ button:
     icon: "mdi:play"
     on_press:
       - lambda: |-
-          // Resume last Auto/Speed 1–4. Off has no RPM; IntelliFlo VS needs one.
-          auto starts = [](const std::string &s, const char *p) -> bool {
-            return s.rfind(p, 0) == 0;
-          };
-          std::string mode = std::string(id(manual_override_select).current_option());
-          if (mode == "Off" || mode.empty()) {
-            mode = id(g_last_pump_mode);
+          // Start at the last Speed 1–4 sent to the pump. Do not restore Auto:
+          // Auto only enables the clock, and a speed switch that is already
+          // "on" skips commandRPM. Reselecting a speed in Mode works because
+          // that path always sends RPM and turns Auto off.
+          int n = id(g_last_speed_n);
+          if (n < 1 || n > 4) {
+            auto starts = [](const std::string &s, const char *p) -> bool {
+              return s.rfind(p, 0) == 0;
+            };
+            const std::string last = id(g_last_pump_mode);
+            if (starts(last, "Speed 2")) n = 2;
+            else if (starts(last, "Speed 3")) n = 3;
+            else if (starts(last, "Speed 4")) n = 4;
+            else n = 1;
           }
-          if (starts(mode, "Speed 1")) mode = "Speed 1";
-          else if (starts(mode, "Speed 2")) mode = "Speed 2";
-          else if (starts(mode, "Speed 3")) mode = "Speed 3";
-          else if (starts(mode, "Speed 4")) mode = "Speed 4";
-          else if (starts(mode, "Auto")) mode = "Auto";
-          if (mode.empty() || mode == "Off") mode = "Auto";
+          id(g_last_speed_n) = n;
+          id(g_last_pump_mode) = n == 1 ? "Speed 1" : n == 2 ? "Speed 2" : n == 3 ? "Speed 3" : "Speed 4";
 
-          std::string option = mode;
-          if (mode == "Speed 1") option = id(g_label_s1);
-          else if (mode == "Speed 2") option = id(g_label_s2);
-          else if (mode == "Speed 3") option = id(g_label_s3);
-          else if (mode == "Speed 4") option = id(g_label_s4);
+          const std::string option =
+              n == 1 ? id(g_label_s1) : n == 2 ? id(g_label_s2) : n == 3 ? id(g_label_s3) : id(g_label_s4);
+          const float rpm =
+              n == 1 ? id(pump_speed_1).state : n == 2 ? id(pump_speed_2).state : n == 3 ? id(pump_speed_3).state : id(pump_speed_4).state;
+          ESP_LOGI("pump", "Pump Run: Speed %d (%.0f RPM)", n, rpm);
 
-          std::string cur = std::string(id(manual_override_select).current_option());
-          if (option == cur) {
-            if (mode == "Auto") {
-              id(auto_schedule_switch).turn_on();
-            } else if (mode == "Speed 1") {
-              id(pump_speed_switch_1).turn_on();
-            } else if (mode == "Speed 2") {
-              id(pump_speed_switch_2).turn_on();
-            } else if (mode == "Speed 3") {
-              id(pump_speed_switch_3).turn_on();
-            } else if (mode == "Speed 4") {
-              id(pump_speed_switch_4).turn_on();
-            }
-          } else {
-            auto call = id(manual_override_select).make_call();
-            call.set_option(option);
-            call.perform();
-          }
+          id(auto_schedule_switch).turn_off();
+          id(g_refreshing_speed_labels) = true;
+          id(manual_override_select).publish_state(option);
+          id(g_refreshing_speed_labels) = false;
+
+          // Force turn_on_action even if the optimistic switch still looks on.
+          id(pump_speed_switch_1).turn_off();
+          id(pump_speed_switch_2).turn_off();
+          id(pump_speed_switch_3).turn_off();
+          id(pump_speed_switch_4).turn_off();
+          if (n == 1) id(pump_speed_switch_1).turn_on();
+          else if (n == 2) id(pump_speed_switch_2).turn_on();
+          else if (n == 3) id(pump_speed_switch_3).turn_on();
+          else id(pump_speed_switch_4).turn_on();
     web_server:
       sorting_group_id: sorting_group_pump_status
       sorting_weight: 20
@@ -311,11 +310,16 @@ globals:
     type: bool
     restore_value: no
     initial_value: "false"
-  # Last Mode that was not Off (Auto or Speed 1–4). Pump Run restores this.
+  # Last Mode that was not Off (Auto or Speed 1–4).
   - id: g_last_pump_mode
     type: std::string
     restore_value: yes
     initial_value: '"Auto"'
+  # Last Speed 1–4 actually sent to the IntelliFlo. Pump Run always starts this.
+  - id: g_last_speed_n
+    type: int
+    restore_value: yes
+    initial_value: "1"
   - id: g_refreshing_speed_labels
     type: bool
     restore_value: no
@@ -482,6 +486,7 @@ switch:
       - switch.turn_off: pump_speed_switch_3
       - switch.turn_off: pump_speed_switch_4
       - lambda: |-
+          id(g_last_speed_n) = 1;
           ESP_LOGD("pump", "Setting pump to Speed 1: %f RPM", id(pump_speed_1).state);
           id(my_pentair).commandRPM(id(pump_speed_1).state);
       - script.execute:
@@ -502,6 +507,7 @@ switch:
       - switch.turn_off: pump_speed_switch_3
       - switch.turn_off: pump_speed_switch_4
       - lambda: |-
+          id(g_last_speed_n) = 2;
           ESP_LOGD("pump", "Setting pump to Speed 2: %f RPM", id(pump_speed_2).state);
           id(my_pentair).commandRPM(id(pump_speed_2).state);
       - script.execute:
@@ -522,6 +528,7 @@ switch:
       - switch.turn_off: pump_speed_switch_2
       - switch.turn_off: pump_speed_switch_4
       - lambda: |-
+          id(g_last_speed_n) = 3;
           ESP_LOGD("pump", "Setting pump to Speed 3: %f RPM", id(pump_speed_3).state);
           id(my_pentair).commandRPM(id(pump_speed_3).state);
       - script.execute:
@@ -542,6 +549,7 @@ switch:
       - switch.turn_off: pump_speed_switch_2
       - switch.turn_off: pump_speed_switch_3
       - lambda: |-
+          id(g_last_speed_n) = 4;
           ESP_LOGD("pump", "Setting pump to Speed 4: %f RPM", id(pump_speed_4).state);
           id(my_pentair).commandRPM(id(pump_speed_4).state);
       - script.execute:
