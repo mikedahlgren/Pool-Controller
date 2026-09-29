@@ -80,7 +80,7 @@ web_server:
   ota: false
   sorting_groups:
     - id: sorting_group_poolvera
-      name: "PoolVera"
+      name: "PoolVeras"
       sorting_weight: -40
     - id: sorting_group_diagnostics
       name: "Diagnostics"
