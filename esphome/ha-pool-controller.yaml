@@ -15,8 +15,9 @@
 # pulls GitHub (do not use 1d while iterating; it caches yesterday's C++).
 #
 # PoolVeras (Sync to the Cloud, Last cloud sync, and the hourly pH and
-# water-temperature post) is written in this file, in the PoolVeras section
-# below. It is the first group on http://pool-controller.local.
+# water-temperature post) is esphome/Include/poolveras.yaml, pulled from
+# GitHub with the other packages. It is the first group on
+# http://pool-controller.local.
 # secrets.yaml must contain poolveras_authorization or Install fails.
 #
 # Device UI is ESPHome web_server v3 at http://pool-controller.local
@@ -111,106 +112,15 @@ packages:
       - esphome/Include/pentair_light.yaml
       - esphome/Include/filter_pressure.yaml
       - esphome/Include/acid_ph.yaml
+      - esphome/Include/poolveras.yaml
       # Uncomment if you add an IntelliChlor-compatible SWG, and set
       # enable_intellichlor: true in esphome/Include/schedule.yaml:
       # - esphome/Include/chlorinator.yaml
 
-# PoolVeras — this section is in this file on purpose. The device page shows it
-# as the first group, "PoolVeras", with Sync to the Cloud and Last cloud sync.
-# The post stores pH, water temperature, and the controller's local date.
-# The site overview keeps the last kit reading for anything left out.
-# secrets.yaml needs:
+# PoolVeras (Sync to the Cloud, Last cloud sync, hourly post) is pulled from
+# GitHub with the other packages above: esphome/Include/poolveras.yaml.
+# secrets.yaml still needs:
 #   poolveras_authorization: "pt_..."
-# Install fails until that line exists.
-
-http_request:
-  verify_ssl: true
-
-text_sensor:
-  - platform: template
-    name: "Last cloud sync"
-    id: poolveras_status
-    icon: "mdi:cloud-check"
-    web_server:
-      sorting_group_id: sorting_group_poolveras
-      sorting_weight: 2
-
-script:
-  - id: poolveras_post
-    mode: single
-    then:
-      - lambda: |-
-          id(poolveras_status).publish_state("Syncing");
-      - delay: 1ms
-      - if:
-          condition:
-            lambda: |-
-              return !isnan(id(pool_ph).state) || !isnan(id(water_temperature).state);
-          then:
-            - logger.log:
-                tag: poolveras
-                format: "PoolVeras sync starting"
-            - http_request.post:
-                url: https://poolveras.com/api/device/readings
-                request_headers:
-                  Content-Type: application/json
-                  Authorization: !lambda |-
-                    static std::string header;
-                    const std::string key = "${poolveras_authorization}";
-                    if (key.size() >= 7 && (key.compare(0, 7, "Bearer ") == 0 || key.compare(0, 7, "bearer ") == 0)) header = key;
-                    else header = "Bearer " + key;
-                    return header.c_str();
-                json: |-
-                  if (!isnan(id(pool_ph).state)) root["ph"] = id(pool_ph).state;
-                  if (!isnan(id(water_temperature).state)) root["tempF"] = id(water_temperature).state;
-                  root["timeLabel"] = "controller";
-                  auto clock = id(homeassistant_time).now();
-                  if (clock.year >= 2024) {
-                    char date_buf[32];
-                    snprintf(date_buf, sizeof(date_buf), "%04d-%02d-%02d", (int) clock.year, (int) clock.month, (int) clock.day_of_month);
-                    root["testedOn"] = date_buf;
-                    root["unix"] = (double) clock.timestamp;
-                  }
-                on_response:
-                  then:
-                    - lambda: |-
-                        std::string text = "HTTP " + std::to_string(response->status_code);
-                        auto clock = id(homeassistant_time).now();
-                        if (clock.year >= 2024) {
-                          char when[16];
-                          snprintf(when, sizeof(when), "%02d:%02d ", (int) clock.hour, (int) clock.minute);
-                          text = std::string(when) + text;
-                        }
-                        id(poolveras_status).publish_state(text);
-                on_error:
-                  then:
-                    - lambda: |-
-                        id(poolveras_status).publish_state("Could not reach the site");
-          else:
-            - lambda: |-
-                id(poolveras_status).publish_state("No pH or temperature");
-            - logger.log:
-                level: WARN
-                tag: poolveras
-                format: "PoolVeras sync skipped: pH and water temperature are unavailable"
-
-button:
-  - platform: template
-    name: "Sync to the Cloud"
-    id: poolveras_sync
-    icon: "mdi:cloud-upload"
-    on_press:
-      - lambda: |-
-          id(poolveras_post).execute();
-    web_server:
-      sorting_group_id: sorting_group_poolveras
-      sorting_weight: 1
-
-interval:
-  - interval: 60min
-    then:
-      - lambda: |-
-          id(poolveras_post).execute();
 
 switch:
   - platform: factory_reset
