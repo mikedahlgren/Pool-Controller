@@ -1,5 +1,5 @@
-# Local CLI build (pool-controller.yaml). Home Assistant uses the same
-# section written directly in ha-pool-controller.yaml.
+# Local CLI build (pool-controller.yaml) includes this file.
+# Home Assistant pulls this same file from GitHub (see ha-pool-controller.yaml).
 # secrets.yaml must contain the device key from the pool's Settings page:
 #   poolveras_authorization: "pt_..."
 # The post stores only the values included here. The site overview keeps the
@@ -48,9 +48,8 @@ script:
                   root["timeLabel"] = "controller";
                   auto clock = id(homeassistant_time).now();
                   if (clock.year >= 2024) {
-                    char date_buf[32];
-                    snprintf(date_buf, sizeof(date_buf), "%04d-%02d-%02d", (int) clock.year, (int) clock.month, (int) clock.day_of_month);
-                    root["testedOn"] = date_buf;
+                    std::string tested_on = clock.strftime("%Y-%m-%d");
+                    root["testedOn"] = tested_on.c_str();
                     root["unix"] = (double) clock.timestamp;
                   }
                 on_response:
@@ -59,9 +58,7 @@ script:
                         std::string text = "HTTP " + std::to_string(response->status_code);
                         auto clock = id(homeassistant_time).now();
                         if (clock.year >= 2024) {
-                          char when[16];
-                          snprintf(when, sizeof(when), "%02d:%02d ", (int) clock.hour, (int) clock.minute);
-                          text = std::string(when) + text;
+                          text = clock.strftime("%H:%M ") + text;
                         }
                         id(poolveras_status).publish_state(text);
                 on_error:
