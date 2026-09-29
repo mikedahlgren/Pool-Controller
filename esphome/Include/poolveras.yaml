@@ -48,7 +48,7 @@ script:
                   root["timeLabel"] = "controller";
                   auto clock = id(homeassistant_time).now();
                   if (clock.year >= 2024) {
-                    char date_buf[11];
+                    char date_buf[32];
                     snprintf(date_buf, sizeof(date_buf), "%04d-%02d-%02d", (int) clock.year, (int) clock.month, (int) clock.day_of_month);
                     root["testedOn"] = date_buf;
                     root["unix"] = (double) clock.timestamp;
@@ -59,7 +59,7 @@ script:
                         std::string text = "HTTP " + std::to_string(response->status_code);
                         auto clock = id(homeassistant_time).now();
                         if (clock.year >= 2024) {
-                          char when[9];
+                          char when[16];
                           snprintf(when, sizeof(when), "%02d:%02d ", (int) clock.hour, (int) clock.minute);
                           text = std::string(when) + text;
                         }
