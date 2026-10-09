@@ -2,7 +2,9 @@
 
 For a **50,000 gallon** pool with **31% muriatic acid** and a **Stenner 45M5** (120 V, 1.7 A, #5 tube, **2.5–50 GPD** depending on the dial).
 
-pH hardware is the **[Atlas Scientific Industrial pH Kit](https://atlas-scientific.com/kits/industrial-ph-kit/)** (SKU **KIT-102P**): DIN-rail **Industrial pH Transmitter** (IND-pH / IXIAN) plus the **industrial 3/4″ NPT probe**. Firmware substitutions are set for this kit: isolated **4-wire** 4–20 mA, **0–14 pH**, **150 Ω** shunt on **GPIO5**.
+Pool pH can come from an Atlas pH circuit in any socket, or from the industrial 4-20 mA kit on J8 screw 2. **pH Source** on the device page picks which one. Auto uses the circuit board when it answers, and the kit otherwise. Connector map: [README.md](README.md).
+
+The kit is the [Atlas Scientific Industrial pH Kit](https://atlas-scientific.com/kits/industrial-ph-kit/) (KIT-102P): 4 mA is 0 pH, 20 mA is 14 pH. The 150 ohm shunt for that screw is already on the hat. `ph_offset` trims the kit reading only.
 
 Lights stay on **CH6**. Acid uses **CH2**. Do **not** put the Stenner on CH1 — that GPIO still belongs to the unused waterfall switch in `schedule.yaml`. Leave **Waterfall (Auto) OFF** in Home Assistant so CH1 does not chatter.
 
@@ -86,50 +88,23 @@ Connect only **power**, **pH probe**, **PT-1000** (if present), and **4–20 mA*
 | **PWR + / PWR −** (larger keyed plug, 9–36 V) | Board **VIN+** / **VIN−** | Separate from the 4–20 mA pair |
 | **pH** (two wires) | Probe pH pair | Reverse does not damage the probe; readings will be wrong |
 | **TEMP** (two wires) | Probe PT-1000 | No polarity |
-| **4–20 mA + / −** | GPIO5 shunt (below) | Isolated current source. 4 mA = 0 pH, 20 mA = 14 pH |
+| **4–20 mA + / −** | J8 screw 2 and the GND screw | Isolated current. 4 mA = 0 pH, 20 mA = 14 pH. The shunt is on the hat. |
 | **F** (fault) | **Nothing** | Outputs **12–24 V** (same as PWR). Will destroy an ESP GPIO |
 | **4 / 7 / 10** (PLC cal) | **Nothing** | Optional PLC strobes; calibrate with the buttons instead |
 
-### 4–20 mA wiring (GPIO5)
+### 4-20 mA wiring (J8 screw 2)
 
-Pico pin 7 is **GP5**, next to GP4 (filter pressure on pin 6). Use Pico **GND** (pin 3 or 8), not RS485 **G** (isolated). If you later add a Hall clamp on the CircuPool cell, use another ADC1 pin (**GPIO6 / 7 / 8 / 9**), not GPIO4 or GPIO5.
+Power the transmitter from 12 V or 24 V, not from the hat's 3.3 V. Filter pressure, if you use it, takes J8 screw 1. Do not share the two signal screws.
 
 ```
-Board VIN+ (12–24 V)  ──────►  transmitter PWR +
-Board VIN−            ──────►  transmitter PWR −
+Supply +  ---- transmitter PWR +
+Supply -  ---- transmitter PWR -  and J8 GND
 
-transmitter 4–20 mA +  ──┬──►  GPIO5  (Pico GP5 / physical pin 7)
-                         └── [150 Ω 1%] ──► Pico GND ──► transmitter 4–20 mA −
+transmitter 4-20 mA +  ---- J8 screw 2
+transmitter 4-20 mA -  ---- J8 GND
 ```
 
-```mermaid
-flowchart LR
-  subgraph board ["ESP32-S3-RELAY-6CH"]
-    VIN["VIN+ 12–24 V"]
-    GND["VIN− / Pico GND"]
-    ADC["GPIO5 ADC"]
-  end
-  subgraph atlas ["Atlas IND-pH KIT-102P"]
-    PWR["PWR 9–36 V"]
-    OUTP["4–20 mA +"]
-    OUTM["4–20 mA −"]
-  end
-  VIN --> PWR
-  PWR --> GND
-  OUTP --> ADC
-  ADC --- R["150 Ω"]
-  R --> GND
-  OUTM --> GND
-```
-
-At 150 Ω (firmware `ph_shunt_ohms: "150.0"`):
-
-| Loop current | Atlas pH | Voltage on GPIO5 |
-|--------------|----------|------------------|
-| 4.00 mA | 0.00 | 0.60 V |
-| 12.00 mA | 7.00 | 1.80 V |
-| 12.46 mA | 7.40 | 1.87 V |
-| 20.00 mA | 14.00 | 3.00 V |
+At 150 ohm: 4 mA is 0.60 V (pH 0), 12 mA is 1.80 V (pH 7), 20 mA is 3.00 V (pH 14). The analog input is soft above about 2.5 V, so a reading near 14 pH can sit a little low. Normal pool pH does not.
 
 ESP32 ADC max is about 3.1 V at 12 dB attenuation, so 3.00 V at pH 14 is intentional headroom. **pH Loop Current** and **pH Loop Voltage** on the device page are the diagnostics.
 
@@ -141,7 +116,7 @@ These values are for KIT-102P. Do not change the pH scale unless you replace the
 
 ```yaml
 acid_pump_pin: GPIO2
-ph_sensor_pin: GPIO5
+ph_sensor_pin: GPIO8
 ph_shunt_ohms: "150.0"
 ph_scale_low: "0"
 ph_scale_high: "14"

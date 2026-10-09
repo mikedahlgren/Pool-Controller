@@ -60,3 +60,18 @@ sensor:
     web_server:
       sorting_group_id: sorting_group_temps
       sorting_weight: 2
+
+  # The ESP32-S3 die. This rises when WiFi is busy. It is not the air temperature.
+  - platform: internal_temperature
+    id: board_temperature
+    name: Board Temperature
+    unit_of_measurement: "°F"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: 60s
+    filters:
+      - lambda: return x * 1.8f + 32.0f;
+    web_server:
+      sorting_group_id: sorting_group_temps
+      sorting_weight: 3

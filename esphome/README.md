@@ -1,302 +1,114 @@
-# ESPHome Configuration
+# Sensor hat
 
-This directory contains the ESPHome configuration for the pool controller based on the **Waveshare Industrial 6-channel ESP32-S3 Relay Module**.
+The hat plugs onto the Waveshare Pico headers. Screw connectors run along the edge, left to right: **J3, J4, J5, J6, J7, J8**.
 
-**Hardware**: [Waveshare ESP32-S3-RELAY-6CH](https://www.waveshare.com/esp32-s3-relay-6ch.htm)
+Relays and the pump cable stay on the Waveshare. See [the repo README](../README.md).
 
-## Configuration Files
+## Atlas circuit boards
 
-### Main Configuration
+Three pairs of sockets. The silk says pH, ORP, and EZO so the installer can tell them apart. Any Atlas circuit can go in any pair: pH, ORP, conductivity (salinity), RTD, or dissolved oxygen.
 
-**`ha-pool-controller.yaml`** — copy this into Home Assistant ESPHome Builder. It pulls packages and `pentair_if_ic` from GitHub.
+Each circuit uses both sockets in its pair.
 
-**`pool-controller.yaml`** — same firmware for a local CLI compile (`esphome run esphome/pool-controller.yaml` from the repo root).
+- The socket nearer the screws is power: VCC, PRB, PGND.
+- The socket farther from the screws is data: GND, TX, RX. Pin 1 of that socket is ground.
 
-Both define:
-- Device identification and platform (ESP32-S3 with ESP-IDF framework)
-- GPIO pin assignments
-- WiFi, API, OTA, and web_server v3
-- Package includes for modular configuration
+The probe cable lands on the two screws under that pair.
 
-**Key Pin Assignments:**
-- `waterfall_pin: GPIO1` - Waterfall relay control (Relay CH1)
-- `one_wire_pin: GPIO10` - Dallas temperature sensors (air & water)
-- `pentair_tx_pin: GPIO17` - RS485 transmit to IntelliFlo (built-in RS485)
-- `pentair_rx_pin: GPIO18` - RS485 receive from IntelliFlo (built-in RS485)
-- `pentair_light_pin: GPIO46` - Pentair IntelliBrite light control (Relay CH6)
-- `filter_pressure_pin: GPIO4` - Filter tank 4–20 mA pressure transmitter (Pico GP4 ADC)
-- `acid_pump_pin: GPIO2` - Stenner 45M5 acid pump (Relay CH2)
-- `ph_sensor_pin: GPIO5` - Atlas Industrial pH Kit (KIT-102P) 4–20 mA + (Pico GP5 ADC)
+| Pair | Screws | Probe screws, left to right |
+|------|--------|-----------------------------|
+| Labeled pH | J3 | PRB, PGND |
+| Labeled ORP | J4 | PRB, PGND |
+| Labeled EZO | J5 | PRB, PGND |
 
-### Include Files
+PRB is the probe signal. PGND is that probe's return. PGND is not the ground screw on J6 or J7. Leave the probe return on PGND.
 
-The configuration is modularized into separate YAML files in the `Include/` directory:
+Factory boards speak UART and answer as soon as they are seated. The device page shows what each socket found: pH Socket, ORP Socket, EZO Socket. Readings show up as EZO pH, ORP, Conductivity, Salinity, TDS, RTD Temperature, or Dissolved Oxygen, based on the board, not the label.
 
-#### **`temperature.yaml`**
-Dallas DS18B20 sensors on a 1-Wire bus (GPIO10). Air and water are converted to **°F** on the device (no separate C / _F entities).
+A board that was already switched to I2C still works in any socket. Two of the same type: the reading comes from the first socket that has one, in the order pH label, ORP label, EZO label.
 
-#### **`schedule.yaml`**
-The most complex configuration file, handling:
-- Pentair IntelliFlo communication (via pentair_if_ic). IntelliChlor polling is off (`enable_intellichlor: false`). Optional IntelliChlor is `chlorinator.yaml` (not used on this install).
-- UART configuration for RS485 communication
-- Pump status monitoring and control
-- Automated scheduling system with 4 time periods plus a pump end time
-- Pump speed configuration (RPM settings)
-- Waterfall relay control and automation
-- Automation enable/disable controls
-- Extensive state management for scheduling logic
+The third pair (labeled EZO) is also the I2C bus. J16 is an empty header on that same bus, for a later part. Pin order, from the fuse side: 3V3, GND, SCL, SDA. Leave J16 empty unless you add something. An EZO still in UART mode on that pair will disturb anything on J16. Switch that module to I2C first, and give the add-on a different address. Atlas defaults are 99 (pH), 98 (ORP), and 100 (EC).
 
-#### **`chlorinator.yaml`** (optional)
+## pH
 
-Pentair IntelliChlor on the IntelliFlo RS485 bus. **Not included** in `ha-pool-controller.yaml` — this pad uses a CircuPool RJ-60 PLUS, which does not speak IntelliChlor. Uncomment the package **and** set `enable_intellichlor: true` in `schedule.yaml` only if you add a compatible SWG.
+Pool pH is the value used for acid dosing and PoolVeras. On the device page, **pH Source** chooses it:
 
-#### **`filter_pressure.yaml`**
-Filter-tank head pressure from a 2-wire 4–20 mA transmitter (Yosoo 0–0.5 MPa G1/4 or equivalent):
-- ADC on GPIO4 (Pico GP4) via a 150 Ω shunt
-- Pressure in psi and bar, loop current diagnostic
-- Per-speed clean baselines (Speed 1–4); unsaved speeds estimated from RPM²
-- Triton II backwash at +10 psi over the active baseline
-- Fault and “needs backwash” binary sensors
+| Setting | What Pool pH uses |
+|---------|-------------------|
+| Auto | The Atlas pH board, if one is answering. Otherwise the 4-20 mA kit. |
+| EZO | The Atlas pH board only. |
+| 4-20 mA | The industrial kit on J8 screw 2 only. |
 
-Full wiring, pinout, and plumbing notes: **[FILTER_PRESSURE.md](FILTER_PRESSURE.md)**
+`ph_offset` trims only the 4-20 mA reading. Calibrate an Atlas pH board on the module.
 
-#### **`acid_ph.yaml`**
-Stenner 45M5 muriatic-acid dosing plus the **Atlas Scientific Industrial pH Kit (KIT-102P)**:
-- Acid pump on **CH2 / GPIO2** (internal switch, timed pulses only; always-off restore)
-- Atlas IND-pH **4-wire** transmitter: 9–36 V from board VIN, isolated 4–20 mA (0–14 pH) into **GPIO5** (Pico GP5) via a **dedicated** 150 Ω shunt — not the Yosoo 2-wire loop
-- Interlocks: IntelliFlo running, min RPM, filter sensor healthy, valid pH, daily runtime cap, settle time
-- Auto-dose hysteresis (start 7.6 / target 7.4); prime and one-shot pulse buttons
+Acid dosing behavior is in [ACID_PH.md](ACID_PH.md).
 
-Lights stay on CH6. Do not put the Stenner on CH1 (that GPIO still belongs to the unused waterfall switch). Full wiring and probe plumbing: **[ACID_PH.md](ACID_PH.md)**
+## 4-20 mA (J8)
 
-#### **`pentair_light.yaml`**
-Pentair IntelliBrite pool light control:
-- 14 color/mode selections via power cycling
-- Mode tracking and persistence
-- Cycling logic to reach desired mode
-- Select entity for mode choice (Party, Romance, Caribbean, American, Sunset, Royalty, Blue, Green, Red, White, Magenta, Hold, Recall)
-- Light on/off control
+Left to right: GND, 1, 2, 3, 4.
 
-## Wiring Diagram
+Each signal screw already has a 150 ohm resistor to the GND screw, plus a filter and a clamp. Do not add another shunt.
 
-### Waveshare ESP32-S3-RELAY-6CH Connections
-![](images/ESP32-S3-Relay-6CH.jpg)
-```
-┌───────────────────────────────────────────────────────────────────────────┐
-│     Waveshare ESP32-S3-RELAY-6CH Industrial Module                        │
-│     [Product Image: https://www.waveshare.com/esp32-s3-relay-6ch.htm]     │
-│                                                                           │
-│  ┌────────────────────────────────────────────────────────────────────┐   │
-│  │ RELAY OUTPUTS (10A 250VAC / 30VDC each channel)                    │   │
-│  │ ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌──────┐              │   │
-│  │ │ CH1 │  │ CH2 │  │ CH3 │  │ CH4 │  │ CH5 │  │ CH6  │              │   │
-│  │ │GPIO1│  │GPIO2│  │GPIO41│ │GPIO42│ │GPIO45│ │GPIO46│              │   │
-│  │ └──┬──┘  └─────┘  └─────┘  └─────┘  └─────┘  └───┬──┘              │   │
-│  │    │                                             │                 │   │
-│  │    │ Screw Terminals (NO/COM/NC per channel)     │                 │   │
-│  │    └──> Unused (waterfall YAML)  Stenner 45M5 (CH2 / GPIO2)        │   │
-│  │         Leave Waterfall Auto OFF   120V hot on COM/NO              │   │
-│  │         Pool Light (CH6 / GPIO46)  Uses COM & NO                   │   │
-│  └────────────────────────────────────────────────────────────────────┘   │
-│                                                                           │
-│  ┌────────────────────────────────────────────────────────────────────┐   │
-│  │ BUILT-IN ISOLATED RS485 INTERFACE (Lower Right)                    │   │
-│  │                                                                    │   │
-│  │  Screw Terminal Connections:                                       │   │
-│  │  ┌─────┐                                                           │   │
-│  │  │ A+  │ ──┐                                                       │   │
-│  │  │ B-  │ ──┼──> To Pentair RS485 Bus                               │   │
-│  │  │ G   │ ──┘    (Pump + Chlorinator)                               │   │
-│  │  └─────┘                                                           │   │
-│  │                                                                    │   │
-│  │  Internal Connection: GPIO17 (TX), GPIO18 (RX)                     │   │
-│  │  Hardware Automatic Direction Control                              │   │
-│  │  Isolated with TVS Diode Protection                                │   │
-│  └────────────────────────────────────────────────────────────────────┘   │
-│                                                                           │
-│  ┌────────────────────────────────────────────────────────────────────┐   │
-│  │ GPIO CONNECTIONS (via 40-pin Pico HAT header)                      │   │
-│  │                                                                    │   │
-│  │  GPIO10 ──> Dallas 1-Wire Bus (with 4.7kΩ pullup to 3.3V)          │   │
-│  │             ├─> Air Temperature Sensor (DS18B20)                   │   │
-│  │             └─> Water Temperature Sensor (DS18B20)                 │   │
-│  │                                                                    │   │
-│  │  GPIO4  ──> Filter pressure ADC (Pico GP4 / pin 6)                 │   │
-│  │             150Ω shunt from 4-20mA loop − to GND                   │   │
-│  │             Transmitter + from board VIN+ (12-24V), NOT 3.3V/5V    │   │
-│  │                                                                    │   │
-│  │  GPIO5  ──> Atlas KIT-102P pH 4-20mA ADC (Pico GP5 / pin 7)        │   │
-│  │             Dedicated 150Ω shunt; 4-wire (PWR on VIN, Iout here)   │   │
-│  └────────────────────────────────────────────────────────────────────┘   │
-│                                                                           │
-│  Power Supply: USB Type-C (5V) or Screw Terminal (7-36V DC)               │
-└───────────────────────────────────────────────────────────────────────────┘
+These loops need their own DC supply, usually 12 V or 24 V, inside the transmitter's range. Do not power them from the hat's 3.3 V pin.
 
-EXTERNAL CONNECTIONS:
+For each channel:
 
-┌──────────────────────────────────────────────────────────────────┐
-│  RS485 BUS (Connected to Module's A+, B-, G terminals)           │
-│                                                                  │
-│      Module RS485                                                │
-│       A+ ────┬────────────────────────────┐                      │
-│       B- ────┼────────┐                   │                      │
-│       G  ────┼────┐   │                   │                      │
-│              │    │   │                   │                      │
-│              │    │   │                   │                      │
-│         ┌────▼────▼───▼────┐         ┌────▼─────────────┐        │
-│         │ Pentair          │         │ CircuPool RJ-60     │        │
-│         │ IntelliFlo Pump  │         │ is NOT on this bus  │        │
-│         │                  │         │                     │        │
-│         │ A+, B-, Ground   │         │ (flow-switch only)  │        │
-│         └──────────────────┘         └──────────────────┘        │
-│                                                                  │
-│  Note: Module has built-in isolation and surge protection        │
-└──────────────────────────────────────────────────────────────────┘
+1. Supply positive to the transmitter positive.
+2. Transmitter negative to that channel's signal screw.
+3. Supply negative to the GND screw.
 
-┌──────────────────────────────────────────────────────────────────┐
-│  DALLAS TEMPERATURE SENSORS (1-Wire on GPIO10)                   │
-│                                                                  │
-│   Each DS18B20 Sensor Wiring:                                    │
-│   ┌─────────────┐                                                │
-│   │  DS18B20    │                                                │
-│   │             │                                                │
-│   │  VCC ────> 3.3V (from Pico header)                           │
-│   │  DATA ───> GPIO10 (via 40-pin header)                        │
-│   │  GND ────> GND                                               │
-│   └─────────────┘                                                │
-│                                                                  │
-│   Required: 4.7kΩ pullup resistor between DATA and VCC           │
-│                                                                  │
-│   Two sensors connected in parallel:                             │
-│   - Air Temperature (Address: ${air_temp_id})                    │
-│   - Water Temperature (Address: ${water_temp_id})                │
-└──────────────────────────────────────────────────────────────────┘
+One supply can feed all four channels. Split the positive side. Each transmitter returns on its own signal screw.
 
-┌──────────────────────────────────────────────────────────────────┐
-│  FILTER TANK 4-20mA PRESSURE TRANSMITTER (Yosoo 0-0.5 MPa)       │
-│                                                                  │
-│   Board VIN+ (12-24V) ── red ──> Transmitter +                   │
-│   Transmitter − (black) ──┬──> GPIO4 (Pico GP4 / pin 6)          │
-│                           └── [150Ω 1%] ──> Pico GND (pin 3/8)   │
-│                                                                  │
-│   Do NOT use RS485 G (isolated). Do NOT use 250Ω (5V at 20mA).   │
-│   Full details: FILTER_PRESSURE.md                               │
-└──────────────────────────────────────────────────────────────────┘
+| Screw | What the firmware does |
+|-------|------------------------|
+| 1 | Filter pressure. GPIO7. Default range 0 to 0.5 MPa. See [FILTER_PRESSURE.md](FILTER_PRESSURE.md). |
+| 2 | Industrial pH kit, 4 mA = 0 pH, 20 mA = 14 pH. GPIO8. |
+| 3 | Milliamps only. GPIO9. |
+| 4 | Milliamps only. GPIO10. |
 
-┌──────────────────────────────────────────────────────────────────┐
-│  ATLAS INDUSTRIAL pH KIT (KIT-102P) — 4-WIRE, NOT 2-WIRE         │
-│                                                                  │
-│   Board VIN+ (12-24V) ──────► transmitter PWR +                  │
-│   Board VIN−            ──────► transmitter PWR −                │
-│                                                                  │
-│   transmitter 4-20mA + ──┬──► GPIO5 (Pico GP5 / pin 7)           │
-│                          └── [150Ω 1%] ──► Pico GND              │
-│                                              ▲                   │
-│   transmitter 4-20mA − ──────────────────────┘                   │
-│                                                                  │
-│   Probe pH pair → transmitter pH terminals                       │
-│   Probe PT-1000 → transmitter TEMP (no polarity)                 │
-│   Do NOT connect F (fault outputs 12-24V) or PLC cal 4/7/10      │
-│   Do NOT share the Yosoo 150Ω. Do NOT use 250Ω.                  │
-│   Full details: ACID_PH.md                                       │
-└──────────────────────────────────────────────────────────────────┘
+At 20 mA the 150 ohm resistor is 3.0 V. The ESP32-S3 analog input is soft above about 2.5 V, which is about 16 mA. Normal pool pressure and pH sit under that. The top of the scale reads a little low. The 150 ohm parts stay as they are.
 
-┌──────────────────────────────────────────────────────────────────┐
-│  RELAY CONNECTIONS                                               │
-│                                                                  │
-│  CH1 (GPIO1) - Unused waterfall YAML (leave Waterfall Auto OFF): │
-│  ┌──────────────────────────────────┐                            │
-│  │  Do not land the Stenner here    │                            │
-│  └──────────────────────────────────┘                            │
-│                                                                  │
-│  CH2 (GPIO2) - Stenner 45M5 acid pump:                           │
-│  ┌──────────────────────────────────┐                            │
-│  │  120V hot ──> COM                │                            │
-│  │  NO ──> Stenner hot (black)      │                            │
-│  │  Neutral and ground stay solid   │                            │
-│  │  NC - Not Used                   │                            │
-│  └──────────────────────────────────┘                            │
-│                                                                  │
-│  CH6 (GPIO46) - Pool light (IntelliBrite-style power cycle):     │
-│  ┌──────────────────────────────────┐                            │
-│  │  AC Line ──> COM                 │                            │
-│  │  NO ──> Pool Light ──> AC Neutral│                            │
-│  │  NC - Not Used                   │                            │
-│  └──────────────────────────────────┘                            │
-│                                                                  │
-│  CH3-CH5: Available for expansion                                │
-└──────────────────────────────────────────────────────────────────┘
+Do not land a fault wire from the Atlas industrial transmitter on the hat. That output is 12 to 24 V.
+
+## 1-Wire (J6)
+
+Left to right: 3V3, DATA, GND. The data pin is GPIO37.
+
+This is for DS18B20 sensors. Air and water can share the three screws. Fit **one** shunt on JP6. Use the 4.7k position for these sensors. The 2.2k and 1k positions are the other choices. Do not fit more than one.
+
+After the first boot, copy each sensor's address from the ESPHome log into `secrets.yaml` as `air_temp_id` and `water_temp_id`.
+
+**Board Temperature** is separate. It is the ESP32-S3 chip, in °F. It rises when WiFi is busy. It is not a stand-in for the air or water sensor.
+
+## Contacts (J7)
+
+Left to right: GND, 1, 2, 3, 4.
+
+Each input is a dry contact: a switch with no voltage of its own. One side goes to a numbered screw. The other side goes to the GND screw on J7. ON means that switch is closed.
+
+| Screw | GPIO |
+|-------|------|
+| 1 | GPIO47 |
+| 2 | GPIO16 |
+| 3 | GPIO14 |
+| 4 | GPIO13 |
+
+Do not connect a powered switch output (5 V, 12 V, or 24 V). The clamp will hold the pin in a safe range and dump the extra current onto the 3.3 V rail.
+
+## Power on the hat
+
+The hat takes 3.3 V from the Waveshare header, through fuse F1 (0.2 A). That rail runs the Atlas circuits, the 1-Wire sensors, and the pull-ups. It does not run 4-20 mA loops.
+
+## Install
+
+Home Assistant: paste [`ha-pool-controller.yaml`](ha-pool-controller.yaml) into ESPHome Builder. It loads the packages from the `PoolverasV1` branch. Add the keys in [`secrets.yaml.example`](secrets.yaml.example) to Home Assistant's `secrets.yaml`, then Install.
+
+From a clone, at the repo root:
+
+```bash
+esphome run esphome/pool-controller.yaml
 ```
 
-### Component Summary
+The device page is `http://pool-controller.local`.
 
-| Component | Connection Type | Pin/Relay | Notes |
-|-----------|----------------|-----------|-------|
-| **Waterfall YAML (unused)** | Relay CH1 | GPIO1 | Leave Waterfall Auto OFF; do not land acid here |
-| **Stenner 45M5 acid pump** | Relay CH2 | GPIO2 | Switch 120 V hot only; pulses only |
-| **Pool Light** | Relay CH6 | GPIO46 | Power cycling for color modes |
-| **Pentair IntelliFlo Pump** | Built-in RS485 | GPIO17/18 | Via onboard isolated RS485 (A+, B-, G) |
-| **Air Temperature** | 1-Wire (Dallas) | GPIO10 | DS18B20 sensor, needs 4.7kΩ pullup |
-| **Water Temperature** | 1-Wire (Dallas) | GPIO10 | DS18B20 sensor (same bus as air) |
-| **Filter tank pressure** | 4–20 mA → ADC | GPIO4 (Pico GP4) | 150 Ω shunt; loop powered from VIN 12–24 V |
-| **Pool pH** | Atlas KIT-102P 4-wire 4–20 mA → ADC | GPIO5 (Pico GP5) | Dedicated 150 Ω; VIN powers PWR; Iout is isolated |
-
-### Notes
-
-- The Waveshare module has 6 relay channels (10A 250VAC each). Currently using:
-  - **CH1 (GPIO1)**: Unused waterfall YAML — leave auto off
-  - **CH2 (GPIO2)**: Stenner 45M5 acid pump
-  - **CH6 (GPIO46)**: Pool light control
-  - **CH3-CH5**: Available for expansion
-- **Built-in RS485**: The module includes an isolated RS485 interface with automatic direction control, TVS diode protection, and hardware isolation - no external converter needed
-- The RS485 terminals (A+, B-, G) are located on the lower right of the module
-- Optional 120Ω termination resistor can be enabled via onboard jumper
-- The 1-Wire temperature bus requires a 4.7kΩ pullup resistor between DATA and VCC
-- Pool light uses power cycling to select modes; ensure relay can handle inrush current
-- Power supply options: USB Type-C (5V) or screw terminal (7-36V DC wide range)
-- All GPIO connections via the 40-pin Pico HAT compatible header
-- Filter pressure: see [FILTER_PRESSURE.md](FILTER_PRESSURE.md). GPIO4 is an ADC pin on the Pico header, not a relay. Relays are GPIO1, GPIO2, GPIO41, GPIO42, GPIO45, GPIO46.
-- Acid / pH: see [ACID_PH.md](ACID_PH.md). GPIO5 is the Atlas IND-pH 4–20 mA ADC. Do not put the Stenner on CH1. Do not land transmitter **F** on the ESP.
-
-## Home Assistant ESPHome Builder (recommended)
-
-Do **not** upload this whole repository into Home Assistant. ESPHome Builder only needs **one YAML file**; it downloads the rest from GitHub when you click Install.
-
-1. Push this fork to GitHub (`mikedahlgren/Pool-Controller`).
-2. In ESPHome Builder, create or open `pool-controller` and paste **[`ha-pool-controller.yaml`](ha-pool-controller.yaml)** as the device config (you can keep that filename or rename it).
-3. Merge [`secrets.yaml.example`](secrets.yaml.example) into `/config/esphome/secrets.yaml` (Wi‑Fi entries are usually already there).
-4. Click **Install**. First compile pulls `pentair_if_ic` and the `esphome/Include/*.yaml` packages from GitHub.
-
-After that, day-to-day use is Home Assistant entities plus the built-in device page at `http://pool-controller.local` (ESPHome web_server v3).
-
-Once an hour the controller posts **Pool pH** and **Water Temperature** (°F) to PoolVeras. On the device page that is its own first section, **PoolVeras**, with **Sync to the Cloud**. That section is [`Include/poolveras.yaml`](Include/poolveras.yaml), pulled from GitHub with the other packages. The ESPHome Builder device file on Home Assistant is a local copy: a GitHub push does not change it until you replace that device YAML with the current [`ha-pool-controller.yaml`](ha-pool-controller.yaml). Add `poolveras_authorization` from [`secrets.yaml.example`](secrets.yaml.example) (the key from that pool’s Settings page on https://poolveras.com, pasted as shown), then Install. Each post is a new log row. The overview keeps the last kit reading for anything the controller does not send.
-
-**Private GitHub repo:** ESPHome cannot use `github://` without auth. Use:
-
-```yaml
-external_components:
-  - source:
-      type: git
-      url: https://github.com/mikedahlgren/Pool-Controller
-      username: git
-      password: !secret github_token
-    components: [pentair_if_ic]
-```
-
-and the same `username` / `password` on the `packages:` git url. Create a PAT with `repo` read access.
-
-**Better than uploading files through the UI:** install the **Studio Code Server** (or Samba) add-on and edit `/config/esphome/ha-pool-controller.yaml` in place. Or make `/config/esphome` a git repo that contains only that one yaml plus `secrets.yaml`.
-
-## Getting Started (local clone / ESPHome CLI)
-
-1. Copy `secrets.yaml.example` to `esphome/secrets.yaml` and fill it in
-2. From the **repository root**: `esphome run esphome/pool-controller.yaml`
-3. Device UI: `http://pool-controller.local`
-
-## Dependencies
-
-This configuration requires:
-- ESPHome 2025.9.0 or newer
-- Custom component `pentair_if_ic` (IntelliFlo RS485)
-
-See the [components README](../components/README.md).
+ESPHome 2025.9.0 or newer. The custom pieces are `pentair_if_ic` (the pump) and `atlas_ezo` (the three sockets).
