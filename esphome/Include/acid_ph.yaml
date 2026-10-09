@@ -8,15 +8,17 @@
 # Inject on the RETURN after the filter. Do not inject into the filter inlet
 # (often >25 PSI) or into the pH sample loop. See esphome/ACID_PH.md.
 #
-# pH hardware: Atlas Scientific Industrial pH Kit (KIT-102P) —
-# IND-pH / IXIAN isolated 4-wire transmitter + industrial 3/4" NPT probe.
-# 9–36 V on the transmitter PWR terminals from board VIN (12–24 V).
-# Isolated 4–20 mA output (4 mA = 0 pH, 20 mA = 14 pH) through a dedicated
-# 150Ω 1% shunt into GPIO5 (Pico GP5 / pin 7, ADC1). Do NOT wire this as a
-# 2-wire loop like the Yosoo pressure sender. Do NOT land transmitter F
-# (fault, 12–24 V) on an ESP pin. Calibrate buffers on the Atlas, not in YAML.
+# pH can come from either kind of circuit:
+#   An Atlas pH board on any of the three sockets. The silk labels are only
+#   a guide for the person installing the boards.
+#   Atlas Industrial pH Kit (KIT-102P) 4-20 mA on J8 screw 2 (GPIO8).
+#     4 mA = 0 pH, 20 mA = 14 pH, through the 150 ohm shunt.
+#     Do NOT land transmitter F (fault, 12-24 V) on an ESP pin.
+# Pool pH is what acid dosing and PoolVeras use. Source Auto takes the EZO
+# reading when that board answers, and otherwise the 4-20 kit. ph_offset
+# trims only the 4-20 reading. Calibrate an EZO on the module.
 # Auto-dose stays off until pH reads valid. Always-off restore; HA cannot
-# hold the pump on — only the pulse script can.
+# hold the pump on. Only the pulse script can.
 
 substitutions:
   ph_offset: "0.2"   # ESP/HA vs Atlas display; override in ha-pool-controller.yaml
@@ -166,10 +168,27 @@ number:
       sorting_group_id: sorting_group_acid
       sorting_weight: 9
 
+select:
+  - platform: template
+    name: "pH Source"
+    id: ph_source
+    optimistic: true
+    restore_value: true
+    initial_option: Auto
+    options:
+      - Auto
+      - EZO
+      - "4-20 mA"
+    icon: "mdi:ph"
+    entity_category: config
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 1.1
+
 sensor:
   - platform: template
-    name: "Pool pH"
-    id: pool_ph
+    name: "4-20 pH"
+    id: ph_420
     unit_of_measurement: "pH"
     accuracy_decimals: 2
     icon: "mdi:ph"
@@ -191,6 +210,33 @@ sensor:
       float ph = ph_lo + (ma - 4.0f) / 16.0f * (ph_hi - ph_lo);
       ph += ${ph_offset};
       return ph;
+    web_server:
+      sorting_group_id: sorting_group_acid
+      sorting_weight: 1.3
+
+  - platform: template
+    name: "Pool pH"
+    id: pool_ph
+    unit_of_measurement: "pH"
+    accuracy_decimals: 2
+    icon: "mdi:ph"
+    device_class: ph
+    state_class: measurement
+    update_interval: ${ph_update_interval}
+    lambda: |-
+      const char *opt = id(ph_source).current_option();
+      const bool force_ezo = opt != nullptr && strcmp(opt, "EZO") == 0;
+      const bool force_loop = opt != nullptr && strcmp(opt, "4-20 mA") == 0;
+      if (!force_loop) {
+        const float ezo = id(ezo_ph).state;
+        if (!isnan(ezo) && ezo >= 0.0f && ezo <= 14.0f) {
+          return ezo;
+        }
+        if (force_ezo) {
+          return NAN;
+        }
+      }
+      return id(ph_420).state;
     web_server:
       sorting_group_id: sorting_group_acid
       sorting_weight: 1
@@ -242,7 +288,7 @@ sensor:
       sorting_weight: 3.3
 
   - platform: adc
-    pin: ${ph_sensor_pin}   # Pico GP5 / pin 7; Atlas 4–20 mA + through 150Ω to GND
+    pin: ${ph_sensor_pin}   # J8 screw 2; Atlas 4-20 mA through 150 ohm to GND
     name: "pH Loop Voltage"
     id: ph_loop_voltage
     attenuation: 12db

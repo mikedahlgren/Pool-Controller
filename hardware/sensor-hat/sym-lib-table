@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "sensor-hat") (type "KiCad") (uri "${KIPRJMOD}/sensor-hat.kicad_sym") (options "") (descr "Waveshare interface and EZO blocks"))
+)

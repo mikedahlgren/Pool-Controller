@@ -1,21 +1,21 @@
 substitutions:
   waterfall_pin: GPIO1
-  one_wire_pin: GPIO10
+  one_wire_pin: GPIO37
   air_temp_id: !secret air_temp_id
   water_temp_id: !secret water_temp_id
   pentair_tx_pin: GPIO17
   pentair_rx_pin: GPIO18
   right_arrow: "➡️"
   pentair_light_pin: GPIO46
-  # Yosoo 4-20mA 0-0.5MPa filter-tank transmitter on Pico GP4 (see FILTER_PRESSURE.md)
-  filter_pressure_pin: GPIO4
+  # Yosoo 4-20mA 0-0.5MPa filter-tank transmitter on J8 screw 1 (GPIO7)
+  filter_pressure_pin: GPIO7
   filter_pressure_shunt_ohms: "150.0"
   filter_pressure_full_scale_mpa: "0.5"
-  # Stenner 45M5 on CH2; Atlas Industrial pH Kit (KIT-102P) 4-wire 4-20mA on Pico GP5
-  # (see ACID_PH.md). Scale is 0–14 pH for this transmitter — do not change.
-  # ph_offset trims ESP/HA vs the Atlas display (positive = ESP was reading low).
+  # Stenner 45M5 on CH2. 4-20 pH kit on J8 screw 2 (GPIO8).
+  # An Atlas pH board works in any of the three sockets. Scale is 0-14 for the kit.
+  # ph_offset trims the 4-20 reading only (positive = ESP was reading low).
   acid_pump_pin: GPIO2
-  ph_sensor_pin: GPIO5
+  ph_sensor_pin: GPIO8
   ph_shunt_ohms: "150.0"
   ph_scale_low: "0"
   ph_scale_high: "14"
@@ -72,7 +72,7 @@ external_components:
   - source:
       type: local
       path: ../components
-    components: [pentair_if_ic]
+    components: [pentair_if_ic, atlas_ezo]
 
 web_server:
   port: 80
@@ -92,6 +92,7 @@ packages:
   pentair_light: !include Include/pentair_light.yaml
   filter_pressure: !include Include/filter_pressure.yaml
   acid_ph: !include Include/acid_ph.yaml
+  hat: !include Include/hat.yaml
   poolveras: !include Include/poolveras.yaml
   # Uncomment if you add an IntelliChlor-compatible SWG, and set
   # enable_intellichlor: true in Include/schedule.yaml:
