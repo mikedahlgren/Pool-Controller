@@ -1,0 +1,1275 @@
+(kicad_symbol_lib
+	(version 20251024)
+	(generator "kicad_symbol_editor")
+	(generator_version "10.0")
+	(symbol "Waveshare"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -39.37 -464.82000000000016 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "Waveshare" (at -39.37 7.62 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "Waveshare_0_1"
+			(rectangle (start -78.74 -462.28000000000014) (end -2.54 5.08)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "Waveshare" (at -39.37 -459.7400000000001 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "Waveshare_1_1"
+			(pin passive line
+				(at 0 -0.0 180)
+				(length 2.54)
+				(name "3V3  J1.11"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -45.72 180)
+				(length 2.54)
+				(name "ADC1  GPIO7"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -60.96 180)
+				(length 2.54)
+				(name "ADC2  GPIO8"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -76.2 180)
+				(length 2.54)
+				(name "ADC3  GPIO9"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -91.44 180)
+				(length 2.54)
+				(name "ADC4  GPIO10"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -137.16 180)
+				(length 2.54)
+				(name "DIN1  GPIO47"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "6"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -152.4 180)
+				(length 2.54)
+				(name "DIN2  GPIO16"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "7"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -167.64000000000001 180)
+				(length 2.54)
+				(name "DIN3  GPIO14"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "8"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -182.88000000000002 180)
+				(length 2.54)
+				(name "DIN4  GPIO13"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "9"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -228.60000000000002 180)
+				(length 2.54)
+				(name "1-Wire  GPIO37"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "10"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -274.32000000000005 180)
+				(length 2.54)
+				(name "SDA  GPIO4"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "11"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -289.56000000000006 180)
+				(length 2.54)
+				(name "SCL  GPIO5"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "12"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -335.2800000000001 180)
+				(length 2.54)
+				(name "pH RX  GPIO12"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "13"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -350.5200000000001 180)
+				(length 2.54)
+				(name "pH TX  GPIO11"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "14"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -396.2400000000001 180)
+				(length 2.54)
+				(name "ORP RX  GPIO40"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "15"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -411.48000000000013 180)
+				(length 2.54)
+				(name "ORP TX  GPIO39"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "16"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -457.20000000000016 180)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "17"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "MA"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -13.97 -53.339999999999996 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "4-20 mA" (at -13.97 20.32 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "MA_0_1"
+			(rectangle (start -27.94 -50.8) (end -2.54 17.78)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "4-20 mA" (at -13.97 -48.26 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "MA_1_1"
+			(pin passive line
+				(at -27.94 12.7 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -27.94 -0.0 0)
+				(length 2.54)
+				(name "CH1"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -27.94 -15.240000000000002 0)
+				(length 2.54)
+				(name "CH2"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -27.94 -30.480000000000004 0)
+				(length 2.54)
+				(name "CH3"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -27.94 -45.72 0)
+				(length 2.54)
+				(name "CH4"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "Contact"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -13.97 -53.340000000000025 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "Contacts" (at -13.97 20.32 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "Contact_0_1"
+			(rectangle (start -27.94 -50.800000000000026) (end -2.54 17.78)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "Contacts" (at -13.97 -48.260000000000026 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "Contact_1_1"
+			(pin passive line
+				(at -27.94 12.7 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -27.94 -0.0 0)
+				(length 2.54)
+				(name "IN1"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -27.94 -15.240000000000009 0)
+				(length 2.54)
+				(name "IN2"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -27.94 -30.480000000000018 0)
+				(length 2.54)
+				(name "IN3"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -27.94 -45.72000000000003 0)
+				(length 2.54)
+				(name "IN4"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "OW"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -10.16 -15.239999999999998 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "1-Wire" (at -10.16 15.239999999999998 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "OW_0_1"
+			(rectangle (start -20.32 -12.7) (end -2.54 12.7)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "1-Wire" (at -10.16 -10.16 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "OW_1_1"
+			(pin passive line
+				(at -20.32 7.62 0)
+				(length 2.54)
+				(name "3V3"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -20.32 0 0)
+				(length 2.54)
+				(name "DATA"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -20.32 -7.62 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "JP6"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -11.43 -27.939999999999998 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "one shunt" (at -11.43 7.62 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "JP6_0_1"
+			(rectangle (start -22.86 -25.4) (end -2.54 5.08)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "one shunt" (at -11.43 -22.86 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "JP6_1_1"
+			(pin passive line
+				(at 0 0 180)
+				(length 2.54)
+				(name "OW"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -10.16 180)
+				(length 2.54)
+				(name "OW"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -20.32 180)
+				(length 2.54)
+				(name "OW"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "6"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -22.86 0 0)
+				(length 2.54)
+				(name "4.7k"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -22.86 -10.16 0)
+				(length 2.54)
+				(name "2.2k"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -22.86 -20.32 0)
+				(length 2.54)
+				(name "1k"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J11"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -8.89 -22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "data" (at -8.89 17.78 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J11_0_1"
+			(rectangle (start -17.78 -20.320000000000007) (end -2.54 15.24)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "data" (at -8.89 -17.78000000000001 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J11_1_1"
+			(pin passive line
+				(at -17.78 10.16 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -17.78 0 0)
+				(length 2.54)
+				(name "RX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -17.78 -15.240000000000009 0)
+				(length 2.54)
+				(name "TX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "U1"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -17.78 -22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "EZO pH" (at -17.78 17.78 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "U1_0_1"
+			(rectangle (start -35.56 -20.320000000000007) (end -2.54 15.24)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "EZO pH" (at -17.78 -17.78000000000001 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "U1_1_1"
+			(pin passive line
+				(at 0 0 180)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -7.62 180)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -15.240000000000009 180)
+				(length 2.54)
+				(name "VCC"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 10.16 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 0 0)
+				(length 2.54)
+				(name "RX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 -15.240000000000009 0)
+				(length 2.54)
+				(name "TX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "6"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J12"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -8.255 -22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "probe" (at -8.255 7.62 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J12_0_1"
+			(rectangle (start -16.51 -20.320000000000007) (end -2.54 5.08)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "probe" (at -8.255 -17.78000000000001 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J12_1_1"
+			(pin passive line
+				(at -16.51 -15.240000000000009 0)
+				(length 2.54)
+				(name "VCC"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -16.51 -7.62 0)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -16.51 0 0)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J3"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -7.62 -15.239999999999998 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "wires" (at -7.62 7.62 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J3_0_1"
+			(rectangle (start -15.24 -12.7) (end -2.54 5.08)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "wires" (at -7.62 -10.16 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J3_1_1"
+			(pin passive line
+				(at -15.24 -7.62 0)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -15.24 0 0)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J9"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -8.89 -22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "data" (at -8.89 17.78 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J9_0_1"
+			(rectangle (start -17.78 -20.320000000000007) (end -2.54 15.24)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "data" (at -8.89 -17.78000000000001 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J9_1_1"
+			(pin passive line
+				(at -17.78 10.16 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -17.78 0 0)
+				(length 2.54)
+				(name "RX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -17.78 -15.240000000000009 0)
+				(length 2.54)
+				(name "TX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "U2"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -17.78 -22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "EZO ORP" (at -17.78 17.78 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "U2_0_1"
+			(rectangle (start -35.56 -20.320000000000007) (end -2.54 15.24)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "EZO ORP" (at -17.78 -17.78000000000001 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "U2_1_1"
+			(pin passive line
+				(at 0 0 180)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -7.62 180)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -15.240000000000009 180)
+				(length 2.54)
+				(name "VCC"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 10.16 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 0 0)
+				(length 2.54)
+				(name "RX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 -15.240000000000009 0)
+				(length 2.54)
+				(name "TX"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "6"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J10"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -8.255 -22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "probe" (at -8.255 7.62 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J10_0_1"
+			(rectangle (start -16.51 -20.320000000000007) (end -2.54 5.08)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "probe" (at -8.255 -17.78000000000001 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J10_1_1"
+			(pin passive line
+				(at -16.51 -15.240000000000009 0)
+				(length 2.54)
+				(name "VCC"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -16.51 -7.62 0)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -16.51 0 0)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J4"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -7.62 -15.239999999999998 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "wires" (at -7.62 7.62 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J4_0_1"
+			(rectangle (start -15.24 -12.7) (end -2.54 5.08)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "wires" (at -7.62 -10.16 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J4_1_1"
+			(pin passive line
+				(at -15.24 -7.62 0)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -15.24 0 0)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J16"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -7.62 -22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "I2C" (at -7.62 20.32 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J16_0_1"
+			(rectangle (start -15.24 -20.320000000000007) (end -2.54 17.78)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "I2C" (at -7.62 -17.78000000000001 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J16_1_1"
+			(pin passive line
+				(at 0 12.7 180)
+				(length 2.54)
+				(name "3V3"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 7.62 180)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -15.240000000000009 180)
+				(length 2.54)
+				(name "SCL"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 0 180)
+				(length 2.54)
+				(name "SDA"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J13"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -8.89 -7.62 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "data" (at -8.89 22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J13_0_1"
+			(rectangle (start -17.78 -5.08) (end -2.54 20.320000000000007)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "data" (at -8.89 -2.54 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J13_1_1"
+			(pin passive line
+				(at -17.78 10.16 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -17.78 0 0)
+				(length 2.54)
+				(name "SCL"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -17.78 15.240000000000009 0)
+				(length 2.54)
+				(name "SDA"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "U3"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -17.78 -15.239999999999998 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "EZO I2C" (at -17.78 22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "U3_0_1"
+			(rectangle (start -35.56 -12.7) (end -2.54 20.320000000000007)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "EZO I2C" (at -17.78 -10.16 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "U3_1_1"
+			(pin passive line
+				(at 0 0 180)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 -7.62 180)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at 0 15.240000000000009 180)
+				(length 2.54)
+				(name "VCC"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 10.16 0)
+				(length 2.54)
+				(name "GND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "4"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 0 0)
+				(length 2.54)
+				(name "SCL"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "5"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -35.56 15.240000000000009 0)
+				(length 2.54)
+				(name "SDA"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "6"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J14"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -8.255 -15.239999999999998 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "probe" (at -8.255 22.860000000000007 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J14_0_1"
+			(rectangle (start -16.51 -12.7) (end -2.54 20.320000000000007)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "probe" (at -8.255 -10.16 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J14_1_1"
+			(pin passive line
+				(at -16.51 15.240000000000009 0)
+				(length 2.54)
+				(name "VCC"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -16.51 -7.62 0)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -16.51 0 0)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "3"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "J5"
+		(pin_numbers (hide yes))
+		(pin_names (offset 1.016))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(property "Reference" "U" (at -7.62 -15.239999999999998 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "wires" (at -7.62 7.62 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "" (at 0 0 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "J5_0_1"
+			(rectangle (start -15.24 -12.7) (end -2.54 5.08)
+				(stroke (width 0.254) (type default))
+				(fill (type background)))
+			(text "wires" (at -7.62 -10.16 0)
+				(effects (font (size 1.27 1.27))))
+		)
+		(symbol "J5_1_1"
+			(pin passive line
+				(at -15.24 -7.62 0)
+				(length 2.54)
+				(name "PRB"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "1"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+			(pin passive line
+				(at -15.24 0 0)
+				(length 2.54)
+				(name "PGND"
+					(effects (font (size 1.27 1.27)))
+				)
+				(number "2"
+					(effects (font (size 1.27 1.27)))
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+)

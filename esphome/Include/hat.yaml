@@ -1,0 +1,220 @@
+# Sensor hat on the Waveshare Pico headers.
+#
+# The three Atlas sockets are the same kind of port. pH, ORP, and EZO on
+# the silk only tell the installer which socket is which. A pH, ORP, EC,
+# RTD, or dissolved-oxygen circuit can sit in any socket. The ESP asks the
+# board what it is. Factory boards speak UART. A board already switched to
+# I2C is picked up on that socket too.
+#
+# Socket 1 is the pair labeled pH: ESP TX GPIO11, ESP RX GPIO12.
+# Socket 2 is the pair labeled ORP: ESP TX GPIO39, ESP RX GPIO40.
+# Socket 3 is the pair labeled EZO: ESP TX GPIO5, ESP RX GPIO4.
+#
+# J8 screw 1 is filter pressure. Screw 2 is the 4-20 mA pH kit.
+# Screws 3 and 4 are spare current inputs. Contacts are dry switches
+# to the GND screw: ON means that switch is closed.
+
+atlas_ezo:
+  id: atlas_hat
+  ports:
+    - tx_pin: GPIO11
+      rx_pin: GPIO12
+    - tx_pin: GPIO39
+      rx_pin: GPIO40
+    - tx_pin: GPIO5
+      rx_pin: GPIO4
+
+web_server:
+  sorting_groups:
+    - id: sorting_group_probes
+      name: "Probes"
+      sorting_weight: -6
+    - id: sorting_group_contacts
+      name: "Contacts"
+      sorting_weight: -5
+    - id: sorting_group_ma
+      name: "4-20 mA"
+      sorting_weight: -4
+
+sensor:
+  - platform: atlas_ezo
+    atlas_ezo_id: atlas_hat
+    ph:
+      name: "EZO pH"
+      id: ezo_ph
+      icon: "mdi:ph"
+      web_server:
+        sorting_group_id: sorting_group_acid
+        sorting_weight: 1.2
+    orp:
+      name: "ORP"
+      icon: "mdi:flash"
+      state_class: measurement
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 1
+    conductivity:
+      name: "Conductivity"
+      icon: "mdi:waves"
+      state_class: measurement
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 2
+    salinity:
+      name: "Salinity"
+      id: pool_salinity
+      icon: "mdi:waves"
+      state_class: measurement
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 3
+    tds:
+      name: "TDS"
+      icon: "mdi:water"
+      state_class: measurement
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 4
+    rtd:
+      name: "RTD Temperature"
+      icon: "mdi:thermometer"
+      state_class: measurement
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 5
+    dissolved_oxygen:
+      name: "Dissolved Oxygen"
+      icon: "mdi:air-filter"
+      state_class: measurement
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 6
+
+  - platform: adc
+    pin: GPIO9
+    id: ma3_voltage
+    attenuation: 12db
+    samples: 16
+    update_interval: 5s
+    internal: true
+    filters:
+      - median:
+          window_size: 5
+          send_every: 2
+          send_first_at: 1
+    on_value:
+      then:
+        - sensor.template.publish:
+            id: ma3_current
+            state: !lambda "return x / ${ph_shunt_ohms} * 1000.0f;"
+
+  - platform: template
+    name: "4-20 Input 3"
+    id: ma3_current
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    icon: "mdi:current-dc"
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: sorting_group_ma
+      sorting_weight: 3
+
+  - platform: adc
+    pin: GPIO10
+    id: ma4_voltage
+    attenuation: 12db
+    samples: 16
+    update_interval: 5s
+    internal: true
+    filters:
+      - median:
+          window_size: 5
+          send_every: 2
+          send_first_at: 1
+    on_value:
+      then:
+        - sensor.template.publish:
+            id: ma4_current
+            state: !lambda "return x / ${ph_shunt_ohms} * 1000.0f;"
+
+  - platform: template
+    name: "4-20 Input 4"
+    id: ma4_current
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    icon: "mdi:current-dc"
+    entity_category: diagnostic
+    web_server:
+      sorting_group_id: sorting_group_ma
+      sorting_weight: 4
+
+text_sensor:
+  - platform: atlas_ezo
+    atlas_ezo_id: atlas_hat
+    socket_1:
+      name: "pH Socket"
+      icon: "mdi:chip"
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 10
+    socket_2:
+      name: "ORP Socket"
+      icon: "mdi:chip"
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 11
+    socket_3:
+      name: "EZO Socket"
+      icon: "mdi:chip"
+      web_server:
+        sorting_group_id: sorting_group_probes
+        sorting_weight: 12
+
+binary_sensor:
+  - platform: gpio
+    name: "Contact 1"
+    pin:
+      number: GPIO47
+      mode:
+        input: true
+      inverted: true
+    icon: "mdi:electric-switch"
+    web_server:
+      sorting_group_id: sorting_group_contacts
+      sorting_weight: 1
+
+  - platform: gpio
+    name: "Contact 2"
+    pin:
+      number: GPIO16
+      mode:
+        input: true
+      inverted: true
+    icon: "mdi:electric-switch"
+    web_server:
+      sorting_group_id: sorting_group_contacts
+      sorting_weight: 2
+
+  - platform: gpio
+    name: "Contact 3"
+    pin:
+      number: GPIO14
+      mode:
+        input: true
+      inverted: true
+    icon: "mdi:electric-switch"
+    web_server:
+      sorting_group_id: sorting_group_contacts
+      sorting_weight: 3
+
+  - platform: gpio
+    name: "Contact 4"
+    pin:
+      number: GPIO13
+      mode:
+        input: true
+      inverted: true
+    icon: "mdi:electric-switch"
+    web_server:
+      sorting_group_id: sorting_group_contacts
+      sorting_weight: 4

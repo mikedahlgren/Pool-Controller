@@ -28,18 +28,18 @@
 
 substitutions:
   waterfall_pin: GPIO1
-  one_wire_pin: GPIO10
+  one_wire_pin: GPIO37
   air_temp_id: !secret air_temp_id
   water_temp_id: !secret water_temp_id
   pentair_tx_pin: GPIO17
   pentair_rx_pin: GPIO18
   right_arrow: "➡️"
   pentair_light_pin: GPIO46
-  filter_pressure_pin: GPIO4
+  filter_pressure_pin: GPIO7   # J8 screw 1
   filter_pressure_shunt_ohms: "150.0"
   filter_pressure_full_scale_mpa: "0.5"
   acid_pump_pin: GPIO2          # Stenner 45M5 hot on CH2
-  ph_sensor_pin: GPIO5          # Atlas KIT-102P 4-20mA + (Pico GP5 / pin 7)
+  ph_sensor_pin: GPIO8          # Atlas KIT-102P 4-20 mA on J8 screw 2
   ph_shunt_ohms: "150.0"        # Dedicated 150Ω; not the Yosoo shunt; not 250Ω
   ph_scale_low: "0"             # Atlas IND-pH: 4 mA = 0 pH
   ph_scale_high: "14"           # Atlas IND-pH: 20 mA = 14 pH
@@ -85,8 +85,8 @@ wifi:
 captive_portal:
 
 external_components:
-  - source: github://mikedahlgren/Pool-Controller@main
-    components: [pentair_if_ic]
+  - source: github://mikedahlgren/Pool-Controller@PoolverasV1
+    components: [pentair_if_ic, atlas_ezo]
     refresh: 0s
 
 web_server:
@@ -104,7 +104,7 @@ web_server:
 packages:
   pool_firmware:
     url: https://github.com/mikedahlgren/Pool-Controller
-    ref: main
+    ref: PoolverasV1
     refresh: 0s
     files:
       - esphome/Include/temperature.yaml
@@ -112,6 +112,7 @@ packages:
       - esphome/Include/pentair_light.yaml
       - esphome/Include/filter_pressure.yaml
       - esphome/Include/acid_ph.yaml
+      - esphome/Include/hat.yaml
       - esphome/Include/poolveras.yaml
       # Uncomment if you add an IntelliChlor-compatible SWG, and set
       # enable_intellichlor: true in esphome/Include/schedule.yaml:
