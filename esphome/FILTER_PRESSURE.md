@@ -18,105 +18,25 @@ The IntelliFlo `Pressure` entity already in Home Assistant is the **pump’s int
 
 Pool sand/cartridge filters usually run in the **8–25 psi** range, so 0–0.5 MPa is a good fit.
 
-## Parts
+The hat already has the 150 ohm shunt, the filter capacitor, and the clamp. Connector map: [README.md](README.md).
 
-| Part | Notes |
-|------|--------|
-| 150 Ω, 1% metal-film resistor, ≥0.25 W | Current-to-voltage shunt. **Do not use 250 Ω** — 20 mA × 250 Ω = 5 V, which can damage the ESP32 ADC. |
-| 12–24 V DC supply on the board VIN screw terminal | Same supply can power the ESP and the 4–20 mA loop. USB-only 5 V is not enough for the transmitter. |
-| Optional 3.3 V zener (e.g. 1N4728A) | Across GPIO4–GND as a clamp if a wire comes loose. |
-| Optional 0.1 µF ceramic | GPIO4 to GND, close to the header, to quiet the ADC. |
-| G1/4 female → 1/4" NPT male adapter | Most US filter gauge ports are **1/4" NPT**. The Yosoo thread is **G1/4**. |
-| Brass tee | Keep the mechanical gauge and add the transmitter on the same port. |
-| PTFE tape | On the NPT/adapter side. G1/4 BSPP often needs a bonded washer or O-ring, not just tape. |
+## Wiring
 
-## ESP32 pin (Pico HAT header)
+J8, left to right: GND, 1, 2, 3, 4. Filter pressure is screw 1 (GPIO7).
 
-GPIO4 is **ADC1_CH3** (safe to use with WiFi). Relays do **not** use GPIO4:
-
-| Relay | ESP32 GPIO |
-|-------|------------|
-| CH1 | GPIO1 |
-| CH2 | GPIO2 |
-| CH3 | GPIO41 |
-| CH4 | GPIO42 |
-| CH5 | GPIO45 |
-| CH6 | GPIO46 |
-
-Dallas 1-Wire is already on **GPIO10** (Pico **GP10**, physical pin 13). The Atlas Industrial pH Kit uses **GPIO5** (Pico **GP5**, pin 7) with its **own** 150 Ω shunt on a **4-wire** 4–20 mA output — do not share this Yosoo loop; see [ACID_PH.md](ACID_PH.md).
-
-Use Pico **GP4**, physical **pin 6**:
+Use a separate 12 V or 24 V supply. Do not use the hat's 3.3 V, and do not use the RS485 ground.
 
 ```
-USB / Type-C end of the 40-pin Pico header
-Pin 1  GP0          GP1  Pin 2
-Pin 3  GND          GP2  Pin 4
-Pin 5  GP3          GP4  Pin 6   ← ADC (GPIO4)
-Pin 7  GP5          GND  Pin 8   ← extra GND
-...
-Pin 13 GP10         GP11 Pin 14  ← existing Dallas 1-Wire
+Supply +  ---- transmitter +
+Transmitter - ---- J8 screw 1
+Supply -  ---- J8 GND screw
 ```
 
-**GND:** Pico pin 3 or 8 (same ground as the Dallas sensors).
+A 3-wire unit uses the same GND screw for its ground wire, and screw 1 for the signal.
 
-**Do not** use the RS485 **G** terminal for this circuit. That ground is isolated from the ESP32.
+At 150 ohm: 4 mA is 0.60 V (0 psi), 12 mA is 1.80 V, 20 mA is 3.00 V (72.5 psi). The analog input is soft above about 2.5 V, so the top of the scale reads a little low. Normal filter pressure sits under that.
 
-**Do not** power the transmitter from Pico 3.3 V or 5 V.
-
-## Electrical diagram
-
-Two-wire 4–20 mA loop (typical Yosoo: **red = +**, **black = signal**. Confirm on the sensor body — colors vary):
-
-```
- 12–24 V DC
- board VIN+ ────── red (transmitter +)
-                          │
-                   [Yosoo 4–20 mA]
-                          │
-                     black (loop −)
-                          │
-                          ├──────── GPIO4  (Pico GP4 / pin 6)
-                          │
-                       [150 Ω 1%]
-                          │
- Pico GND ────────────────┴──────── board VIN−
- (header pin 3 or 8)
-```
-
-```mermaid
-flowchart LR
-  subgraph supply ["ESP32-S3-RELAY-6CH"]
-    VIN["VIN+ 12–24 V"]
-    GND["Pico GND"]
-    ADC["GPIO4 ADC"]
-  end
-  subgraph loop ["4–20 mA loop"]
-    TX["Yosoo transmitter 0–0.5 MPa"]
-    R["150 Ω shunt"]
-  end
-  VIN -->|"red +"| TX
-  TX -->|"black −"| R
-  R --> GND
-  R -.->|"0.6–3.0 V"| ADC
-```
-
-At 150 Ω:
-
-| Loop current | Meaning | Voltage on GPIO4 |
-|--------------|---------|------------------|
-| 4 mA | 0 psi (0 MPa) | 0.60 V |
-| 12 mA | 36.3 psi (mid-scale) | 1.80 V |
-| 20 mA | 72.5 psi (0.5 MPa) | 3.00 V |
-
-ESP32 ADC max is about 3.1 V at 12 dB attenuation, so 3.00 V at full scale is intentional headroom.
-
-### If your unit is 3-wire
-
-Some batches bring out a separate ground:
-
-- Red → VIN+
-- Black → Pico GND
-- Blue/green signal → top of the 150 Ω shunt (other end of shunt to Pico GND, tap to GPIO4)
+Plumbing parts that are not on the hat: a G1/4 to 1/4 inch NPT adapter if the filter port is NPT, a tee if you want to keep the mechanical gauge, and PTFE tape. The Yosoo thread is G1/4.
 
 ## Plumbing
 
@@ -132,7 +52,7 @@ In `esphome/pool-controller.yaml`:
 
 ```yaml
 substitutions:
-  filter_pressure_pin: GPIO4
+  filter_pressure_pin: GPIO7
   filter_pressure_shunt_ohms: "150.0"
   filter_pressure_full_scale_mpa: "0.5"
 ```
