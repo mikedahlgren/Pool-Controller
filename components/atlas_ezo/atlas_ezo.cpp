@@ -98,6 +98,16 @@ void AtlasEzo::add_port(InternalGPIOPin *tx, InternalGPIOPin *rx) {
   this->count_++;
 }
 
+void AtlasEzo::add_i2c_port(i2c::I2CBus *bus) {
+  if (this->count_ >= 3 || bus == nullptr) {
+    return;
+  }
+  Port &port = this->ports_[this->count_++];
+  port.shared_i2c = true;
+  port.uart_mode = false;
+  this->i2c_bus_ = bus;
+}
+
 void AtlasEzo::set_socket_sensor(uint8_t index, text_sensor::TextSensor *sensor) {
   if (index < 3) {
     this->ports_[index].label = sensor;
@@ -113,8 +123,12 @@ void AtlasEzo::dump_config() {
 
 void AtlasEzo::setup() {
   for (uint8_t i = 0; i < this->count_; i++) {
-    this->ports_[i].tx->setup();
-    this->ports_[i].rx->setup();
+    if (this->ports_[i].tx != nullptr) {
+      this->ports_[i].tx->setup();
+    }
+    if (this->ports_[i].rx != nullptr) {
+      this->ports_[i].rx->setup();
+    }
   }
   uart_config_t cfg{};
   cfg.baud_rate = 9600;
@@ -134,7 +148,10 @@ void AtlasEzo::setup() {
 
 void AtlasEzo::detach_other_pins_(const Port &active) {
   for (uint8_t i = 0; i < this->count_; i++) {
-    if (&this->ports_[i] == &active) {
+    if (&this->ports_[i] == &active || this->ports_[i].shared_i2c) {
+      continue;
+    }
+    if (this->ports_[i].tx == nullptr || this->ports_[i].rx == nullptr) {
       continue;
     }
     gpio_reset_pin(static_cast<gpio_num_t>(this->ports_[i].tx->get_pin()));
@@ -188,7 +205,8 @@ void AtlasEzo::clear_port_(Port &port) {
   port.have_read = false;
   port.nvalues = 0;
   port.address = 0;
-  port.uart_mode = true;
+  port.misses = 0;
+  port.uart_mode = !port.shared_i2c;
   this->show_(port, "none");
 }
 
@@ -364,6 +382,45 @@ std::string AtlasEzo::i2c_read_(Port &port, uint8_t address) {
   return out;
 }
 
+static const uint8_t ATLAS_ADDRS[] = {97, 98, 99, 100, 102, 104};
+static const uint8_t ATLAS_ADDR_COUNT = 6;
+
+bool AtlasEzo::hw_probe_(uint8_t address) {
+  if (this->i2c_bus_ == nullptr) {
+    return false;
+  }
+  uint8_t buf = 0;
+  return this->i2c_bus_->write_readv(address, nullptr, 0, &buf, 1) == i2c::ERROR_OK;
+}
+
+bool AtlasEzo::hw_write_(uint8_t address, const char *text) {
+  if (this->i2c_bus_ == nullptr || text == nullptr) {
+    return false;
+  }
+  return this->i2c_bus_->write_readv(address, reinterpret_cast<const uint8_t *>(text), strlen(text), nullptr, 0) ==
+         i2c::ERROR_OK;
+}
+
+std::string AtlasEzo::hw_read_(uint8_t address) {
+  if (this->i2c_bus_ == nullptr) {
+    return "";
+  }
+  uint8_t buf[32] = {};
+  if (this->i2c_bus_->write_readv(address, nullptr, 0, buf, sizeof(buf)) != i2c::ERROR_OK) {
+    return "";
+  }
+  std::string out;
+  for (size_t i = 1; i < sizeof(buf); i++) {
+    if (buf[i] == 0) {
+      break;
+    }
+    if (buf[i] >= 32) {
+      out.push_back(static_cast<char>(buf[i]));
+    }
+  }
+  return out;
+}
+
 void AtlasEzo::begin_port_() {
   if (this->index_ >= this->count_) {
     this->publish_();
@@ -378,6 +435,17 @@ void AtlasEzo::begin_port_() {
     this->job_ = Job::OUTPUTS;
   } else {
     this->job_ = Job::READ;
+  }
+  if (port.shared_i2c) {
+    if (port.address != 0) {
+      this->scanning_ = false;
+      this->issue_();
+      return;
+    }
+    this->scan_address_ = 0;
+    this->scanning_ = true;
+    this->waiting_ = false;
+    return;
   }
   if (!port.uart_mode && port.address != 0) {
     this->arm_i2c_(port);
@@ -413,6 +481,18 @@ void AtlasEzo::issue_() {
     text = "i";
   } else if (this->job_ == Job::OUTPUTS) {
     text = "O,?";
+  }
+  if (port.shared_i2c) {
+    if (!this->hw_write_(port.address, text)) {
+      this->on_timeout_();
+      return;
+    }
+    this->waiting_ = true;
+    this->i2c_wait_ = true;
+    this->line_ready_ = false;
+    this->buffer_.clear();
+    this->deadline_ = millis() + (this->job_ == Job::READ ? 1000 : 350);
+    return;
   }
   this->i2c_write_(port, port.address, text);
   this->waiting_ = true;
@@ -482,7 +562,9 @@ void AtlasEzo::on_timeout_() {
   }
   if (!port.uart_mode && port.misses >= 2) {
     this->clear_port_(port);
-    port.uart_mode = true;
+    if (!port.shared_i2c) {
+      port.uart_mode = true;
+    }
   }
   this->advance_();
 }
@@ -576,8 +658,21 @@ void AtlasEzo::loop() {
   }
   if (this->scanning_) {
     Port &port = this->ports_[this->index_];
-    if (this->i2c_probe_(port, this->scan_address_)) {
-      port.address = this->scan_address_;
+    uint8_t address = this->scan_address_;
+    bool hit = false;
+    if (port.shared_i2c) {
+      if (this->scan_address_ >= ATLAS_ADDR_COUNT) {
+        this->clear_port_(port);
+        this->advance_();
+        return;
+      }
+      address = ATLAS_ADDRS[this->scan_address_];
+      hit = this->hw_probe_(address);
+    } else {
+      hit = this->i2c_probe_(port, address);
+    }
+    if (hit) {
+      port.address = address;
       port.uart_mode = false;
       port.identified = false;
       this->scanning_ = false;
@@ -586,7 +681,15 @@ void AtlasEzo::loop() {
       this->issue_();
       return;
     }
-    if (++this->scan_address_ > 127) {
+    this->scan_address_++;
+    if (port.shared_i2c) {
+      if (this->scan_address_ >= ATLAS_ADDR_COUNT) {
+        this->clear_port_(port);
+        this->advance_();
+      }
+      return;
+    }
+    if (this->scan_address_ > 127) {
       this->clear_port_(port);
       port.uart_mode = true;
       this->advance_();
@@ -598,7 +701,7 @@ void AtlasEzo::loop() {
       return;
     }
     Port &port = this->ports_[this->index_];
-    const std::string line = this->i2c_read_(port, port.address);
+    const std::string line = port.shared_i2c ? this->hw_read_(port.address) : this->i2c_read_(port, port.address);
     this->i2c_wait_ = false;
     this->waiting_ = false;
     if (line.empty()) {

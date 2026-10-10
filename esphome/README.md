@@ -23,11 +23,11 @@ The probe cable lands on the two screws under that pair.
 
 PRB is the probe signal. PGND is that probe's return. PGND is not the ground screw on J6 or J7. Leave the probe return on PGND.
 
-Factory boards speak UART and answer as soon as they are seated. The device page shows what each socket found: pH Socket, ORP Socket, EZO Socket. Readings show up as EZO pH, ORP, Conductivity, Salinity, TDS, RTD Temperature, or Dissolved Oxygen, based on the board, not the label.
+Factory boards on the pairs labeled pH and ORP speak UART and answer as soon as they are seated. The device page shows what each socket found: pH Socket, ORP Socket, EZO Socket. Readings show up as EZO pH, ORP, Conductivity, Salinity, TDS, RTD Temperature, or Dissolved Oxygen, based on the board, not the label.
 
 A board that was already switched to I2C still works in any socket. Two of the same type: the reading comes from the first socket that has one, in the order pH label, ORP label, EZO label.
 
-The third pair (labeled EZO) is also the I2C bus. J16 is an empty header on that same bus, for a later part. Pin order, from the fuse side: 3V3, GND, SCL, SDA. Leave J16 empty unless you add something. An EZO still in UART mode on that pair will disturb anything on J16. Switch that module to I2C first, and give the add-on a different address. Atlas defaults are 99 (pH), 98 (ORP), and 100 (EC).
+The third pair (labeled EZO) is the I2C bus, shared with J16. J16 is a female 4-pin socket for a 2.42 inch SSD1309. Pin order, from the left: GND, 3V3, SCL, SDA. The screen address is 0x3C. Solder the socket and plug the display in with its GND pin on the left. A factory UART board on that pair will fight the screen, so switch that Atlas board to I2C on one of the other pairs first. Atlas defaults are 99 (pH), 98 (ORP), and 100 (EC).
 
 ## pH
 
