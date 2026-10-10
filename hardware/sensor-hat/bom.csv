@@ -55,6 +55,11 @@ J10,probe socket,Connector_PinSocket_2.54mm:PinSocket_1x03_P2.54mm_Vertical,
 J4,EZO ORP probe,TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5_2-5.08_1x02_P5.08mm_Horizontal,
 R28,4.7k,PCM_JLCPCB:R_0805,C17673
 R27,4.7k,PCM_JLCPCB:R_0805,C17673
+J16,I2C,Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical,
 J13,data socket,Connector_PinSocket_2.54mm:PinSocket_1x03_P2.54mm_Vertical,
 J14,probe socket,Connector_PinSocket_2.54mm:PinSocket_1x03_P2.54mm_Vertical,
 J5,EZO I2C probe,TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5_2-5.08_1x02_P5.08mm_Horizontal,
+R29,10k,PCM_JLCPCB:R_0805,C17414
+SW1,TS-1187A,Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A,
+R30,10k,PCM_JLCPCB:R_0805,C17414
+SW2,TS-1187A,Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A,

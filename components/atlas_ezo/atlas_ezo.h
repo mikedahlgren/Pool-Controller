@@ -2,6 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/core/hal.h"
+#include "esphome/components/i2c/i2c_bus.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include <string>
@@ -15,6 +16,7 @@ namespace atlas_ezo {
 class AtlasEzo : public Component {
  public:
   void add_port(InternalGPIOPin *tx, InternalGPIOPin *rx);
+  void add_i2c_port(i2c::I2CBus *bus);
   void set_socket_sensor(uint8_t index, text_sensor::TextSensor *sensor);
   void set_ph_sensor(sensor::Sensor *sensor) { this->ph_ = sensor; }
   void set_orp_sensor(sensor::Sensor *sensor) { this->orp_ = sensor; }
@@ -45,6 +47,7 @@ class AtlasEzo : public Component {
     bool have_read{false};
     uint8_t misses{0};
     uint8_t address{0};
+    bool shared_i2c{false};
     float values[4]{};
     uint8_t nvalues{0};
   };
@@ -58,6 +61,9 @@ class AtlasEzo : public Component {
   bool i2c_probe_(Port &port, uint8_t address);
   void i2c_write_(Port &port, uint8_t address, const char *text);
   std::string i2c_read_(Port &port, uint8_t address);
+  bool hw_probe_(uint8_t address);
+  bool hw_write_(uint8_t address, const char *text);
+  std::string hw_read_(uint8_t address);
   void begin_port_();
   void issue_();
   void on_line_(const std::string &line);
@@ -86,6 +92,7 @@ class AtlasEzo : public Component {
   bool i2c_wait_{false};
   uint32_t deadline_{0};
   uint32_t next_action_{0};
+  i2c::I2CBus *i2c_bus_{nullptr};
   std::string buffer_;
   bool saw_ph_{false};
   bool saw_orp_{false};

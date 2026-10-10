@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "SensorHat")(type "KiCad")(uri "${KIPRJMOD}/SensorHat.pretty")(options "")(descr "Mechanical models for the sensor hat"))
+)

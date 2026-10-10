@@ -25,6 +25,7 @@ LIB = {
     "Connector_Generic:Conn_01x05": "/usr/share/kicad/symbols/Connector_Generic.kicad_sym",
     "Connector_Generic:Conn_01x20": "/usr/share/kicad/symbols/Connector_Generic.kicad_sym",
     "Connector_Generic:Conn_02x03_Odd_Even": "/usr/share/kicad/symbols/Connector_Generic.kicad_sym",
+    "Switch:SW_Push": "/usr/share/kicad/symbols/Switch.kicad_sym",
 }
 
 FP_R = "PCM_JLCPCB:R_0805"
@@ -505,6 +506,7 @@ def build():
         [("pH RX  GPIO12", "EPH_RX"), ("pH TX  GPIO11", "EPH_TX")],
         [("ORP RX  GPIO40", "EOR_RX"), ("ORP TX  GPIO39", "EOR_TX")],
         [("GND", "GND")],
+        [("BTN1  GPIO6", "BTN1"), ("BTN2  GPIO36", "BTN2")],
     ]
     right = []
     dy = 0.0
@@ -722,7 +724,7 @@ def build():
             board_rx, board_tx = "RX", "TX"
         else:
             sch.text(
-                title + ". Switch this module to I2C before you plug it in. Pull-ups are fitted. J16 is the same bus and is left empty.",
+                title + ". Switch this module to I2C before you plug it in. Pull-ups are fitted. J16 is the same bus: pin 1 GND toward the USB edge, then 3.3 V, SCL, and SDA toward the screws.",
                 130, y_rx - 8, 1.2,
             )
             # Pin 2 of each resistor sits on the signal wire. Pin 1 goes up to 3.3 V.
@@ -730,22 +732,21 @@ def build():
             rt = resistor(r_tx, "4.7k", snap(165), y_tx - 3.81, rot=0)
             sch.add_box(
                 "sensor-hat:J16", "I2C",
-                [("3V3", -12.7, 1), ("GND", -7.62, 2), ("SCL", y_rx - y_tx, 3), ("SDA", 0, 4)],
+                [("GND", -12.7, 1), ("3V3", -7.62, 2), ("SCL", y_rx - y_tx, 3), ("SDA", 0, 4)],
                 width=15.24,
             )
             j6 = sch.place(
                 "sensor-hat:J16", "J16", "I2C",
                 snap(pin[tx_key][0] + 20.32), y_tx,
-                "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
-                extra={"Pin order": "1 3V3, 2 GND, 3 SCL, 4 SDA. Pin 1 faces the fuse. Not fitted."},
-                dnp=True,
+                "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical",
+                extra={"Pin order": "1 GND, 2 3V3, 3 SCL, 4 SDA. Pin 1 is on the left. Female socket, so the OLED plugs in."},
             )
             straight(pin[tx_key], j6["4"])
             straight(j6["4"], rt["2"])
             straight(pin[rx_key], j6["3"])
             straight(j6["3"], rs["2"])
-            pwr_off(j6["1"], "V3OUT", 0, -5.08)
-            pwr_off(j6["2"], "GND", -7.62, 0)
+            pwr_off(j6["1"], "GND", 0, -5.08)
+            pwr_off(j6["2"], "V3OUT", -7.62, 0)
             pwr_off(rs["1"], "V3OUT", 0, -5.08)
             pwr_off(rt["1"], "V3OUT", 0, -5.08)
             rx_src, tx_src = rs["2"], rt["2"]
@@ -824,6 +825,30 @@ def build():
         "SCL", "SDA", "R28", "R27", "EZO_PRB", "EZO_PGND",
         link="pullup",
     )
+
+    sch.text(
+        "Buttons A and B sit at the USB-left corner. Each switch closes to ground. A 10k pulls the input up to the fused 3.3 V.",
+        130, xy("BTN1")[1] - 8, 1.2,
+    )
+
+    def button(key, sw_ref, r_ref):
+        src = pin[key]
+        y = src[1]
+        pull = resistor(r_ref, "10k", snap(src[0] + 20.32), y - 3.81, rot=0)
+        straight(src, pull["2"])
+        pwr_off(pull["1"], "V3OUT", 0, -5.08)
+        sw = sch.place(
+            "Switch:SW_Push", sw_ref, "TS-1187A",
+            snap(pull["2"][0] + 25.4), y,
+            "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A",
+            rot=180,
+            extra={"Description": "pin 1 to GND, pin 2 to the GPIO. Silk A is SW1, silk B is SW2."},
+        )
+        straight(pull["2"], sw["2"])
+        pwr_off(sw["1"], "GND", 5.08, 0)
+
+    button("BTN1", "SW1", "R29")
+    button("BTN2", "SW2", "R30")
     return sch
 
 

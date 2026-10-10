@@ -2,17 +2,27 @@
 #
 # The three Atlas sockets are the same kind of port. pH, ORP, and EZO on
 # the silk only tell the installer which socket is which. A pH, ORP, EC,
-# RTD, or dissolved-oxygen circuit can sit in any socket. The ESP asks the
-# board what it is. Factory boards speak UART. A board already switched to
-# I2C is picked up on that socket too.
+# RTD, or dissolved-oxygen circuit can sit in any socket. The first two
+# sockets speak UART, and also accept a board that is already in I2C mode.
+# Socket 3 stays on I2C because the display shares those two wires.
 #
 # Socket 1 is the pair labeled pH: ESP TX GPIO11, ESP RX GPIO12.
 # Socket 2 is the pair labeled ORP: ESP TX GPIO39, ESP RX GPIO40.
-# Socket 3 is the pair labeled EZO: ESP TX GPIO5, ESP RX GPIO4.
+# Socket 3 is the pair labeled EZO, on the same I2C bus as J16.
+# J16 is a female socket for a 4-pin SSD1309. From the left: GND, 3.3 V,
+# SCL, SDA. Pin 1 is the left pin. The screen uses address 0x3C. A board on socket 3
+# must already be in I2C mode. Its address stays in the Atlas range.
 #
 # J8 screw 1 is filter pressure. Screw 2 is the 4-20 mA pH kit.
 # Screws 3 and 4 are spare current inputs. Contacts are dry switches
 # to the GND screw: ON means that switch is closed.
+
+i2c:
+  - id: hat_i2c
+    sda: GPIO4
+    scl: GPIO5
+    frequency: 100kHz
+    scan: true
 
 atlas_ezo:
   id: atlas_hat
@@ -21,8 +31,7 @@ atlas_ezo:
       rx_pin: GPIO12
     - tx_pin: GPIO39
       rx_pin: GPIO40
-    - tx_pin: GPIO5
-      rx_pin: GPIO4
+    - i2c_id: hat_i2c
 
 web_server:
   sorting_groups:
@@ -48,6 +57,7 @@ sensor:
         sorting_weight: 1.2
     orp:
       name: "ORP"
+      id: ezo_orp
       icon: "mdi:flash"
       state_class: measurement
       web_server:
@@ -218,3 +228,31 @@ binary_sensor:
     web_server:
       sorting_group_id: sorting_group_contacts
       sorting_weight: 4
+
+font:
+  - file: "gfonts://Roboto"
+    id: oled_font
+    size: 18
+
+# The 2.42 inch SSD1309 uses the same 128x64 I2C setup as an SSD1306.
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    update_interval: 1s
+    lambda: |-
+      if (id(pool_ph).has_state() && !isnan(id(pool_ph).state)) {
+        it.printf(0, 0, id(oled_font), "pH  %.2f", id(pool_ph).state);
+      } else {
+        it.print(0, 0, id(oled_font), "pH  --");
+      }
+      if (id(ezo_orp).has_state() && !isnan(id(ezo_orp).state)) {
+        it.printf(0, 22, id(oled_font), "ORP %.0f", id(ezo_orp).state);
+      } else {
+        it.print(0, 22, id(oled_font), "ORP --");
+      }
+      if (id(water_temperature).has_state() && !isnan(id(water_temperature).state)) {
+        it.printf(0, 44, id(oled_font), "H2O %.1f F", id(water_temperature).state);
+      } else {
+        it.print(0, 44, id(oled_font), "H2O --");
+      }
