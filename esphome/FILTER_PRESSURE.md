@@ -22,17 +22,17 @@ The hat already has the 150 ohm shunt, the filter capacitor, and the clamp. Conn
 
 ## Wiring
 
-J8, left to right: GND, 1, 2, 3, 4. Filter pressure is screw 1 (GPIO7).
+J8, left to right: GND, 1, 2, 3, 4. Filter pressure is screw 3 (GPIO9). Screw 1 is GPIO13, and the ESP32-S3 cannot measure a voltage on that pin, so leave screw 1 open. Screw 2 is the pH kit.
 
 Use a separate 12 V or 24 V supply. Do not use the hat's 3.3 V, and do not use the RS485 ground.
 
 ```
 Supply +  ---- transmitter +
-Transmitter - ---- J8 screw 1
+Transmitter - ---- J8 screw 3
 Supply -  ---- J8 GND screw
 ```
 
-A 3-wire unit uses the same GND screw for its ground wire, and screw 1 for the signal.
+A 3-wire unit uses the same GND screw for its ground wire, and screw 3 for the signal.
 
 At 150 ohm: 4 mA is 0.60 V (0 psi), 12 mA is 1.80 V, 20 mA is 3.00 V (72.5 psi). The analog input is soft above about 2.5 V, so the top of the scale reads a little low. Normal filter pressure sits under that.
 
@@ -52,7 +52,7 @@ In `esphome/pool-controller.yaml`:
 
 ```yaml
 substitutions:
-  filter_pressure_pin: GPIO7
+  filter_pressure_pin: GPIO9
   filter_pressure_shunt_ohms: "150.0"
   filter_pressure_full_scale_mpa: "0.5"
 ```

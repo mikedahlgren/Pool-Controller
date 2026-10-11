@@ -26,6 +26,7 @@ LIB = {
     "Connector_Generic:Conn_01x20": "/usr/share/kicad/symbols/Connector_Generic.kicad_sym",
     "Connector_Generic:Conn_02x03_Odd_Even": "/usr/share/kicad/symbols/Connector_Generic.kicad_sym",
     "Switch:SW_Push": "/usr/share/kicad/symbols/Switch.kicad_sym",
+    "Switch:SW_SP3T": "/usr/share/kicad/symbols/Switch.kicad_sym",
 }
 
 FP_R = "PCM_JLCPCB:R_0805"
@@ -662,10 +663,13 @@ def build():
     for n in range(1, 5):
         straight(in_rows[n], j8[str(n + 1)])
 
-    # 1-Wire. The shunt block is drawn open so the three choices are readable.
-    # Fit one of them, or none. J6 is the screw terminal.
+    # 1-Wire. SW3 is on-on-on, so one pull-up is always connected.
+    # Pin 3 is the common, on the data net. J6 is the screw terminal.
     y_ow = xy("OWGPIO")[1]
-    sch.text("1-Wire. Fit one shunt on JP6, or none.", 130, y_ow - 8, 1.2)
+    sch.text(
+        "1-Wire. SW3 selects the pull-up. Pin 3 is the data line. Pin 1 is 4.7k, pin 2 is 2.2k, and pin 4 is 1k. The handle toward the USB edge is 4.7k.",
+        130, y_ow - 8, 1.2,
+    )
     r21 = resistor("R21", "100", 160, y_ow)
     straight(pin["OWGPIO"], r21["2"])
     sch.label("OW", r21["1"][0] + 5.08, y_ow)
@@ -685,24 +689,20 @@ def build():
     straight(r21["1"], ow["2"])
     pwr_off(ow["1"], "V3OUT", 0, -5.08)
     pwr_off(ow["3"], "GND", 0, 5.08)
-    sch.add_box(
-        "sensor-hat:JP6", "one shunt",
-        [("OW", 0, 2), ("OW", 10.16, 4), ("OW", 20.32, 6)],
-        [("4.7k", 0, 1), ("2.2k", 10.16, 3), ("1k", 20.32, 5)],
-        width=22.86,
+    sw = sch.place(
+        "Switch:SW_SP3T", "SW3", "SK13D07VG5", snap(250), snap(y_ow - 25.4),
+        "SensorHat:SW_SK13D07VG5",
+        extra={
+            "LCSC": "C393948",
+            "Description": "SHOU HAN SK13D07VG5, right-angle SP3T. Pin 3 is common (1-Wire data). Pin 1 is 4.7k, pin 2 is 2.2k, pin 4 is 1k.",
+        },
     )
-    jp6 = sch.place(
-        "sensor-hat:JP6", "JP6", "fit one", 250, y_ow - 7.62 - 20.32, FP_JUMP6,
-        extra={"Description": "Fit ONE shunt: pins 1-2 are 4.7k, 3-4 are 2.2k, 5-6 are 1k"},
-    )
-    sch.wire(jp6["2"][0], jp6["2"][1], jp6["4"][0], jp6["4"][1])
-    sch.wire(jp6["4"][0], jp6["4"][1], jp6["6"][0], jp6["6"][1])
-    sch.wire(jp6["6"][0], jp6["6"][1], jp6["6"][0], y_ow)
-    pulls = ((1, "R24", "4.7k"), (3, "R25", "2.2k"), (5, "R26", "1k"))
+    sch.tie(sw["3"], "OW")
+    pulls = (("1", "R24", "4.7k"), ("2", "R25", "2.2k"), ("4", "R26", "1k"))
     pull_parts = []
-    for odd, ref, value in pulls:
-        pad = jp6[str(odd)]
-        part = resistor(ref, value, pad[0] - 16, pad[1])
+    for num, ref, value in pulls:
+        pad = sw[num]
+        part = resistor(ref, value, snap(pad[0] + 15.24), pad[1])
         straight(part["1"], pad)
         pull_parts.append(part)
     sch.wire(pull_parts[0]["2"][0], pull_parts[0]["2"][1], pull_parts[1]["2"][0], pull_parts[1]["2"][1])

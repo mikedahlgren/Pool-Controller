@@ -7,15 +7,19 @@
 # Socket 3 stays on I2C because the display shares those two wires.
 #
 # Socket 1 is the pair labeled pH: ESP TX GPIO11, ESP RX GPIO12.
-# Socket 2 is the pair labeled ORP: ESP TX GPIO39, ESP RX GPIO40.
+# Socket 2 is the pair labeled ORP: ESP TX GPIO40, ESP RX GPIO39.
 # Socket 3 is the pair labeled EZO, on the same I2C bus as J16.
-# J16 is a female socket for a 4-pin SSD1309. From the left: GND, 3.3 V,
-# SCL, SDA. Pin 1 is the left pin. The screen uses address 0x3C. A board on socket 3
-# must already be in I2C mode. Its address stays in the Atlas range.
+# J16 is a female socket for a 4-pin SSD1309. Pin 1 is GND toward the USB
+# edge, then 3.3 V, SCL, and SDA toward the screws. The screen uses address
+# 0x3C. A board on socket 3 must already be in I2C mode. Its address stays
+# in the Atlas range.
 #
-# J8 screw 1 is filter pressure. Screw 2 is the 4-20 mA pH kit.
-# Screws 3 and 4 are spare current inputs. Contacts are dry switches
-# to the GND screw: ON means that switch is closed.
+# J8 screw 1 is GPIO13. The ESP32-S3 cannot measure a voltage on that pin,
+# so nothing samples it. Screw 2 is the 4-20 mA pH kit (GPIO8). Screw 3 is
+# filter pressure (GPIO9). Screw 4 is a spare current input (GPIO10).
+# Contacts are dry switches to the GND screw: ON means that switch is closed.
+# Button A is GPIO7 (SW1 and J17 pins 1-2). Button B is GPIO6 (SW2 and J17
+# pins 3-4). Each button has its own 10k pull-up. Pressed pulls the pin to ground.
 
 i2c:
   - id: hat_i2c
@@ -29,8 +33,8 @@ atlas_ezo:
   ports:
     - tx_pin: GPIO11
       rx_pin: GPIO12
-    - tx_pin: GPIO39
-      rx_pin: GPIO40
+    - tx_pin: GPIO40
+      rx_pin: GPIO39
     - i2c_id: hat_i2c
 
 web_server:
@@ -44,6 +48,9 @@ web_server:
     - id: sorting_group_ma
       name: "4-20 mA"
       sorting_weight: -4
+    - id: sorting_group_buttons
+      name: "Buttons"
+      sorting_weight: -3
 
 sensor:
   - platform: atlas_ezo
@@ -99,35 +106,6 @@ sensor:
       web_server:
         sorting_group_id: sorting_group_probes
         sorting_weight: 6
-
-  - platform: adc
-    pin: GPIO9
-    id: ma3_voltage
-    attenuation: 12db
-    samples: 16
-    update_interval: 5s
-    internal: true
-    filters:
-      - median:
-          window_size: 5
-          send_every: 2
-          send_first_at: 1
-    on_value:
-      then:
-        - sensor.template.publish:
-            id: ma3_current
-            state: !lambda "return x / ${ph_shunt_ohms} * 1000.0f;"
-
-  - platform: template
-    name: "4-20 Input 3"
-    id: ma3_current
-    unit_of_measurement: "mA"
-    accuracy_decimals: 2
-    icon: "mdi:current-dc"
-    entity_category: diagnostic
-    web_server:
-      sorting_group_id: sorting_group_ma
-      sorting_weight: 3
 
   - platform: adc
     pin: GPIO10
@@ -208,7 +186,7 @@ binary_sensor:
   - platform: gpio
     name: "Contact 3"
     pin:
-      number: GPIO14
+      number: GPIO15
       mode:
         input: true
       inverted: true
@@ -220,7 +198,7 @@ binary_sensor:
   - platform: gpio
     name: "Contact 4"
     pin:
-      number: GPIO13
+      number: GPIO14
       mode:
         input: true
       inverted: true
@@ -228,6 +206,30 @@ binary_sensor:
     web_server:
       sorting_group_id: sorting_group_contacts
       sorting_weight: 4
+
+  - platform: gpio
+    name: "Button A"
+    pin:
+      number: GPIO7
+      mode:
+        input: true
+      inverted: true
+    icon: "mdi:gesture-tap-button"
+    web_server:
+      sorting_group_id: sorting_group_buttons
+      sorting_weight: 1
+
+  - platform: gpio
+    name: "Button B"
+    pin:
+      number: GPIO6
+      mode:
+        input: true
+      inverted: true
+    icon: "mdi:gesture-tap-button"
+    web_server:
+      sorting_group_id: sorting_group_buttons
+      sorting_weight: 2
 
 font:
   - file: "gfonts://Roboto"

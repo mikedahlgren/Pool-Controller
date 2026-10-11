@@ -15,7 +15,8 @@ The Waveshare board talks to the pump, switches the acid pump and the pool light
 | Board temperature | Inside the ESP32-S3. This is the chip, not the pool |
 | Atlas pH, ORP, salinity, RTD, or dissolved oxygen | Hat sockets. Any of those boards can go in any pair |
 | Filter pressure and other 4-20 mA loops | Hat screw J8. Each loop needs its own 12 V or 24 V supply |
-| Air and water temperature | Hat screw J6, DS18B20 sensors, one 4.7k shunt on JP6 |
+| Air and water temperature | Hat screw J6, DS18B20 sensors. SW3 selects the pull-up. Use 4.7k, handle toward the USB edge |
+| Display buttons | SW1 is GPIO7 and SW2 is GPIO6. J17 is the same two switches |
 | Dry contacts | Hat screw J7. A bare switch to the GND screw. ON means closed |
 
 CH3, CH4, and CH5 on the Waveshare are free. The hat's 3.3 V rail, through fuse F1, powers the Atlas boards and the 1-Wire sensors. It does not power the 4-20 mA loops.

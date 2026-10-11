@@ -7,8 +7,9 @@ substitutions:
   pentair_rx_pin: GPIO18
   right_arrow: "➡️"
   pentair_light_pin: GPIO46
-  # Yosoo 4-20mA 0-0.5MPa filter-tank transmitter on J8 screw 1 (GPIO7)
-  filter_pressure_pin: GPIO7
+  # Yosoo 4-20mA 0-0.5MPa filter-tank transmitter on J8 screw 3 (GPIO9).
+  # Screw 1 is GPIO13. The ESP32-S3 cannot read analog voltage on that pin.
+  filter_pressure_pin: GPIO9
   filter_pressure_shunt_ohms: "150.0"
   filter_pressure_full_scale_mpa: "0.5"
   # Stenner 45M5 on CH2. 4-20 pH kit on J8 screw 2 (GPIO8).

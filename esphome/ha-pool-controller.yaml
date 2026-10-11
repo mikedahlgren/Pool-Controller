@@ -35,7 +35,7 @@ substitutions:
   pentair_rx_pin: GPIO18
   right_arrow: "➡️"
   pentair_light_pin: GPIO46
-  filter_pressure_pin: GPIO7   # J8 screw 1
+  filter_pressure_pin: GPIO9   # J8 screw 3. Screw 1 is GPIO13 and is not an ADC pin.
   filter_pressure_shunt_ohms: "150.0"
   filter_pressure_full_scale_mpa: "0.5"
   acid_pump_pin: GPIO2          # Stenner 45M5 hot on CH2

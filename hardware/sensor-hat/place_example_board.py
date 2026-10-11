@@ -14,6 +14,8 @@ buttons at the USB-left corner are GPIO inputs for that display.
 Parts may sit under those boards. Each probe screw is only the two probe wires.
 EZO1, EZO2, and EZO3 are visual models of the Atlas boards for the 3D viewer.
 They have no pads and they are not part of the hat.
+The saved sensor-hat.kicad_pcb is the board that gets built.
+Do not run this script over that file. It would replace the hand layout.
 """
 
 import pcbnew
@@ -225,15 +227,14 @@ def route(board, net, points, width, layer=None):
 
 
 def onewire(board, names):
-    """Dallas 1-Wire: series 100 ohm, and one of three pull-ups via JP6.
+    """Dallas 1-Wire: series 100 ohm, and one of three pull-ups via SW3.
 
     F1 sits between the header rows, input on the pin 11 column. C3 is on
-    the fused output. JP6 is centered in the slot between the third Atlas
-    board and the display, just below the relay pins so the shunt can be
-    reached with both boards installed. The pull-ups sit under that Atlas
-    board. 3.3 V leaves the rail, runs under the display, and returns
-    under the shunt. The data wire into J6 crosses that return, so that
-    short span is on the back.
+    the fused output. SW3 is the SK13D07VG5 slide in the slot between the
+    third Atlas board and the display. Pin 3 is the data common. Pin 1 is
+    4.7k, pin 2 is 2.2k, and pin 4 is 1k. The handle points toward the
+    display, and the handle toward the USB edge selects 4.7k. The pull-ups
+    sit under that Atlas board.
     """
     parts = {}
     # Rotation 180 puts the 3.3 V input on pin 11 and the output to its left.
@@ -248,17 +249,16 @@ def onewire(board, names):
         "C3", "100nF", 62.0, 10.895, 90, ["V3OUT", "GND"],
         ("PCM_JLCPCB", "C_0805"),
     )
-    # Odd pins are the pull-ups. Even pins are the data net. Pin 1 is the
-    # header end, on the Atlas side. The body is centered in the 8.2 mm
-    # slot. The relay-row pads block anything higher.
+    # Pin 1 is the USB end of the slide. The relay-row pads block anything higher.
     jp_y = 24.40
     pull_x = 45.40
-    jp_x = 50.46
-    parts["JP6"] = add_part(
-        board, names, HDR_LIB, "PinHeader_2x03_P2.54mm_Vertical",
-        "JP6", "one shunt", jp_x, jp_y, 0,
-        ["PU47", "OW", "PU22", "OW", "PU10", "OW"],
-        ("Connector_PinHeader_2.54mm", "PinHeader_2x03_P2.54mm_Vertical"),
+    parts["SW3"] = add_part(
+        board, names,
+        "/home/mdahlgre/src/Pool-Controller/hardware/sensor-hat/SensorHat.pretty",
+        "SW_SK13D07VG5",
+        "SW3", "SK13D07VG5", 51.25, 25.60, 0,
+        ["PU47", "PU22", "OW", "PU10"],
+        ("SensorHat", "SW_SK13D07VG5"),
     )
     pullups = (("R24", "4.7k", "PU47", 0), ("R25", "2.2k", "PU22", 1), ("R26", "1k", "PU10", 2))
     for ref, value, net, row in pullups:
@@ -320,39 +320,32 @@ def onewire(board, names):
     route(board, v3, [(v_pads[0][0], socket_y), (j14_v[0], socket_y)], 0.25)
     j7_tap = pad_xy(fps["J8"], 5)[0] - 2.60
     route(board, v3, [(conn_v[0], 31.00), conn_v, (conn_v[0], V3_EDGE_Y), (j7_tap, V3_EDGE_Y)], 0.25)
-    for ref, _value, net, row in pullups:
-        src = pad_xy(parts[ref], 2)
-        dst = pad_xy(parts["JP6"], 1 + 2 * row)
-        route(board, ensure_net(board, names, net), [src, dst], 0.2)
-
-    ow_pins = [pad_xy(parts["JP6"], n) for n in (2, 4, 6)]
-    route(board, ow, ow_pins, 0.25)
-    # Straight down on J6 pin 2. The 3.3 V return hops this vertical.
-    route(board, ow, [ow_pins[2], (conn_ow[0], ow_pins[2][1]), conn_ow], 0.25)
-    route(board, ow, [ow_pins[0], r21_ow], 0.2)
+    route(board, ensure_net(board, names, "PU47"), [(46.31, 24.40), (51.25, 24.40), (51.25, 25.60)], 0.2)
+    route(board, ensure_net(board, names, "PU22"), [(46.31, 26.94), (49.55, 26.94), (49.55, 29.60), (51.25, 29.60)], 0.2)
+    route(board, ensure_net(board, names, "PU10"), [(46.31, 29.48), (48.70, 29.48), (48.70, 33.60), (51.25, 33.60)], 0.2)
+    route(board, ow, [(51.25, 27.60), (54.15, 27.60), (54.15, 34.91), (55.50, 34.91), (56.62, 36.03), conn_ow], 0.2)
     route(board, owgpio, [r21_gpio, ow_gpio], 0.2)
 
-    style_text(parts["F1"].Reference(), 68.02, 16.55, 0.55)
-    style_text(parts["F1"].Value(), 68.02, 17.25, 0.5)
-    style_text(parts["C3"].Reference(), 63.6, 16.9, 0.45)
-    style_text(parts["C3"].Value(), 63.6, 17.6, 0.4)
-    parts["JP6"].Value().SetVisible(False)
-    style_text(parts["JP6"].Reference(), 51.9, 15.8, 0.55)
+    style_text(parts["F1"].Reference(), 68.02, 16.55, 0.69)
+    style_text(parts["F1"].Value(), 68.02, 17.25, 0.63)
+    style_text(parts["C3"].Reference(), 63.6, 16.9, 0.56)
+    style_text(parts["C3"].Value(), 63.6, 17.6, 0.5)
+    parts["SW3"].Value().SetVisible(False)
+    style_text(parts["SW3"].Reference(), 44.2, 35.4, 0.7)
     fps["J6"].Reference().SetPosition(vec(56.63, 46.15))
     parts["R21"].Value().SetVisible(False)
-    style_text(parts["R21"].Reference(), 57.4, 27.3, 0.45)
-    # Shunt values sit to the right of the header, in the gap by the display.
-    label_x = 56.0
-    label_ys = (24.5, 27.0, 29.5)
+    style_text(parts["R21"].Reference(), 57.4, 27.3, 0.56)
+    # Values sit in a row under the slide, toward the screw edge.
+    label_xs = (45.6, 50.6, 55.45)
     label_text = ("4.7k", "2.2k", "1.0k")
     for ref, value, _net, row in pullups:
         y = jp_y + row * PITCH
         parts[ref].Value().SetVisible(False)
-        style_text(parts[ref].Reference(), 43.1, y, 0.4)
-        item = silk(board, label_text[row], label_x, label_ys[row], 1.50, 0.18)
-        item.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT)
+        style_text(parts[ref].Reference(), 43.1, y, 0.5)
+        item = silk(board, label_text[row], label_xs[row], 37.55, 1.4, 0.18)
+        item.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_CENTER)
         item.SetVertJustify(pcbnew.GR_TEXT_V_ALIGN_CENTER)
-        item.SetPosition(vec(label_x, label_ys[row]))
+        item.SetPosition(vec(label_xs[row], 37.55))
 
 
 def via(board, x, y, net):
@@ -937,22 +930,22 @@ def main():
     silk(board, "pH", 2.2, 21.6, 0.8)
     silk(board, "ORP", 24.0, 21.4, 0.8)
     silk(board, "EZO", 29.0, 17.4, 0.8)
-    silk(board, "PH", 9.62, 29.4, 2.0, 0.15)
-    silk(board, "ORP", 25.15, 29.4, 2.0, 0.15)
-    silk(board, "EZO", 41.335, 29.4, 2.0, 0.15)
+    silk(board, "PH", 9.62, 29.4, 2.5, 0.19)
+    silk(board, "ORP", 25.15, 29.4, 2.5, 0.19)
+    silk(board, "EZO", 41.335, 29.4, 2.5, 0.19)
     silk(board, "Pool Controller 1.1", 70.5, 18, 3.0, 0.3)
-    silk(board, "PoolVeras", 70.5, 14, 6.0, 0.3)
+    silk(board, "PoolVeras", 70.5, 14, 6.0, 0.4)
     # Names sit on the edge. Pin names sit just above them.
     # Pitch is 5.08 mm, so the short names fit a pin.
     for text, x, y in (
-        ("pH", 7.34, 48.28),
-        ("ORP", 25.81, 48.55),
-        ("EZO", 42.68, 48.55),
-        ("1-Wire", 56.62, 48.55),
-        ("contacts", 78.99, 48.55),
-        ("4-20", 106.44, 48.55),
+        ("pH", 7.34, 48.15),
+        ("ORP", 25.81, 48.15),
+        ("EZO", 42.68, 48.15),
+        ("1-Wire", 56.62, 48.15),
+        ("contacts", 78.99, 48.15),
+        ("4-20", 106.44, 48.15),
     ):
-        silk(board, text, x, y, 0.6, 0.12)
+        silk(board, text, x, y, 0.75, 0.15)
     pin_labels = (
         (4.80, ("PRB", "PGND")),
         (23.27, ("PRB", "PGND")),
@@ -963,7 +956,7 @@ def main():
     )
     for origin, labels in pin_labels:
         for index, text in enumerate(labels):
-            silk(board, text, origin + index * 5.08, 47.85, 0.5, 0.1)
+            silk(board, text, origin + index * 5.08, 47.85, 0.625, 0.125)
     silk(board, "Pico 40", 104.5, 6.4, 0.6)
     silk(board, "Pico 1", 100.0, 19.0, 0.7)
     silk(board, "17.78 mm", 13.5, 18.5, 0.7)

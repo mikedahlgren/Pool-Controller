@@ -1,7 +1,8 @@
 # Filter tank head-pressure package
 #
 # Hardware: 2-wire 4-20mA silicon pressure transmitter (Yosoo 0-0.5 MPa / G1/4,
-# Amazon B07NQ36XTC or equivalent) on the Waveshare ESP32-S3-RELAY-6CH Pico header.
+# Amazon B07NQ36XTC or equivalent) on J8 screw 3 (GPIO9). Screw 1 is GPIO13
+# and is not an analog input.
 #
 # Clean baselines are learned per Speed 1–4: the lowest N-hour average while
 # the pump holds that speed (N = Filter Learn Hours, default 2). Unsaved speeds

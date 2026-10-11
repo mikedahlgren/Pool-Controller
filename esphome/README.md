@@ -27,7 +27,7 @@ Factory boards on the pairs labeled pH and ORP speak UART and answer as soon as 
 
 A board that was already switched to I2C still works in any socket. Two of the same type: the reading comes from the first socket that has one, in the order pH label, ORP label, EZO label.
 
-The third pair (labeled EZO) is the I2C bus, shared with J16. J16 is a female 4-pin socket for a 2.42 inch SSD1309. Pin order, from the left: GND, 3V3, SCL, SDA. The screen address is 0x3C. Solder the socket and plug the display in with its GND pin on the left. A factory UART board on that pair will fight the screen, so switch that Atlas board to I2C on one of the other pairs first. Atlas defaults are 99 (pH), 98 (ORP), and 100 (EC).
+The third pair (labeled EZO) is the I2C bus, shared with J16. J16 is a female 4-pin socket for a 2.42 inch SSD1309. Pin 1 is GND, toward the USB edge. Then 3V3, SCL, and SDA toward the screws. The screen address is 0x3C. Plug the display in with its GND pin toward the USB edge. A factory UART board on that pair will fight the screen, so switch that Atlas board to I2C on one of the other pairs first. Atlas defaults are 99 (pH), 98 (ORP), and 100 (EC).
 
 ## pH
 
@@ -61,9 +61,9 @@ One supply can feed all four channels. Split the positive side. Each transmitter
 
 | Screw | What the firmware does |
 |-------|------------------------|
-| 1 | Filter pressure. GPIO7. Default range 0 to 0.5 MPa. See [FILTER_PRESSURE.md](FILTER_PRESSURE.md). |
+| 1 | GPIO13. This pin cannot measure a current loop. Leave it open. |
 | 2 | Industrial pH kit, 4 mA = 0 pH, 20 mA = 14 pH. GPIO8. |
-| 3 | Milliamps only. GPIO9. |
+| 3 | Filter pressure. GPIO9. Default range 0 to 0.5 MPa. See [FILTER_PRESSURE.md](FILTER_PRESSURE.md). |
 | 4 | Milliamps only. GPIO10. |
 
 At 20 mA the 150 ohm resistor is 3.0 V. The ESP32-S3 analog input is soft above about 2.5 V, which is about 16 mA. Normal pool pressure and pH sit under that. The top of the scale reads a little low. The 150 ohm parts stay as they are.
@@ -74,7 +74,7 @@ Do not land a fault wire from the Atlas industrial transmitter on the hat. That 
 
 Left to right: 3V3, DATA, GND. The data pin is GPIO37.
 
-This is for DS18B20 sensors. Air and water can share the three screws. Fit **one** shunt on JP6. Use the 4.7k position for these sensors. The 2.2k and 1k positions are the other choices. Do not fit more than one.
+This is for DS18B20 sensors. Air and water can share the three screws. SW3 selects the pull-up. The common contact is the data line. Set the handle toward the USB edge for 4.7k. The middle position is 2.2k. The position toward the screws is 1k. R24, R25, and R26 stay fitted. There is no shunt.
 
 After the first boot, copy each sensor's address from the ESPHome log into `secrets.yaml` as `air_temp_id` and `water_temp_id`.
 
@@ -90,10 +90,16 @@ Each input is a dry contact: a switch with no voltage of its own. One side goes 
 |-------|------|
 | 1 | GPIO47 |
 | 2 | GPIO16 |
-| 3 | GPIO14 |
-| 4 | GPIO13 |
+| 3 | GPIO15 |
+| 4 | GPIO14 |
 
 Do not connect a powered switch output (5 V, 12 V, or 24 V). The clamp will hold the pin in a safe range and dump the extra current onto the 3.3 V rail.
+
+## Buttons
+
+SW1 is button A (GPIO7). SW2 is button B (GPIO6). Each has its own 10k pull-up. ON means the button is pressed.
+
+J17 brings those same two switches out of the box. Pin 1 is button A, pin 2 is ground, pin 3 is button B, pin 4 is ground. A closed switch pulls that pin to ground.
 
 ## Power on the hat
 

@@ -39,7 +39,7 @@ R16,10k,PCM_JLCPCB:R_0805,C17414
 J7,Contacts,TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5_5-5.08_1x05_P5.08mm_Horizontal,
 R21,100,PCM_JLCPCB:R_0805,C17408
 J6,1-Wire,TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5_3-5.08_1x03_P5.08mm_Horizontal,
-JP6,fit one,Connector_PinHeader_2.54mm:PinHeader_2x03_P2.54mm_Vertical,
+SW3,SK13D07VG5,SensorHat:SW_SK13D07VG5,C393948
 R24,4.7k,PCM_JLCPCB:R_0805,C17673
 R25,2.2k,PCM_JLCPCB:R_0805,C17520
 R26,1k,PCM_JLCPCB:R_0805,C17513
