@@ -94,7 +94,7 @@ Connect only **power**, **pH probe**, **PT-1000** (if present), and **4–20 mA*
 
 ### 4-20 mA wiring (J8 screw 2)
 
-Power the transmitter from 12 V or 24 V, not from the hat's 3.3 V. Filter pressure, if you use it, takes J8 screw 3. Do not share the two signal screws. Screw 1 is GPIO13 and cannot measure a current loop.
+Power the transmitter from 12 V or 24 V, not from the hat's 3.3 V. Filter pressure, if you use it, takes J8 screw 1. Do not share the two signal screws.
 
 ```
 Supply +  ---- transmitter PWR +

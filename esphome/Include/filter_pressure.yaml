@@ -1,8 +1,8 @@
 # Filter tank head-pressure package
 #
 # Hardware: 2-wire 4-20mA silicon pressure transmitter (Yosoo 0-0.5 MPa / G1/4,
-# Amazon B07NQ36XTC or equivalent) on J8 screw 3 (GPIO9). Screw 1 is GPIO13
-# and is not an analog input.
+# Amazon B07NQ36XTC or equivalent) on J8 screw 1 (GPIO13, ADC2).
+# See hardware/WAVESHARE_PINOUT.md.
 #
 # Clean baselines are learned per Speed 1–4: the lowest N-hour average while
 # the pump holds that speed (N = Filter Learn Hours, default 2). Unsaved speeds

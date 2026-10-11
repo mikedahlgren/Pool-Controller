@@ -23,7 +23,7 @@ CH3, CH4, and CH5 on the Waveshare are free. The hat's 3.3 V rail, through fuse 
 
 Screw order on the hat, left to right, is J3 through J8. Probe returns land on PGND next to PRB, not on the board ground screws.
 
-Connector-by-connector wiring is in [esphome/README.md](esphome/README.md). Acid dosing is in [esphome/ACID_PH.md](esphome/ACID_PH.md). Filter pressure is in [esphome/FILTER_PRESSURE.md](esphome/FILTER_PRESSURE.md). The board files are in [hardware/sensor-hat](hardware/sensor-hat).
+Connector-by-connector wiring is in [esphome/README.md](esphome/README.md). The Waveshare header and onboard GPIO map is in [hardware/WAVESHARE_PINOUT.md](hardware/WAVESHARE_PINOUT.md). Acid dosing is in [esphome/ACID_PH.md](esphome/ACID_PH.md). Filter pressure is in [esphome/FILTER_PRESSURE.md](esphome/FILTER_PRESSURE.md). The board files are in [hardware/sensor-hat](hardware/sensor-hat).
 
 ## Install
 

@@ -1,6 +1,6 @@
 # Sensor hat
 
-The hat plugs onto the Waveshare Pico headers. Screw connectors run along the edge, left to right: **J3, J4, J5, J6, J7, J8**.
+The hat plugs onto the Waveshare Pico headers. The header pinout is in [WAVESHARE_PINOUT.md](../hardware/WAVESHARE_PINOUT.md). Screw connectors run along the edge, left to right: **J3, J4, J5, J6, J7, J8**.
 
 Relays and the pump cable stay on the Waveshare. See [the repo README](../README.md).
 
@@ -61,9 +61,9 @@ One supply can feed all four channels. Split the positive side. Each transmitter
 
 | Screw | What the firmware does |
 |-------|------------------------|
-| 1 | GPIO13. This pin cannot measure a current loop. Leave it open. |
+| 1 | Filter pressure. GPIO13. Default range 0 to 0.5 MPa. See [FILTER_PRESSURE.md](FILTER_PRESSURE.md). |
 | 2 | Industrial pH kit, 4 mA = 0 pH, 20 mA = 14 pH. GPIO8. |
-| 3 | Filter pressure. GPIO9. Default range 0 to 0.5 MPa. See [FILTER_PRESSURE.md](FILTER_PRESSURE.md). |
+| 3 | Milliamps only. GPIO9. |
 | 4 | Milliamps only. GPIO10. |
 
 At 20 mA the 150 ohm resistor is 3.0 V. The ESP32-S3 analog input is soft above about 2.5 V, which is about 16 mA. Normal pool pressure and pH sit under that. The top of the scale reads a little low. The 150 ohm parts stay as they are.
