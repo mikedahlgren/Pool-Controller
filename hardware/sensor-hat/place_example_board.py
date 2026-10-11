@@ -46,18 +46,20 @@ RELAY_ROW_Y = round(USB_ROW_Y + ROW_GAP, 2)
 # terminal, not at the left edge. 0.25 mm track, 0.5 mm copper-to-edge.
 V3_EDGE_Y = 47.30
 
-# Pin 1 is the antenna end. 4-20 uses USB pins 6, 7, 9, 10. Contacts use
-# relay pins 4, 5, 7, 9. pH UART is relay pins 20 and 19. ORP UART is USB
-# pins 16 and 17. I2C is USB pins 15 and 14. Button A is USB pin 12
-# (GPIO6). Button B is relay pin 15 (GPIO36). Pin 20 on the USB row is the
-# buzzer, so it stays open. Pin 11 is the fuse input.
+# Pin 1 is the antenna end. 4-20 channels 2 to 4 use USB pins 9, 7, and 6.
+# Channel 1 uses relay pin 4. Contacts use relay pins 9, 7, 6, and 5.
+# pH UART is relay pins 20 and 19. ORP receive is USB pin 17 (GPIO39) and
+# ORP transmit is USB pin 16 (GPIO40). I2C is USB pins 15 and 14. Button A
+# is USB pin 10 (GPIO7). Button B is USB pin 12 (GPIO6). Relay pin 15 is
+# open. Pin 20 on the USB row is the buzzer, so it stays open. Pin 11 is
+# the fuse input.
 USB_NETS = [
-    None, None, "GND", "+3V3", "+3V3", "ADC4", "ADC3", "GND", "ADC2", "ADC1",
-    "+3V3", "BTN1", "GND", "SCL", "SDA", "EOR_RX", "EOR_TX", "GND", None, None,
+    None, None, "GND", "+3V3", "+3V3", "ADC4", "ADC3", "GND", "ADC2", "BTN1",
+    "+3V3", "BTN2", "GND", "SCL", "SDA", "EOR_TX", "EOR_RX", "GND", None, None,
 ]
 RELAY_NETS = [
-    None, None, "GND", "DIN4", "DIN3", None, "DIN2", "GND", "DIN1", None,
-    None, None, "GND", None, "BTN2", "OWGPIO", None, "GND", "EPH_TX", "EPH_RX",
+    None, None, "GND", "ADC1", "DIN4", "DIN3", "DIN2", "GND", "DIN1", None,
+    None, None, "GND", None, None, "OWGPIO", None, "GND", "EPH_TX", "EPH_RX",
 ]
 
 
@@ -226,28 +228,32 @@ def onewire(board, names):
     """Dallas 1-Wire: series 100 ohm, and one of three pull-ups via JP6.
 
     F1 sits between the header rows, input on the pin 11 column. C3 is on
-    the fused output. V3OUT drops between relay pins 18 and 19 and runs
-    straight to J14 pin 1. The other 3.3 V loads branch off that run.
+    the fused output. JP6 is centered in the slot between the third Atlas
+    board and the display, just below the relay pins so the shunt can be
+    reached with both boards installed. The pull-ups sit under that Atlas
+    board. 3.3 V leaves the rail, runs under the display, and returns
+    under the shunt. The data wire into J6 crosses that return, so that
+    short span is on the back.
     """
     parts = {}
     # Rotation 180 puts the 3.3 V input on pin 11 and the output to its left.
     # The body is between the rows, clear of both courtyards.
     parts["F1"] = add_part(
         board, names, FUSE_LIB, "Fuse_1812_4532Metric",
-        "F1", "0.2A", 68.02, 14.0, 180, ["+3V3", "V3OUT"],
+        "F1", "0.2A", 66.0, 9.945, -90, ["+3V3", "V3OUT"],
         ("Fuse", "Fuse_1812_4532Metric"),
     )
     parts["C3"] = add_part(
         board, names, R_LIB, "C_0805",
-        "C3", "100nF", 62.0, 14.95, 270, ["V3OUT", "GND"],
+        "C3", "100nF", 62.0, 10.895, 90, ["V3OUT", "GND"],
         ("PCM_JLCPCB", "C_0805"),
     )
     # Odd pins are the pull-ups. Even pins are the data net. Pin 1 is the
-    # header end. The pull-up column sits on J6 pin 1 so the 3.3 V feed is
-    # one vertical. JP6 and R21 keep their place beside that column.
-    jp_y = 28.3
-    pull_x = 51.54 + 0.91
-    jp_x = pull_x + 6.2
+    # header end, on the Atlas side. The body is centered in the 8.2 mm
+    # slot. The relay-row pads block anything higher.
+    jp_y = 24.40
+    pull_x = 45.40
+    jp_x = 50.46
     parts["JP6"] = add_part(
         board, names, HDR_LIB, "PinHeader_2x03_P2.54mm_Vertical",
         "JP6", "one shunt", jp_x, jp_y, 0,
@@ -261,10 +267,10 @@ def onewire(board, names):
             ref, value, pull_x, jp_y + row * PITCH, 0, ["V3OUT", net],
             ("PCM_JLCPCB", "R_0805"),
         )
-    # Between the header pin and the jumper's data column. Pad 2 faces the pin.
+    # Right of the data column. Pad 1 faces the jumper, pad 2 the GPIO pin.
     parts["R21"] = add_part(
         board, names, R_LIB, "R_0805",
-        "R21", "100", jp_x + 1.59, 25.0, 180, ["OW", "OWGPIO"],
+        "R21", "100", 55.50, 34.00, 90, ["OW", "OWGPIO"],
         ("PCM_JLCPCB", "R_0805"),
     )
 
@@ -302,13 +308,18 @@ def onewire(board, names):
         f_out, (59.4, f_out[1]), (59.4, 14.43), (55.4, 14.43), (55.4, f_out[1]), (drop_x, f_out[1]),
     ], 0.30)
     route(board, v3, [(drop_x, 13.93), (51.0, 13.82)], 0.25)
-    route(board, v3, [(drop_x, 13.93), (drop_x, socket_y), (j14_v[0], socket_y)], 0.25)
-    # J6 pin 1 and the pull-up pads share an x, so this rise has no jog.
-    # The clamp feeds leave J6 along the screw edge. They do not tour the left side.
+    # Leave the rail before the display header, drop under the display
+    # between relay pins 14 and 15, then come back under the shunt.
     v_pads = [pad_xy(parts[ref], 1) for ref, *_ in pullups]
+    route(board, v3, [(55.20, 14.29), (55.20, 17.80), (61.27, 17.80), (61.27, 31.00)], 0.25)
+    route(board, v3, [(61.27, 31.00), (57.35, 31.00)], 0.25)
+    via(board, 57.35, 31.00, v3)
+    route(board, v3, [(57.35, 31.00), (55.85, 31.00)], 0.25, pcbnew.B_Cu)
+    via(board, 55.85, 31.00, v3)
+    route(board, v3, [(55.85, 31.00), (v_pads[0][0], 31.00), v_pads[2], v_pads[0]], 0.25)
+    route(board, v3, [(v_pads[0][0], socket_y), (j14_v[0], socket_y)], 0.25)
     j7_tap = pad_xy(fps["J8"], 5)[0] - 2.60
-    route(board, v3, [(drop_x, socket_y), v_pads[0], conn_v, (conn_v[0], V3_EDGE_Y), (j7_tap, V3_EDGE_Y)], 0.25)
-    route(board, v3, v_pads, 0.2)
+    route(board, v3, [(conn_v[0], 31.00), conn_v, (conn_v[0], V3_EDGE_Y), (j7_tap, V3_EDGE_Y)], 0.25)
     for ref, _value, net, row in pullups:
         src = pad_xy(parts[ref], 2)
         dst = pad_xy(parts["JP6"], 1 + 2 * row)
@@ -316,32 +327,32 @@ def onewire(board, names):
 
     ow_pins = [pad_xy(parts["JP6"], n) for n in (2, 4, 6)]
     route(board, ow, ow_pins, 0.25)
-    # Cut the corner into J6 instead of running along the terminal.
-    route(board, ow, [ow_pins[2], (ow_pins[2][0], 37.23), conn_ow], 0.25)
-    route(board, ow, [r21_ow, (r21_ow[0], ow_pins[0][1]), ow_pins[0]], 0.25)
-    # Cut the corner into the header pin instead of running across at the resistor.
-    route(board, owgpio, [r21_gpio, (r21_gpio[0], 23.15), ow_gpio], 0.25)
+    # Straight down on J6 pin 2. The 3.3 V return hops this vertical.
+    route(board, ow, [ow_pins[2], (conn_ow[0], ow_pins[2][1]), conn_ow], 0.25)
+    route(board, ow, [ow_pins[0], r21_ow], 0.2)
+    route(board, owgpio, [r21_gpio, ow_gpio], 0.2)
 
     style_text(parts["F1"].Reference(), 68.02, 16.55, 0.55)
     style_text(parts["F1"].Value(), 68.02, 17.25, 0.5)
     style_text(parts["C3"].Reference(), 63.6, 16.9, 0.45)
     style_text(parts["C3"].Value(), 63.6, 17.6, 0.4)
     parts["JP6"].Value().SetVisible(False)
-    style_text(parts["JP6"].Reference(), jp_x - 8.8, 27.5, 0.55)
+    style_text(parts["JP6"].Reference(), 51.9, 15.8, 0.55)
     fps["J6"].Reference().SetPosition(vec(56.63, 46.15))
-    style_text(parts["R21"].Reference(), jp_x - 2.11, 25.6, 0.45)
-    style_text(parts["R21"].Value(), jp_x - 2.11, 24.8, 0.4)
-    # The big row labels are the shunt choice. Keep the part numbers, hide the tiny values.
-    label_x = jp_x + 4.4
-    label_size = 1.60
+    parts["R21"].Value().SetVisible(False)
+    style_text(parts["R21"].Reference(), 57.4, 27.3, 0.45)
+    # Shunt values sit to the right of the header, in the gap by the display.
+    label_x = 56.0
+    label_ys = (24.5, 27.0, 29.5)
+    label_text = ("4.7k", "2.2k", "1.0k")
     for ref, value, _net, row in pullups:
         y = jp_y + row * PITCH
         parts[ref].Value().SetVisible(False)
-        style_text(parts[ref].Reference(), pull_x + 2.6, y, 0.4)
-        item = silk(board, value, label_x, y, label_size, 0.18)
+        style_text(parts[ref].Reference(), 43.1, y, 0.4)
+        item = silk(board, label_text[row], label_x, label_ys[row], 1.50, 0.18)
         item.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT)
         item.SetVertJustify(pcbnew.GR_TEXT_V_ALIGN_CENTER)
-        item.SetPosition(vec(label_x, y))
+        item.SetPosition(vec(label_x, label_ys[row]))
 
 
 def via(board, x, y, net):
@@ -398,13 +409,13 @@ def ma420(board, names):
 
     150 ohm always runs from the signal screw to ground. 1k, 100 nF, and a
     BAT54S clamp sit on the ADC side. Ground vias drop into the back plane.
-    3.3 V is V3OUT, from the fuse drop. The ADC runs on the front,
-    between the header rows.
+    3.3 V is V3OUT, from the fuse drop. Channel 1 is a short front run to
+    relay pin 4. Channels 2 to 4 stay on the front, between the header rows.
     """
     j7 = next(fp for fp in board.GetFootprints() if fp.GetReference() == "J8")
     sig_x = [pad_xy(j7, n)[0] for n in range(2, 6)]
-    # ADC pins on the USB row, left to right: GPIO7, GPIO8, GPIO9, GPIO10.
-    adc_pin = [10, 9, 7, 6]
+    # Channel 1 is relay pin 4. Channels 2 to 4 are USB pins 9, 7, and 6.
+    adc_pin = [None, 9, 7, 6]
     lane_y = [18.4, 16.8, 15.2, 13.6]
     parts = {}
     for n, sx in enumerate(sig_x, start=1):
@@ -430,7 +441,7 @@ def ma420(board, names):
         )
 
     fps = {fp.GetReference(): fp for fp in board.GetFootprints()}
-    j1, j7 = fps["J1"], fps["J8"]
+    j1, j2, j7 = fps["J1"], fps["J2"], fps["J8"]
     gnd = ensure_net(board, names, "GND")
     v3 = ensure_net(board, names, "V3OUT")
     taps = []
@@ -446,8 +457,8 @@ def ma420(board, names):
     for tap, clamp in taps:
         route(board, v3, [(tap, V3_EDGE_Y), (tap, clamp[1]), clamp], 0.25)
 
-    # Each channel leaves the clamp on a short rise, cuts onto its lane,
-    # runs left, then cuts up into the header pin.
+    # Channels 2 to 4 leave the clamp, cut onto a lane, and rise into the
+    # USB pin. Channel 1 ignores the first cut and runs straight to J2 pin 4.
     # rise_y, lane join x, lane end x, height of the last cut.
     adc_cuts = (
         (22.0, 98.7, 84.5, 6.6),
@@ -463,16 +474,20 @@ def ma420(board, names):
         series_sig, series_adc = pad_xy(parts[f"R{n+4}"], 1), pad_xy(parts[f"R{n+4}"], 2)
         cap_a = pad_xy(parts[f"C{n+3}"], 1)
         clamp_a = pad_xy(parts[f"D{n}"], 3)
-        adc_pad = pad_xy(j1, pin)
         rise_y, join_x, end_x, pin_y = cut
 
         route(board, sig, [conn, (r_sig[0], conn[1]), r_sig, series_sig], 0.25)
         route(board, adc, [series_adc, (series_adc[0], clamp_a[1]), clamp_a], 0.2)
         route(board, adc, [cap_a, (series_adc[0], cap_a[1])], 0.2)
-        route(board, adc, [
-            clamp_a, (clamp_a[0], rise_y), (join_x, lane), (end_x, lane),
-            (adc_pad[0], pin_y), adc_pad,
-        ], 0.2)
+        if n == 1:
+            hdr = pad_xy(j2, 4)
+            route(board, adc, [clamp_a, (clamp_a[0], 22.7), (hdr[0], 22.7), hdr], 0.2)
+        else:
+            adc_pad = pad_xy(j1, pin)
+            route(board, adc, [
+                clamp_a, (clamp_a[0], rise_y), (join_x, lane), (end_x, lane),
+                (adc_pad[0], pin_y), adc_pad,
+            ], 0.2)
 
         style_text(parts[f"R{n}"].Reference(), sx - 2.2, 34.1, 0.35)
         style_text(parts[f"R{n}"].Value(), sx + 2.2, 34.1, 0.35)
@@ -495,10 +510,10 @@ def ezo(board, names):
     # ORP receive is the upper lane, transmit the lower, so they do not cross.
     # pH stays lower and ends on the relay row.
     placed = {
-        "R20": (35.41, 5.0, ["EZO_ORP_RX", "EOR_TX"]),
-        "R19": (35.09, 2.0, ["EZO_ORP_TX", "EOR_RX"]),
-        "R18": (17.2, 17.0, ["EZO_PH_RX", "EPH_TX"]),
-        "R17": (28.59, 23.0, ["EZO_PH_TX", "EPH_RX"]),
+        "R20": (43.59, 10.5, ["EZO_ORP_RX", "EOR_TX"]),
+        "R19": (39.09, 8.5, ["EZO_ORP_TX", "EOR_RX"]),
+        "R18": (16.065, 19.55, ["EZO_PH_RX", "EPH_TX"]),
+        "R17": (27.74, 21.50, ["EZO_PH_TX", "EPH_RX"]),
     }
     parts = {}
     for ref, (x, y, nets) in placed.items():
@@ -508,12 +523,6 @@ def ezo(board, names):
         )
         style_text(parts[ref].Reference(), x, y - 1.35, 0.4)
         style_text(parts[ref].Value(), x, y + 1.35, 0.4)
-    # The upper ORP part is close to the header, so its name sits beside it.
-    style_text(parts["R19"].Reference(), 35.09, 3.2, 0.4)
-    style_text(parts["R19"].Value(), 32.5, 1.5, 0.4)
-    style_text(parts["R20"].Reference(), 35.0, 6.3, 0.4)
-    style_text(parts["R20"].Value(), 33.0, 4.5, 0.4)
-
     v3 = ensure_net(board, names, "V3OUT")
 
     def wire(net_name, points):
@@ -565,20 +574,20 @@ def ezo(board, names):
     # short diagonal so the run does not travel the whole pin column.
     rx_src = pad_xy(fps["J9"], 2)
     rx_left, rx_right = pad_xy(parts["R19"], 1), pad_xy(parts["R19"], 2)
-    rx_dst = pad_xy(j1, 16)
+    rx_dst = pad_xy(j1, 17)
     rx_net_in = parts["R19"].FindPadByNumber("1").GetNet()
     rx_net = parts["R19"].FindPadByNumber("2").GetNet()
     route(board, rx_net_in, [rx_src, (rx_src[0], rx_left[1]), rx_left], 0.2)
-    # Along y=2, then a short diagonal into pin 16.
-    route(board, rx_net, [rx_right, (38.0, 2.0), (56.0, 2.0), rx_dst], 0.2)
+    # Along y=2, then down into pin 17. Pin 16 stays to the right for transmit.
+    route(board, rx_net, [rx_right, (38.0, 2.0), (rx_dst[0], 2.0), rx_dst], 0.2)
 
     tx_src = pad_xy(fps["J9"], 3)
     tx_left, tx_right = pad_xy(parts["R20"], 1), pad_xy(parts["R20"], 2)
-    tx_dst = pad_xy(j1, 17)
+    tx_dst = pad_xy(j1, 16)
     tx_net_in = parts["R20"].FindPadByNumber("1").GetNet()
     tx_net = parts["R20"].FindPadByNumber("2").GetNet()
     route(board, tx_net_in, [tx_src, (tx_src[0], tx_left[1]), tx_left], 0.2)
-    route(board, tx_net, [tx_right, (53.42, tx_right[1]), tx_dst], 0.2)
+    route(board, tx_net, [tx_right, (56.25, tx_right[1]), (56.25, 2.0), (tx_dst[0], 2.0), tx_dst], 0.2)
 
 
 def i2c(board, names):
@@ -594,7 +603,7 @@ def i2c(board, names):
     j1 = fps["J1"]
     sda_pin, scl_pin = pad_xy(j1, 15), pad_xy(j1, 14)
     # Pin 1 toward the USB edge. Pins step toward the screws.
-    header_x, header_y = 57.0, 8.08
+    header_x, header_y = 58.5, 9.5
     j6 = add_part(
         board, names, SOCK_LIB, "PinSocket_1x04_P2.54mm_Vertical",
         "J16", "Socket", header_x, header_y, 0, ["GND", "V3OUT", "SCL", "SDA"],
@@ -602,19 +611,19 @@ def i2c(board, names):
     )
     j6.Value().SetVisible(False)
     style_text(j6.Reference(), 51.8, 6.5, 0.45)
-    for index, text in enumerate(("GND", "3V3", "SCL", "SDA")):
-        silk(board, text, 51.8, header_y + index * PITCH, 0.45, 0.1)
+    for text, y in (("GND", 9.500), ("3V3", 11.945), ("SCL", 14.945), ("SDA", 17.120)):
+        silk(board, text, 56.0, y, 0.45, 0.1)
     sock_sda = pad_xy(fps["J13"], 2)
     sock_scl = pad_xy(fps["J13"], 3)
 
     # R27 sits in the gap between the ORP board and the third socket.
     # R28 stands on the fused trunk.
     r27 = add_part(
-        board, names, R_LIB, "R_0805", "R27", "4.7k", 34.6, 11.8, 180,
+        board, names, R_LIB, "R_0805", "R27", "4.7k", 32.65, 15.41, 90,
         ["V3OUT", "SDA"], ("PCM_JLCPCB", "R_0805"),
     )
     r28 = add_part(
-        board, names, R_LIB, "R_0805", "R28", "4.7k", 51.0, 12.91, 90,
+        board, names, R_LIB, "R_0805", "R28", "4.7k", 51.0, 15.38, 90,
         ["V3OUT", "SCL"], ("PCM_JLCPCB", "R_0805"),
     )
     style_text(r27.Reference(), 34.6, 10.5, 0.4)
@@ -661,14 +670,14 @@ def contacts(board, names):
     """Dry contacts on J7. 10k to 3.3 V, 1k, 100 nF, and a clamp.
 
     3.3 V is V3OUT from the fuse drop. Ground vias drop into the
-    back plane. D5 goes to relay pin 9, D6 to pin 7, D7 to pin 5, D8 to pin 4.
+    back plane. D5 goes to relay pin 9, D6 to pin 7, D7 to pin 6, D8 to pin 5.
     """
     fps = {fp.GetReference(): fp for fp in board.GetFootprints()}
     j2, j8 = fps["J2"], fps["J7"]
     columns = [pad_xy(j8, n)[0] for n in range(2, 6)]
-    # Left to right on the screws. D5 (IN1) is pin 9, D6 (IN2) is pin 7.
-    # IN3 stays on pin 5, IN4 on pin 4.
-    header_pins = [9, 7, 5, 4]
+    # Left to right on the screws. D5 (IN1) is pin 9, D6 (IN2) is pin 7,
+    # D7 (IN3) is pin 6, D8 (IN4) is pin 5.
+    header_pins = [9, 7, 6, 5]
     parts = {}
     for n, sx in enumerate(columns, start=1):
         din_name = f"DIN{n}"
@@ -719,12 +728,12 @@ def contacts(board, names):
         gnd_via(board, gnd, dio_g[0], dio_g[1])
 
         hdr = pad_xy(j2, pin)
-        # D5 and D6 now sit on the pin column, so the run is straight.
-        # D7 and D8 keep the short jog into their pins.
+        # D5 and D6 sit on the pin column, so the run is straight.
+        # D7 and D8 jog left into the next pins.
         if n == 3:
-            route(board, din, [dio_din, (dio_din[0], 23.0), (hdr[0], 22.61), hdr], 0.2)
+            route(board, din, [dio_din, (dio_din[0], 24.2), (hdr[0], 24.2), hdr], 0.2)
         elif n == 4:
-            route(board, din, [dio_din, (dio_din[0], 23.4), hdr], 0.2)
+            route(board, din, [dio_din, (dio_din[0], 23.2), (hdr[0], 23.2), hdr], 0.2)
         else:
             route(board, din, [dio_din, hdr], 0.2)
 
@@ -745,9 +754,9 @@ def atlas_modules(board):
     """
     folder = "/home/mdahlgre/src/Pool-Controller/hardware/sensor-hat/SensorHat.pretty"
     specs = (
-        ("EZO1", "pH", 7.34, "${KIPRJMOD}/3d/Atlas_EZO_pH.step"),
-        ("EZO2", "ORP", 25.81, "${KIPRJMOD}/3d/Atlas_EZO_ORP.step"),
-        ("EZO3", "EZO", 43.44, "${KIPRJMOD}/3d/Atlas_EZO_EZO.step"),
+        ("EZO1", "pH", 8.96, "${KIPRJMOD}/3d/Atlas_EZO_pH.step"),
+        ("EZO2", "ORP", 24.96, "${KIPRJMOD}/3d/Atlas_EZO_ORP.step"),
+        ("EZO3", "EZO", 40.775, "${KIPRJMOD}/3d/Atlas_EZO_EZO.step"),
     )
     for ref, value, x, filename in specs:
         fp = load_fp(folder, "Atlas_EZO")
@@ -774,7 +783,7 @@ def ssd1309(board):
     fp = load_fp(folder, "SSD1309")
     fp.SetReference("DISP1")
     fp.SetValue("SSD1309")
-    fp.SetPosition(vec(57.0, 8.08))
+    fp.SetPosition(vec(58.5, 9.5))
     fp.SetOrientationDegrees(-90)
     board.Add(fp)
 
@@ -794,8 +803,13 @@ def buttons(board, names):
     """Two push buttons at the USB-left corner, for the display.
 
     Each switch closes its GPIO to ground. A 10k pulls that net up to
-    the fused 3.3 V. SW1 (silk A) is GPIO6 on J1 pin 12. SW2 (silk B)
-    is GPIO36 on J2 pin 15.
+    the fused 3.3 V. Pin 1 is the USB-side pair and carries the GPIO.
+    Pin 2 goes to ground. SW1 (silk A) is GPIO7 on J1 pin 10. SW2
+    (silk B) is GPIO6 on J1 pin 12. A stays on the outer top lane and
+    B on the inner lane, so the two traces do not cross.
+    J17 is on the USB edge, pin 1 at 35 mm from the left. Left to right
+    the pins are SW1, ground, SW2, ground, so an enclosure switch across
+    each pair does what the matching button does.
     """
     fps = {fp.GetReference(): fp for fp in board.GetFootprints()}
     sw_lib = "/usr/share/kicad/footprints/Button_Switch_SMD.pretty"
@@ -816,15 +830,30 @@ def buttons(board, names):
             raise SystemExit(f"{fp.GetReference()} missing pad {number}")
 
     sw1 = add_part(board, names, sw_lib, sw_name, "SW1", "push", 8.0, 5.2, 0, ["GND", "BTN1"], sw_id)
-    sw2 = add_part(board, names, sw_lib, sw_name, "SW2", "push", 17.5, 5.2, 0, ["GND", "BTN2"], sw_id)
+    sw2 = add_part(board, names, sw_lib, sw_name, "SW2", "push", 19.0, 5.2, 0, ["GND", "BTN2"], sw_id)
     for sw, sig in ((sw1, btn1), (sw2, btn2)):
-        set_numbered(sw, "1", gnd)
-        set_numbered(sw, "2", sig)
+        set_numbered(sw, "1", sig)
+        set_numbered(sw, "2", gnd)
         sw.Value().SetVisible(False)
     style_text(sw1.Reference(), 8.0, 8.7, 0.55)
-    style_text(sw2.Reference(), 17.5, 8.7, 0.55)
+    style_text(sw2.Reference(), 19.0, 8.7, 0.55)
     silk(board, "A", 4.2, 5.2, 0.9, 0.15)
-    silk(board, "B", 21.4, 5.2, 0.9, 0.15)
+    silk(board, "B", 22.9, 5.2, 0.9, 0.15)
+
+    # Pin 1 at the left. Rotation puts the row along the USB edge.
+    j17 = add_part(
+        board, names, HDR_LIB, "PinHeader_1x04_P2.54mm_Vertical",
+        "J17", "external", 35.0, 2.10, 90,
+        ["BTN1", "GND", "BTN2", "GND"],
+        ("Connector_PinHeader_2.54mm", "PinHeader_1x04_P2.54mm_Vertical"),
+    )
+    j17.Value().SetVisible(False)
+    style_text(j17.Reference(), 33.1, 4.7, 0.45)
+    silk(board, "A", 36.27, 4.55, 0.7, 0.12)
+    silk(board, "B", 41.35, 4.55, 0.7, 0.12)
+    a_pin, b_pin = pad_xy(j17, 1), pad_xy(j17, 3)
+    route(board, btn1, [a_pin, (a_pin[0], 0.75)], 0.2)
+    route(board, btn2, [b_pin, (b_pin[0], 1.5)], 0.2)
 
     r29 = add_part(
         board, names, R_LIB, "R_0805", "R29", "10k", 8.0, 11.3, 90,
@@ -846,32 +875,27 @@ def buttons(board, names):
             if pad.GetNumber() == str(number)
         ]
 
-    for sw, sig, pull in ((sw1, btn1, r29), (sw2, btn2, r30)):
-        gnd_pads = pads(sw, 1)
-        sig_pads = pads(sw, 2)
-        route(board, gnd, gnd_pads, 0.2)
+    for sw, sig in ((sw1, btn1), (sw2, btn2)):
+        sig_pads = pads(sw, 1)
+        gnd_pads = pads(sw, 2)
         route(board, sig, sig_pads, 0.2)
+        route(board, gnd, gnd_pads, 0.2)
         outer = min(gnd_pads, key=lambda point: point[0])
         route(board, gnd, [outer, (outer[0] - 1.3, outer[1])], 0.2)
         gnd_via(board, gnd, outer[0] - 1.3, outer[1])
-        pull_sig = pad_xy(pull, 2)
-        route(board, sig, [pull_sig, (pull_sig[0], sig_pads[0][1])], 0.2)
 
     left_v = pad_xy(fps["J12"], 1)
     pull_y = pad_xy(r29, 1)[1]
     route(board, v3, [left_v, (left_v[0], 24.2), (1.8, 24.2), (1.8, pull_y), pad_xy(r30, 1)], 0.30)
 
-    gpio6 = pad_xy(fps["J1"], 12)
-    sw1_sig = max(pads(sw1, 2), key=lambda point: point[0])
-    route(board, btn1, [sw1_sig, (12.2, sw1_sig[1]), (12.2, 0.75), (gpio6[0], 0.75), gpio6], 0.2)
+    gpio7 = pad_xy(fps["J1"], 10)
+    route(board, btn1, [(5.0, 3.325), (12.2, 3.325)], 0.2)
+    route(board, btn1, [(12.2, 0.75), (12.2, 10.39), (pad_xy(r29, 2)[0], 10.39)], 0.2)
+    route(board, btn1, [(12.2, 0.75), (gpio7[0], 0.75), gpio7], 0.2)
 
-    gpio36 = pad_xy(fps["J2"], 15)
-    sw2_sig = max(pads(sw2, 2), key=lambda point: point[0])
-    route(board, btn2, [sw2_sig, (22.0, sw2_sig[1]), (22.0, 16.6), (50.2, 16.6)], 0.2)
-    via(board, 50.2, 16.6, btn2)
-    route(board, btn2, [(50.2, 16.6), (52.0, 16.6)], 0.2, pcbnew.B_Cu)
-    via(board, 52.0, 16.6, btn2)
-    route(board, btn2, [(52.0, 16.6), (52.0, 17.6), (gpio36[0], 17.6), gpio36], 0.2)
+    gpio6 = pad_xy(fps["J1"], 12)
+    route(board, btn2, [(14.5, 3.325), (22.4, 3.325), (22.4, 10.39), pad_xy(r30, 2)], 0.2)
+    route(board, btn2, [(22.4, 1.5), (gpio6[0], 1.5), gpio6], 0.2)
 
 
 def main():
@@ -884,11 +908,11 @@ def main():
     # 20.16 mm boards clear the Pico header and each other. Probe row is
     # 17.78 mm toward the screw edge.
     ezo_y = 15.4
-    ezo_pair(board, names, "J11", "J12", 4.80, ezo_y, "EZO_PH_TX", "EZO_PH_RX", "PH_PRB", "PH_PGND")
-    ezo_pair(board, names, "J9", "J10", 23.27, ezo_y, "EZO_ORP_TX", "EZO_ORP_RX", "ORP_PRB", "ORP_PGND")
+    ezo_pair(board, names, "J11", "J12", 6.42, ezo_y, "EZO_PH_TX", "EZO_PH_RX", "PH_PRB", "PH_PGND")
+    ezo_pair(board, names, "J9", "J10", 22.42, ezo_y, "EZO_ORP_TX", "EZO_ORP_RX", "ORP_PRB", "ORP_PGND")
     # Just left of the equal gap, so the socket courtyard clears J16.
     # The body may cover the Pico pins. The socket holes stay off those pins.
-    ezo_pair(board, names, "J13", "J14", 40.90, ezo_y, "SDA", "SCL", "EZO_PRB", "EZO_PGND")
+    ezo_pair(board, names, "J13", "J14", 38.235, ezo_y, "SDA", "SCL", "EZO_PRB", "EZO_PGND")
 
     # Each probe screw is centered under its module. J5 stops 1 mm short of
     # the 1-Wire body, so it sits slightly left of the I2C module's center.
@@ -913,11 +937,11 @@ def main():
     silk(board, "pH", 2.2, 21.6, 0.8)
     silk(board, "ORP", 24.0, 21.4, 0.8)
     silk(board, "EZO", 29.0, 17.4, 0.8)
-    silk(board, "PH", 8.0, 29.4, 2.0, 0.15)
-    silk(board, "ORP", 26.0, 29.4, 2.0, 0.15)
-    silk(board, "EZO", 44.0, 29.4, 2.0, 0.15)
-    silk(board, "Pool Controller 1.0", 73, 18, 3.0, 0.3)
-    silk(board, "PoolVeras", 73, 14, 6.0, 0.3)
+    silk(board, "PH", 9.62, 29.4, 2.0, 0.15)
+    silk(board, "ORP", 25.15, 29.4, 2.0, 0.15)
+    silk(board, "EZO", 41.335, 29.4, 2.0, 0.15)
+    silk(board, "Pool Controller 1.1", 70.5, 18, 3.0, 0.3)
+    silk(board, "PoolVeras", 70.5, 14, 6.0, 0.3)
     # Names sit on the edge. Pin names sit just above them.
     # Pitch is 5.08 mm, so the short names fit a pin.
     for text, x, y in (

@@ -240,7 +240,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": ""
+      "sch_revision": "1"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -658,13 +658,18 @@
       {
         "filename": "sensor-hat.kicad_sch",
         "name": "sensor-hat",
-        "uuid": "00000000-0000-0000-0000-000000000000"
+        "uuid": "108685f0-30ce-51b5-93f8-df7bf068f484"
       }
     ],
     "used_designators": "",
     "variants": []
   },
-  "sheets": [],
+  "sheets": [
+    [
+      "108685f0-30ce-51b5-93f8-df7bf068f484",
+      "sensor-hat"
+    ]
+  ],
   "text_variables": {},
   "tuning_profiles": {
     "meta": {

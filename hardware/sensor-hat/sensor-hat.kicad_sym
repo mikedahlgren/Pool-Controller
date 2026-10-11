@@ -37,7 +37,7 @@
 			(pin passive line
 				(at 0 -45.72 180)
 				(length 2.54)
-				(name "ADC1  GPIO7"
+				(name "ADC1  GPIO13"
 					(effects (font (size 1.27 1.27)))
 				)
 				(number "2"
@@ -97,7 +97,7 @@
 			(pin passive line
 				(at 0 -167.64000000000001 180)
 				(length 2.54)
-				(name "DIN3  GPIO14"
+				(name "DIN3  GPIO15"
 					(effects (font (size 1.27 1.27)))
 				)
 				(number "8"
@@ -107,7 +107,7 @@
 			(pin passive line
 				(at 0 -182.88000000000002 180)
 				(length 2.54)
-				(name "DIN4  GPIO13"
+				(name "DIN4  GPIO14"
 					(effects (font (size 1.27 1.27)))
 				)
 				(number "9"
@@ -167,7 +167,7 @@
 			(pin passive line
 				(at 0 -396.2400000000001 180)
 				(length 2.54)
-				(name "ORP RX  GPIO40"
+				(name "ORP RX  GPIO39"
 					(effects (font (size 1.27 1.27)))
 				)
 				(number "15"
@@ -177,7 +177,7 @@
 			(pin passive line
 				(at 0 -411.48000000000013 180)
 				(length 2.54)
-				(name "ORP TX  GPIO39"
+				(name "ORP TX  GPIO40"
 					(effects (font (size 1.27 1.27)))
 				)
 				(number "16"
@@ -197,7 +197,7 @@
 			(pin passive line
 				(at 0 -502.9200000000002 180)
 				(length 2.54)
-				(name "BTN1  GPIO6"
+				(name "BTN1  GPIO7"
 					(effects (font (size 1.27 1.27)))
 				)
 				(number "18"
@@ -207,7 +207,7 @@
 			(pin passive line
 				(at 0 -518.1600000000002 180)
 				(length 2.54)
-				(name "BTN2  GPIO36"
+				(name "BTN2  GPIO6"
 					(effects (font (size 1.27 1.27)))
 				)
 				(number "19"

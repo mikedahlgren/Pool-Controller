@@ -490,7 +490,7 @@ def build():
     groups = [
         [("3V3  J1.11", "3V3")],
         [
-            ("ADC1  GPIO7", "ADC1"),
+            ("ADC1  GPIO13", "ADC1"),
             ("ADC2  GPIO8", "ADC2"),
             ("ADC3  GPIO9", "ADC3"),
             ("ADC4  GPIO10", "ADC4"),
@@ -498,15 +498,15 @@ def build():
         [
             ("DIN1  GPIO47", "DIN1"),
             ("DIN2  GPIO16", "DIN2"),
-            ("DIN3  GPIO14", "DIN3"),
-            ("DIN4  GPIO13", "DIN4"),
+            ("DIN3  GPIO15", "DIN3"),
+            ("DIN4  GPIO14", "DIN4"),
         ],
         [("1-Wire  GPIO37", "OWGPIO")],
         [("SDA  GPIO4", "SDA"), ("SCL  GPIO5", "SCL")],
         [("pH RX  GPIO12", "EPH_RX"), ("pH TX  GPIO11", "EPH_TX")],
-        [("ORP RX  GPIO40", "EOR_RX"), ("ORP TX  GPIO39", "EOR_TX")],
+        [("ORP RX  GPIO39", "EOR_RX"), ("ORP TX  GPIO40", "EOR_TX")],
         [("GND", "GND")],
-        [("BTN1  GPIO6", "BTN1"), ("BTN2  GPIO36", "BTN2")],
+        [("BTN1  GPIO7", "BTN1"), ("BTN2  GPIO6", "BTN2")],
     ]
     right = []
     dy = 0.0
@@ -637,7 +637,7 @@ def build():
         straight(adc_rows[n], j7[str(n + 1)])
 
     sch.text("Contacts on J7. Left to right: IN1, IN2, IN3, IN4.", 130, xy("DIN1")[1] - 8, 1.2)
-    # Screw order is the GPIO order: IN1 GPIO47, IN2 GPIO16, IN3 GPIO14, IN4 GPIO13.
+    # Screw order is IN1 GPIO47, IN2 GPIO16, IN3 GPIO15, IN4 GPIO14.
     contact_rows = (("DIN1", 1), ("DIN2", 2), ("DIN3", 3), ("DIN4", 4))
     in_rows = {}
     for key, n in contact_rows:
@@ -841,14 +841,31 @@ def build():
             "Switch:SW_Push", sw_ref, "TS-1187A",
             snap(pull["2"][0] + 25.4), y,
             "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A",
-            rot=180,
-            extra={"Description": "pin 1 to GND, pin 2 to the GPIO. Silk A is SW1, silk B is SW2."},
+            rot=0,
+            extra={"Description": "pin 1 to the GPIO, pin 2 to GND. Silk A is SW1, silk B is SW2."},
         )
-        straight(pull["2"], sw["2"])
-        pwr_off(sw["1"], "GND", 5.08, 0)
+        straight(pull["2"], sw["1"])
+        sch.label(key, snap((pull["2"][0] + sw["1"][0]) / 2), sw["1"][1])
+        pwr_off(sw["2"], "GND", 5.08, 0)
 
     button("BTN1", "SW1", "R29")
     button("BTN2", "SW2", "R30")
+
+    # Enclosure header. A switch on pins 1 and 2 matches SW1. Pins 3 and 4 match SW2.
+    sch.text(
+        "J17 brings SW1 and SW2 out for enclosure switches. Odd pins are the signals. Even pins are ground.",
+        130, xy("BTN2")[1] + 18, 1.2,
+    )
+    j17 = sch.place(
+        "Connector_Generic:Conn_01x04", "J17", "external",
+        snap(pin["BTN2"][0] + 70), snap(pin["BTN1"][1]),
+        "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
+        extra={"Description": "Pin 1 SW1, pin 2 GND, pin 3 SW2, pin 4 GND."},
+    )
+    sch.tie(j17["1"], "BTN1")
+    sch.tie(j17["2"], "GND")
+    sch.tie(j17["3"], "BTN2")
+    sch.tie(j17["4"], "GND")
     return sch
 
 
