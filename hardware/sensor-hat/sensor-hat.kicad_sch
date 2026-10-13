@@ -4971,6 +4971,18 @@
 			(at 154.94 39.37 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "Bourns"
+			(at 154.94 39.37 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "MF-MSMF020-2"
+			(at 154.94 39.37 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "1812"
+			(at 154.94 39.37 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "88e8a3f0-63ea-4d7f-9e63-7e09bed39315")
 		)
@@ -5011,11 +5023,19 @@
 			(at 168.91 39.37 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 168.91 39.37 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 168.91 39.37 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 168.91 39.37 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 168.91 39.37 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -5318,11 +5338,19 @@
 			(at 179.07 85.09 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 179.07 85.09 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 179.07 85.09 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 179.07 85.09 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 179.07 85.09 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -5366,11 +5394,19 @@
 			(at 162.56 81.28 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 162.56 81.28 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.56 81.28 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 162.56 81.28 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 162.56 81.28 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -5451,11 +5487,19 @@
 			(at 175.26 80.01 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C7420333"
+		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
 			(at 175.26 80.01 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
+		(property "Manufacturer" "onsemi"
+			(at 175.26 80.01 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 175.26 80.01 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SOT-23"
 			(at 175.26 80.01 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -5576,11 +5620,19 @@
 			(at 193.04 81.28 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17471"
+		(property "Tolerance" "1%"
 			(at 193.04 81.28 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 193.04 81.28 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07150RL"
+			(at 193.04 81.28 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 193.04 81.28 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -5661,11 +5713,19 @@
 			(at 179.07 100.33 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 179.07 100.33 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 179.07 100.33 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 179.07 100.33 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 179.07 100.33 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -5709,11 +5769,19 @@
 			(at 162.56 96.52 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 162.56 96.52 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.56 96.52 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 162.56 96.52 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 162.56 96.52 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -5794,11 +5862,19 @@
 			(at 175.26 95.25 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C7420333"
+		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
 			(at 175.26 95.25 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
+		(property "Manufacturer" "onsemi"
+			(at 175.26 95.25 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 175.26 95.25 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SOT-23"
 			(at 175.26 95.25 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -5919,11 +5995,19 @@
 			(at 193.04 96.52 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17471"
+		(property "Tolerance" "1%"
 			(at 193.04 96.52 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 193.04 96.52 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07150RL"
+			(at 193.04 96.52 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 193.04 96.52 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6004,11 +6088,19 @@
 			(at 179.07 115.57 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 179.07 115.57 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 179.07 115.57 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 179.07 115.57 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 179.07 115.57 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6052,11 +6144,19 @@
 			(at 162.56 111.76 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 162.56 111.76 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.56 111.76 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 162.56 111.76 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 162.56 111.76 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6137,11 +6237,19 @@
 			(at 175.26 110.49 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C7420333"
+		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
 			(at 175.26 110.49 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
+		(property "Manufacturer" "onsemi"
+			(at 175.26 110.49 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 175.26 110.49 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SOT-23"
 			(at 175.26 110.49 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6262,11 +6370,19 @@
 			(at 193.04 111.76 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17471"
+		(property "Tolerance" "1%"
 			(at 193.04 111.76 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 193.04 111.76 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07150RL"
+			(at 193.04 111.76 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 193.04 111.76 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6347,11 +6463,19 @@
 			(at 179.07 130.81 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 179.07 130.81 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 179.07 130.81 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 179.07 130.81 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 179.07 130.81 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6395,11 +6519,19 @@
 			(at 162.56 127.0 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 162.56 127.0 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.56 127.0 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 162.56 127.0 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 162.56 127.0 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6480,11 +6612,19 @@
 			(at 175.26 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C7420333"
+		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
 			(at 175.26 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
+		(property "Manufacturer" "onsemi"
+			(at 175.26 125.73 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 175.26 125.73 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SOT-23"
 			(at 175.26 125.73 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6605,11 +6745,19 @@
 			(at 193.04 127.0 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17471"
+		(property "Tolerance" "1%"
 			(at 193.04 127.0 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 193.04 127.0 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07150RL"
+			(at 193.04 127.0 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 193.04 127.0 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6687,6 +6835,18 @@
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
 		(property "Datasheet" ""
+			(at 427.99 85.09 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Manufacturer" "Phoenix Contact"
+			(at 427.99 85.09 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "1715750"
+			(at 427.99 85.09 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "5.08mm"
 			(at 427.99 85.09 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6776,11 +6936,19 @@
 			(at 179.07 176.53 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 179.07 176.53 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 179.07 176.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 179.07 176.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 179.07 176.53 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6824,11 +6992,19 @@
 			(at 162.56 172.72 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 162.56 172.72 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.56 172.72 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 162.56 172.72 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 162.56 172.72 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -6909,11 +7085,19 @@
 			(at 175.26 171.45 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C7420333"
+		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
 			(at 175.26 171.45 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
+		(property "Manufacturer" "onsemi"
+			(at 175.26 171.45 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 175.26 171.45 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SOT-23"
 			(at 175.26 171.45 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7034,11 +7218,19 @@
 			(at 193.04 180.34 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17414"
+		(property "Tolerance" "1%"
 			(at 193.04 180.34 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 193.04 180.34 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 193.04 180.34 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 193.04 180.34 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7119,11 +7311,19 @@
 			(at 179.07 191.77 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 179.07 191.77 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 179.07 191.77 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 179.07 191.77 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 179.07 191.77 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7167,11 +7367,19 @@
 			(at 162.56 187.96 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 162.56 187.96 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.56 187.96 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 162.56 187.96 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 162.56 187.96 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7252,11 +7460,19 @@
 			(at 175.26 186.69 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C7420333"
+		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
 			(at 175.26 186.69 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
+		(property "Manufacturer" "onsemi"
+			(at 175.26 186.69 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 175.26 186.69 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SOT-23"
 			(at 175.26 186.69 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7377,11 +7593,19 @@
 			(at 193.04 195.58 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17414"
+		(property "Tolerance" "1%"
 			(at 193.04 195.58 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 193.04 195.58 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 193.04 195.58 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 193.04 195.58 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7462,11 +7686,19 @@
 			(at 179.07 207.01 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 179.07 207.01 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 179.07 207.01 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 179.07 207.01 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 179.07 207.01 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7510,11 +7742,19 @@
 			(at 162.56 203.2 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 162.56 203.2 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.56 203.2 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 162.56 203.2 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 162.56 203.2 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7595,11 +7835,19 @@
 			(at 175.26 201.93 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C7420333"
+		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
 			(at 175.26 201.93 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
+		(property "Manufacturer" "onsemi"
+			(at 175.26 201.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 175.26 201.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SOT-23"
 			(at 175.26 201.93 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7720,11 +7968,19 @@
 			(at 193.04 210.82 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17414"
+		(property "Tolerance" "1%"
 			(at 193.04 210.82 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 193.04 210.82 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 193.04 210.82 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 193.04 210.82 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7805,11 +8061,19 @@
 			(at 179.07 222.25 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 179.07 222.25 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 179.07 222.25 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 179.07 222.25 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 179.07 222.25 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7853,11 +8117,19 @@
 			(at 162.56 218.44 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C28233"
+		(property "Voltage" "100V"
 			(at 162.56 218.44 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Voltage" "100V"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.56 218.44 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "CL21B104KCFSFNE"
+			(at 162.56 218.44 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 162.56 218.44 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -7938,11 +8210,19 @@
 			(at 175.26 217.17 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C7420333"
+		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
 			(at 175.26 217.17 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Description" "pin 1 GND, pin 2 V3OUT, pin 3 signal"
+		(property "Manufacturer" "onsemi"
+			(at 175.26 217.17 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "BAT54SLT1G"
+			(at 175.26 217.17 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SOT-23"
 			(at 175.26 217.17 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8063,11 +8343,19 @@
 			(at 193.04 226.06 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17414"
+		(property "Tolerance" "1%"
 			(at 193.04 226.06 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 193.04 226.06 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 193.04 226.06 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 193.04 226.06 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8145,6 +8433,18 @@
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
 		(property "Datasheet" ""
+			(at 427.99 176.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Manufacturer" "Phoenix Contact"
+			(at 427.99 176.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "1715750"
+			(at 427.99 176.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "5.08mm"
 			(at 427.99 176.53 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8234,11 +8534,19 @@
 			(at 160.02 267.97 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17408"
+		(property "Tolerance" "1%"
 			(at 160.02 267.97 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 160.02 267.97 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07100RL"
+			(at 160.02 267.97 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 160.02 267.97 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8283,6 +8591,18 @@
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
 		(property "Pin order" "1 3V3, 2 DATA, 3 GND"
+			(at 340.36 267.97 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Manufacturer" "Phoenix Contact"
+			(at 340.36 267.97 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "1715734"
+			(at 340.36 267.97 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "5.08mm"
 			(at 340.36 267.97 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8411,6 +8731,18 @@
 			(at 250.19 242.57 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "SHOU HAN"
+			(at 250.19 242.57 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "SK13D07VG5"
+			(at 250.19 242.57 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "SP3T"
+			(at 250.19 242.57 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "064224ec-a22c-46c6-aad2-85f68c412468")
 		)
@@ -8457,11 +8789,19 @@
 			(at 270.51 240.03 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17673"
+		(property "Tolerance" "1%"
 			(at 270.51 240.03 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 270.51 240.03 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 270.51 240.03 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 270.51 240.03 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8505,11 +8845,19 @@
 			(at 270.51 242.57 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17520"
+		(property "Tolerance" "1%"
 			(at 270.51 242.57 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 270.51 242.57 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-072K2L"
+			(at 270.51 242.57 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 270.51 242.57 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8553,11 +8901,19 @@
 			(at 270.51 245.11 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17513"
+		(property "Tolerance" "1%"
 			(at 270.51 245.11 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 270.51 245.11 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 270.51 245.11 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 270.51 245.11 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8638,11 +8994,19 @@
 			(at 165.1 374.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17408"
+		(property "Tolerance" "1%"
 			(at 165.1 374.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 165.1 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07100RL"
+			(at 165.1 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 165.1 374.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8686,11 +9050,19 @@
 			(at 165.1 389.89 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17408"
+		(property "Tolerance" "1%"
 			(at 165.1 389.89 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 165.1 389.89 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07100RL"
+			(at 165.1 389.89 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 165.1 389.89 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8739,6 +9111,18 @@
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
 		(property "Pin order" "1 GND, 2 TX, 3 RX"
+			(at 201.93 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Manufacturer" "Sullins Connector Solutions"
+			(at 201.93 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "PPPC031LFBN-RC"
+			(at 201.93 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "2.54mm"
 			(at 201.93 374.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -8882,6 +9266,18 @@
 			(at 261.62 374.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "Sullins Connector Solutions"
+			(at 261.62 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "PPPC031LFBN-RC"
+			(at 261.62 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "2.54mm"
+			(at 261.62 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "2f67287c-7864-482e-9020-553074af486e")
 		)
@@ -8966,6 +9362,18 @@
 			(at 276.86 374.65 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "Phoenix Contact"
+			(at 276.86 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "1715721"
+			(at 276.86 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "5.08mm"
+			(at 276.86 374.65 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "79e3b26c-d09b-4551-abfb-1bacd45abec1")
 		)
@@ -9006,11 +9414,19 @@
 			(at 165.1 435.61 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17408"
+		(property "Tolerance" "1%"
 			(at 165.1 435.61 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 165.1 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07100RL"
+			(at 165.1 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 165.1 435.61 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -9054,11 +9470,19 @@
 			(at 165.1 450.85 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17408"
+		(property "Tolerance" "1%"
 			(at 165.1 450.85 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 165.1 450.85 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-07100RL"
+			(at 165.1 450.85 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 165.1 450.85 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -9107,6 +9531,18 @@
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
 		(property "Pin order" "1 GND, 2 TX, 3 RX"
+			(at 201.93 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Manufacturer" "Sullins Connector Solutions"
+			(at 201.93 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "PPPC031LFBN-RC"
+			(at 201.93 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "2.54mm"
 			(at 201.93 435.61 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -9250,6 +9686,18 @@
 			(at 261.62 435.61 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "Sullins Connector Solutions"
+			(at 261.62 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "PPPC031LFBN-RC"
+			(at 261.62 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "2.54mm"
+			(at 261.62 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "daab8f71-b819-4254-8fa6-b991811d3a60")
 		)
@@ -9334,6 +9782,18 @@
 			(at 276.86 435.61 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "Phoenix Contact"
+			(at 276.86 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "1715721"
+			(at 276.86 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "5.08mm"
+			(at 276.86 435.61 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "613339f9-0006-450e-a364-2bef1727928c")
 		)
@@ -9374,11 +9834,19 @@
 			(at 165.1 325.12 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17673"
+		(property "Tolerance" "1%"
 			(at 165.1 325.12 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 165.1 325.12 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 165.1 325.12 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 165.1 325.12 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -9422,11 +9890,19 @@
 			(at 165.1 309.88 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17673"
+		(property "Tolerance" "1%"
 			(at 165.1 309.88 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 165.1 309.88 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-074K7L"
+			(at 165.1 309.88 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 165.1 309.88 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -9471,6 +9947,18 @@
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
 		(property "Pin order" "1 GND, 2 3V3, 3 SCL, 4 SDA. Pin 1 is on the left. Female socket, so the OLED plugs in."
+			(at 135.89 313.69 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Manufacturer" "Sullins Connector Solutions"
+			(at 135.89 313.69 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "PPPC041LFBN-RC"
+			(at 135.89 313.69 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "2.54mm"
 			(at 135.89 313.69 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -9676,6 +10164,18 @@
 			(at 198.12 328.93 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "Sullins Connector Solutions"
+			(at 198.12 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "PPPC031LFBN-RC"
+			(at 198.12 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "2.54mm"
+			(at 198.12 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "cb41c6ad-deb6-4272-828c-62a17c4d48f5")
 		)
@@ -9816,6 +10316,18 @@
 			(at 257.81 328.93 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "Sullins Connector Solutions"
+			(at 257.81 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "PPPC031LFBN-RC"
+			(at 257.81 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "2.54mm"
+			(at 257.81 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "539c7635-c7eb-475d-a77b-466b86c18418")
 		)
@@ -9900,6 +10412,18 @@
 			(at 273.05 328.93 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "Phoenix Contact"
+			(at 273.05 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "1715721"
+			(at 273.05 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "5.08mm"
+			(at 273.05 328.93 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "2d0f2806-f9f2-498d-b6ff-c27008fb0f04")
 		)
@@ -9940,11 +10464,19 @@
 			(at 135.89 538.48 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17414"
+		(property "Tolerance" "1%"
 			(at 135.89 538.48 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 135.89 538.48 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 135.89 538.48 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 135.89 538.48 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -10029,6 +10561,22 @@
 			(at 161.29 542.29 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "XKB Connection"
+			(at 161.29 542.29 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "TS-1187A-B-A-B"
+			(at 161.29 542.29 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "5.1x5.1mm"
+			(at 161.29 542.29 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "LCSC" "C318884"
+			(at 161.29 542.29 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "1ec9149c-6141-4c56-90ed-90eea48d83e0")
 		)
@@ -10106,11 +10654,19 @@
 			(at 135.89 553.72 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "LCSC" "C17414"
+		(property "Tolerance" "1%"
 			(at 135.89 553.72 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
-		(property "Tolerance" "1%"
+		(property "Manufacturer" "Yageo"
+			(at 135.89 553.72 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "RC0805FR-0710KL"
+			(at 135.89 553.72 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "0805"
 			(at 135.89 553.72 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
@@ -10195,6 +10751,22 @@
 			(at 161.29 557.53 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
+		(property "Manufacturer" "XKB Connection"
+			(at 161.29 557.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "TS-1187A-B-A-B"
+			(at 161.29 557.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "5.1x5.1mm"
+			(at 161.29 557.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "LCSC" "C318884"
+			(at 161.29 557.53 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
 		(pin "1"
 			(uuid "9b51303a-018d-42e8-905f-790d19cdcb23")
 		)
@@ -10273,6 +10845,18 @@
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)
 		(property "Description" "Pin 1 SW1, pin 2 GND, pin 3 SW2, pin 4 GND."
+			(at 185.42 542.29 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Manufacturer" "Amphenol"
+			(at 185.42 542.29 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "MPN" "68001-404HLF"
+			(at 185.42 542.29 0)
+			(effects (font (size 1.27 1.27)) (hide yes))
+		)
+		(property "Package" "2.54mm"
 			(at 185.42 542.29 0)
 			(effects (font (size 1.27 1.27)) (hide yes))
 		)

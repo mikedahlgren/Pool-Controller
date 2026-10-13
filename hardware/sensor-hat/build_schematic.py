@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Schematic for the pool sensor hat. Does not place or route the PCB."""
 
+import csv
 import math
 import re
 import uuid
@@ -50,6 +51,67 @@ LCSC = {
     "10u": "C15850",
     "BAT54S": "C7420333",
 }
+
+
+def _order(refs, manufacturer, mpn, package, lcsc=""):
+    return {ref: (manufacturer, mpn, package, lcsc) for ref in refs}
+
+
+# Parts the PCBWay KiCad plugin should quote. Field name MPN is the one the
+# plugin reads. LCSC is kept only when it is that same part.
+ORDER = {}
+ORDER.update(_order(
+    ["R1", "R2", "R3", "R4"], "Yageo", "RC0805FR-07150RL", "0805"))
+ORDER.update(_order(
+    ["R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R26"],
+    "Yageo", "RC0805FR-071KL", "0805"))
+ORDER.update(_order(
+    ["R13", "R14", "R15", "R16", "R29", "R30"],
+    "Yageo", "RC0805FR-0710KL", "0805"))
+ORDER.update(_order(
+    ["R17", "R18", "R19", "R20", "R21"],
+    "Yageo", "RC0805FR-07100RL", "0805"))
+ORDER.update(_order(
+    ["R24", "R27", "R28"], "Yageo", "RC0805FR-074K7L", "0805"))
+ORDER.update(_order(["R25"], "Yageo", "RC0805FR-072K2L", "0805"))
+ORDER.update(_order(
+    ["C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11"],
+    "Samsung Electro-Mechanics", "CL21B104KCFSFNE", "0805"))
+ORDER.update(_order(
+    ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
+    "onsemi", "BAT54SLT1G", "SOT-23"))
+ORDER.update(_order(["F1"], "Bourns", "MF-MSMF020-2", "1812"))
+ORDER.update(_order(
+    ["SW1", "SW2"], "XKB Connection", "TS-1187A-B-A-B", "5.1x5.1mm", "C318884"))
+ORDER.update(_order(
+    ["SW3"], "SHOU HAN", "SK13D07VG5", "SP3T", "C393948"))
+ORDER.update(_order(
+    ["J3", "J4", "J5"], "Phoenix Contact", "1715721", "5.08mm"))
+ORDER.update(_order(["J6"], "Phoenix Contact", "1715734", "5.08mm"))
+ORDER.update(_order(
+    ["J7", "J8"], "Phoenix Contact", "1715750", "5.08mm"))
+ORDER.update(_order(
+    ["J1", "J2"], "Sullins Connector Solutions", "PPPC201LFBN-RC", "2.54mm"))
+ORDER.update(_order(
+    ["J9", "J10", "J11", "J12", "J13", "J14"],
+    "Sullins Connector Solutions", "PPPC031LFBN-RC", "2.54mm"))
+ORDER.update(_order(
+    ["J16"], "Sullins Connector Solutions", "PPPC041LFBN-RC", "2.54mm"))
+ORDER.update(_order(["J17"], "Amphenol", "68001-404HLF", "2.54mm"))
+
+
+def apply_order(ref, extra):
+    row = ORDER.get(ref)
+    if not row:
+        return
+    manufacturer, mpn, package, lcsc = row
+    extra["Manufacturer"] = manufacturer
+    extra["MPN"] = mpn
+    extra["Package"] = package
+    if lcsc:
+        extra["LCSC"] = lcsc
+    else:
+        extra.pop("LCSC", None)
 
 
 def uid():
@@ -281,6 +343,7 @@ class Sch:
         # A placed symbol mirrors the library Y axis, then rotates.
         x, y = snap(x), snap(y)
         extra = dict(extra or {})
+        apply_order(ref, extra)
         ref_at = extra.pop("ref_at", None)
         val_at = extra.pop("val_at", None)
         world = {}
@@ -880,10 +943,16 @@ def groups_key(groups, number):
 
 
 def write_bom(parts, path):
-    lines = ["Ref,Value,Footprint,LCSC"]
-    for ref, value, footprint, lcsc in parts:
-        lines.append(f"{ref},{value},{footprint},{lcsc}")
-    path.write_text("\n".join(lines) + "\n")
+    with path.open("w", newline="") as handle:
+        out = csv.writer(handle)
+        out.writerow(["Ref", "Value", "Footprint", "Manufacturer", "MPN", "Package", "LCSC"])
+        for ref, value, footprint, lcsc in parts:
+            row = ORDER.get(ref)
+            if row:
+                manufacturer, mpn, package, lcsc = row
+            else:
+                manufacturer = mpn = package = ""
+            out.writerow([ref, value, footprint, manufacturer, mpn, package, lcsc])
 
 
 def write_symbol_lib(sch):

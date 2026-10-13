@@ -237,12 +237,27 @@ binary_sensor:
 
   - platform: gpio
     name: "Button A"
+    id: button_a
     pin:
       number: GPIO7
       mode:
         input: true
       inverted: true
     icon: "mdi:gesture-tap-button"
+    on_press:
+      then:
+        - if:
+            condition:
+              lambda: "return !id(hat_display).is_failed();"
+            then:
+              - component.update: hat_display
+    on_release:
+      then:
+        - if:
+            condition:
+              lambda: "return !id(hat_display).is_failed();"
+            then:
+              - component.update: hat_display
     web_server:
       sorting_group_id: sorting_group_buttons
       sorting_weight: 1
@@ -267,10 +282,15 @@ font:
 # The 2.42 inch SSD1309 uses the same 128x64 I2C setup as an SSD1306.
 display:
   - platform: ssd1306_i2c
+    id: hat_display
     model: "SSD1306 128x64"
     address: 0x3C
     update_interval: 1s
     lambda: |-
+      if (id(button_a).state) {
+        it.print(64, 32, id(oled_font), TextAlign::CENTER, "Poolveras");
+        return;
+      }
       if (id(pool_ph).has_state() && !isnan(id(pool_ph).state)) {
         it.printf(0, 0, id(oled_font), "pH  %.2f", id(pool_ph).state);
       } else {
